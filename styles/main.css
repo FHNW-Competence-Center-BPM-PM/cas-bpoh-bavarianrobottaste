@@ -40,7 +40,7 @@ body {
 }
 
 body.has-auth-rail {
-  padding-top: 78px;
+  padding-top: 0;
 }
 
 body::before {
@@ -93,7 +93,7 @@ h3 {
 .site-shell {
   width: min(calc(100% - 32px), var(--max-width));
   margin: 0 auto;
-  padding: 20px 0 48px;
+  padding: 14px 0 48px;
 }
 
 .site-header,
@@ -170,7 +170,7 @@ h3 {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: var(--button-height);
   padding: 0 14px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.1);
