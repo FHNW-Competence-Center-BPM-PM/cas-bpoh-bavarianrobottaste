@@ -75,6 +75,7 @@ const renderAuthRail = (profile) => {
       <div class="auth-rail-card">
         <span class="auth-rail-name">Hallo, ${profileLabel(profile)}</span>
         <a class="auth-rail-link" href="/profile.html">Profil</a>
+        <a class="auth-rail-link" href="/docs.html" target="_blank" rel="noopener noreferrer">Doku</a>
         <button class="auth-rail-button" type="button" data-auth-logout>Logout</button>
       </div>
     `;
@@ -83,6 +84,7 @@ const renderAuthRail = (profile) => {
       <div class="auth-rail-card">
         <a class="auth-rail-link" href="/register.html">Registrierung</a>
         <a class="auth-rail-link is-primary" href="/login.html">Login</a>
+        <a class="auth-rail-link" href="/docs.html" target="_blank" rel="noopener noreferrer">Doku</a>
       </div>
     `;
   }
@@ -128,16 +130,114 @@ const loadCurrentProfile = async () => {
 
 const authReady = loadCurrentProfile();
 
-const dishModal = document.querySelector("#dish-modal");
-const dishTriggers = document.querySelectorAll(".dish-trigger");
+const escapeHtml = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (character) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character] || character;
+  });
 
-if (dishModal && dishTriggers.length > 0) {
+const productPageRoot = document.querySelector("[data-product-page]");
+
+const buildProductCard = (product, page) => {
+  const classes = ["menu-item"];
+  if (page === "drinks") {
+    classes.push("drink-item");
+  }
+  if (product.featured) {
+    classes.push("menu-item-featured");
+  }
+
+  const imageMarkup = product.imagePath
+    ? `<img class="menu-item-media" src="${escapeHtml(product.imagePath)}" alt="${escapeHtml(product.title)}" />`
+    : "";
+  const textClass = page === "drinks" ? "drink-name" : "";
+  const descriptionClass = page === "drinks" ? "drink-description" : "";
+
+  return `
+    <article
+      class="${classes.join(" ")} dish-trigger"
+      tabindex="0"
+      role="button"
+      data-dish-category="${escapeHtml(product.category)}"
+      data-dish-title="${escapeHtml(product.title)}"
+      data-dish-price="${escapeHtml(product.price)}"
+      data-dish-copy="${escapeHtml(product.ingredients)}"
+      data-dish-image="${escapeHtml(product.imagePath)}"
+      data-dish-quote="${escapeHtml(product.quote.text)}"
+      data-dish-author="${escapeHtml(product.quote.author)}"
+      data-dish-special-heading-1="${escapeHtml(product.specialSections[0]?.heading || "")}"
+      data-dish-special-content-1="${escapeHtml(product.specialSections[0]?.content || "")}"
+      data-dish-special-heading-2="${escapeHtml(product.specialSections[1]?.heading || "")}"
+      data-dish-special-content-2="${escapeHtml(product.specialSections[1]?.content || "")}"
+    >
+      ${imageMarkup}
+      <div>
+        <h3 class="${textClass}">${escapeHtml(product.title)}</h3>
+        <p class="${descriptionClass}">${escapeHtml(product.teaser)}</p>
+      </div>
+      <span class="price-tag">${escapeHtml(product.price)}</span>
+    </article>
+  `;
+};
+
+const renderProductPage = async () => {
+  if (!productPageRoot) {
+    return;
+  }
+
+  const page = productPageRoot.dataset.productPage || "";
+  try {
+    const payload = await apiFetch(`/api/products?page=${encodeURIComponent(page)}`, { auth: false });
+    productPageRoot.innerHTML = payload.sections
+      .map(
+        (section) => `
+          <section class="section menu-section reveal">
+            <div class="section-heading">
+              <p class="section-tag">${escapeHtml(section.tag)}</p>
+              <h2>${escapeHtml(section.title)}</h2>
+            </div>
+            <div class="menu-list">
+              ${section.products.map((product) => buildProductCard(product, payload.page)).join("")}
+            </div>
+          </section>
+        `
+      )
+      .join("");
+
+    const dynamicRevealItems = productPageRoot.querySelectorAll(".reveal");
+    dynamicRevealItems.forEach((item) => item.classList.add("is-visible"));
+    bindDishTriggers();
+  } catch (error) {
+    productPageRoot.innerHTML = `
+      <section class="section menu-section reveal is-visible">
+        <div class="section-heading">
+          <p class="section-tag">Produktdaten</p>
+          <h2>Die Produktdaten konnten gerade nicht geladen werden.</h2>
+        </div>
+        <p>${escapeHtml(error.message)}</p>
+      </section>
+    `;
+  }
+};
+
+const dishModal = document.querySelector("#dish-modal");
+let bindDishTriggers = () => {};
+
+if (dishModal) {
   const modalCategory = dishModal.querySelector("#dish-modal-category");
   const modalTitle = dishModal.querySelector("#dish-modal-title");
   const modalPrice = dishModal.querySelector("#dish-modal-price");
   const modalCopy = dishModal.querySelector("#dish-modal-copy");
   const modalOrigin = dishModal.querySelector("#dish-modal-origin");
   const modalQuality = dishModal.querySelector("#dish-modal-quality");
+  const modalSpecialHeading1 = dishModal.querySelector("#dish-modal-special-heading-1");
+  const modalSpecialHeading2 = dishModal.querySelector("#dish-modal-special-heading-2");
   const modalQuote = dishModal.querySelector("#dish-modal-quote");
   const modalAuthor = dishModal.querySelector("#dish-modal-author");
   const modalImageWrap = dishModal.querySelector(".dish-modal-image-wrap");
@@ -153,8 +253,14 @@ if (dishModal && dishTriggers.length > 0) {
     modalTitle.textContent = trigger.dataset.dishTitle || "Gericht";
     modalPrice.textContent = trigger.dataset.dishPrice || "";
     modalCopy.textContent = trigger.dataset.dishCopy || "";
-    modalOrigin.textContent = trigger.dataset.dishOrigin || "";
-    modalQuality.textContent = trigger.dataset.dishQuality || "";
+    modalOrigin.textContent = trigger.dataset.dishSpecialContent1 || "";
+    modalQuality.textContent = trigger.dataset.dishSpecialContent2 || "";
+    if (modalSpecialHeading1) {
+      modalSpecialHeading1.textContent = trigger.dataset.dishSpecialHeading1 || "Details";
+    }
+    if (modalSpecialHeading2) {
+      modalSpecialHeading2.textContent = trigger.dataset.dishSpecialHeading2 || "Mehr";
+    }
     modalQuote.textContent = `"${trigger.dataset.dishQuote || ""}"`;
     modalAuthor.textContent = trigger.dataset.dishAuthor || "";
 
@@ -200,15 +306,25 @@ if (dishModal && dishTriggers.length > 0) {
     imageLightboxImage.alt = "";
   };
 
-  dishTriggers.forEach((trigger) => {
-    trigger.addEventListener("click", () => openDishModal(trigger));
-    trigger.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        openDishModal(trigger);
+  bindDishTriggers = () => {
+    const dishTriggers = document.querySelectorAll(".dish-trigger");
+    dishTriggers.forEach((trigger) => {
+      if (trigger.dataset.dishBound === "true") {
+        return;
       }
+
+      trigger.dataset.dishBound = "true";
+      trigger.addEventListener("click", () => openDishModal(trigger));
+      trigger.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDishModal(trigger);
+        }
+      });
     });
-  });
+  };
+
+  bindDishTriggers();
 
   closeButtons.forEach((button) => {
     button.addEventListener("click", closeDishModal);
@@ -235,6 +351,43 @@ if (dishModal && dishTriggers.length > 0) {
       closeDishModal();
     }
   });
+}
+
+renderProductPage();
+
+const docsTabs = Array.from(document.querySelectorAll("[data-docs-tab]"));
+const docsPanels = Array.from(document.querySelectorAll("[data-docs-panel]"));
+
+if (docsTabs.length > 0 && docsPanels.length > 0) {
+  const activateDocsSection = (sectionId, updateUrl = true) => {
+    const nextId = sectionId || docsPanels[0]?.id || "";
+
+    docsTabs.forEach((tab) => {
+      const isActive = tab.getAttribute("aria-controls") === nextId;
+      tab.classList.toggle("is-active", isActive);
+      tab.setAttribute("aria-selected", String(isActive));
+    });
+
+    docsPanels.forEach((panel) => {
+      const isActive = panel.id === nextId;
+      panel.hidden = !isActive;
+      panel.classList.toggle("is-active", isActive);
+    });
+
+    if (updateUrl && nextId) {
+      window.history.replaceState(null, "", `#${nextId}`);
+    }
+  };
+
+  docsTabs.forEach((tab) => {
+    tab.addEventListener("click", (event) => {
+      event.preventDefault();
+      activateDocsSection(tab.getAttribute("aria-controls") || "");
+    });
+  });
+
+  const initialId = window.location.hash.replace("#", "") || docsPanels[0]?.id || "";
+  activateDocsSection(initialId, Boolean(window.location.hash));
 }
 
 const registrationApp = document.querySelector("[data-registration-app]");

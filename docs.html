@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Doku</title>
+    <meta
+      name="description"
+      content="Technische Dokumentation für den Unterrichtscase von Bavarian RoboTaste mit Reitern für HUE, CMS, ERP, Roboter G1 und NROK."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header reveal" data-site-header></header>
+
+      <main>
+        <section class="section docs-shell reveal">
+          <aside class="docs-tabs" aria-label="Dokubereiche">
+            <a class="docs-tab docs-tab-brand is-active" href="#brt" data-docs-tab aria-controls="brt">
+              <img src="assets/logo/bavarian-robotaste-logo.svg" alt="Bavarian RoboTaste Logo" />
+            </a>
+            <a class="docs-tab" href="#hue" data-docs-tab aria-controls="hue">HUE</a>
+            <a class="docs-tab" href="#cms" data-docs-tab aria-controls="cms">CMS</a>
+            <a class="docs-tab" href="#erp" data-docs-tab aria-controls="erp">ERP</a>
+            <a class="docs-tab" href="#roboter-g1" data-docs-tab aria-controls="roboter-g1">Roboter G1</a>
+            <a class="docs-tab" href="#nrok" data-docs-tab aria-controls="nrok">NROK</a>
+          </aside>
+
+          <div class="docs-content">
+            <article class="docs-panel is-active" id="brt" data-docs-panel>
+              <div class="section-heading">
+                <p class="section-tag">BRT</p>
+                <h2>Technische Bausteine für den Case, sauber gebündelt an einem Ort.</h2>
+              </div>
+              <div class="docs-card-grid">
+                <section class="legal-card">
+                  <p class="card-kicker">Kontext</p>
+                  <h3>Unterrichtscase</h3>
+                  <p>
+                    Diese Dokumentationsseite sammelt die relevanten Systembausteine für den
+                    Unterrichtscase von Bavarian RoboTaste und ordnet sie fachlich in ein
+                    gemeinsames Gesamtbild ein.
+                  </p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Architektur</p>
+                  <h3>Systemlandschaft</h3>
+                  <p>
+                    Links wechselst du zwischen den beteiligten Bereichen. Rechts liegen
+                    OpenAPI-, SOAP- und Integrationsnotizen im gleichen Look & Feel wie die
+                    restliche Anwendung.
+                  </p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Fokus</p>
+                  <h3>Didaktischer Rahmen</h3>
+                  <p>
+                    Im Mittelpunkt stehen fachliche Verantwortungen, Schnittstellen,
+                    Integrationspunkte und das Zusammenspiel von Erlebnis, Prozess und
+                    technischer Orchestrierung.
+                  </p>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="hue" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">HUE</p>
+                <h2>Lighting, Stimmung und Szenensteuerung im Restaurantkontext.</h2>
+              </div>
+              <div class="docs-card-grid">
+                <section class="legal-card">
+                  <p class="card-kicker">OpenAPI</p>
+                  <h3>REST-Endpunkte</h3>
+                  <p>Hier dokumentieren wir später Lichtgruppen, Szenen, Farbprofile und Trigger für Reservierungs- oder Event-Kontexte.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Use Case</p>
+                  <h3>Unterrichtsbezug</h3>
+                  <p>HUE steuert Ambience je nach Tischstatus, Menüphase oder Welcome-Szene beim Eintritt in das Restaurant.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Integration</p>
+                  <h3>Relevante Artefakte</h3>
+                  <p>Webhook-Trigger, Szenen-Mapping, Authentifizierung und das Zusammenspiel mit ERP, CMS oder Roboter-Events.</p>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="cms" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">CMS</p>
+                <h2>Content, Texte und mediale Inhalte für Frontend und Storytelling.</h2>
+              </div>
+              <div class="docs-card-grid">
+                <section class="legal-card">
+                  <p class="card-kicker">OpenAPI</p>
+                  <h3>Content-Endpunkte</h3>
+                  <p>Hier kommen später Produkttexte, Story-Blöcke, Bilder, Testimonials und Sprachvarianten hinein.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Datenobjekte</p>
+                  <h3>Case-relevante Inhalte</h3>
+                  <p>Menütexte, Getränkebeschreibungen, Markenstories und mediale Assets für die Erlebnisinszenierung im Unterrichtscase.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Integration</p>
+                  <h3>Publishing-Flows</h3>
+                  <p>Draft/Publish-Prozesse, Freigaben, Bildverwaltung und Ausspielung in Web, Displays und robotische Touchpoints.</p>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="erp" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">ERP</p>
+                <h2>Preise, Artikel, Bestand und operative Daten für Küche und Service.</h2>
+              </div>
+              <div class="docs-card-grid">
+                <section class="legal-card">
+                  <p class="card-kicker">SOAP</p>
+                  <h3>Business-Services</h3>
+                  <p>Hier sammeln wir SOAP-Schnittstellen für Produktstammdaten, Preislisten, Lagerbewegungen und Bestandsabfragen.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Domäne</p>
+                  <h3>ERP-Rolle im Case</h3>
+                  <p>Das ERP liefert die führenden Informationen für Preis, Verfügbarkeit, Materialverbrauch und betriebliche Steuerung.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Integration</p>
+                  <h3>Synchronisationspunkte</h3>
+                  <p>Produkt-Feeds, Preisupdates, Reservierungslogik, Bestellstatus und Rückmeldungen aus Service oder Roboterprozess.</p>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="roboter-g1" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">Roboter G1</p>
+                <h2>Host-Robotik, Interaktion und operative Touchpoints am Gast.</h2>
+              </div>
+              <div class="docs-card-grid">
+                <section class="legal-card">
+                  <p class="card-kicker">OpenAPI</p>
+                  <h3>Roboter-Commands</h3>
+                  <p>Hier dokumentieren wir Bewegungsprofile, Begrüßungsskripte, Statusmeldungen und Trigger aus Reservierung oder Tischlogik.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Use Case</p>
+                  <h3>Rolle im Erlebnis</h3>
+                  <p>Der Roboter G1 begrüßt Gäste, unterstützt Orientierung und macht Technologie sichtbar, ohne das Ambiente zu stören.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Integration</p>
+                  <h3>Systemkopplung</h3>
+                  <p>Events aus Reservierung, CMS-Inhalten, Gästeprofilen und Licht-/Szenensteuerung werden hier fachlich zusammengeführt.</p>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="nrok" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">NROK</p>
+                <h2>Orchestrierung, Regeln und technische Klammer für den Gesamtprozess.</h2>
+              </div>
+              <div class="docs-card-grid">
+                <section class="legal-card">
+                  <p class="card-kicker">Schnittstellen</p>
+                  <h3>Koordination</h3>
+                  <p>Hier landen Querschnittsdokumente für Eventing, Routing, Fehlerbehandlung und fachliche Orchestrierung zwischen allen Systemen.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Case-Logik</p>
+                  <h3>Fachliche Regeln</h3>
+                  <p>NROK beschreibt im Unterrichtscase die Logik, wann welches System reagiert und wie Status sauber propagiert werden.</p>
+                </section>
+                <section class="legal-card">
+                  <p class="card-kicker">Erweiterung</p>
+                  <h3>Nächste Dokumente</h3>
+                  <p>OpenAPI-Snippets, Sequenzdiagramme, BPMN-Bezüge, Fehlerfälle und Governance-Hinweise können hier Schritt für Schritt ergänzt werden.</p>
+                </section>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal" data-site-footer></footer>
+    </div>
+
+    <script src="scripts/layout.js"></script>
+    <script src="scripts/main.js"></script>
+  </body>
+</html>
