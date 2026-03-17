@@ -6,7 +6,7 @@
     <title>Bavarian RoboTaste | Doku</title>
     <meta
       name="description"
-      content="Technische Dokumentation für den Unterrichtscase von Bavarian RoboTaste mit Reitern für HUE, CMS, ERP, Roboter G1 und NROK."
+      content="Technische Dokumentation für den Unterrichtscase von Bavarian RoboTaste mit Reitern für HUE, CMS, ERP, Tisch Tablets, Roboter G1 und NROK."
     />
     <link rel="stylesheet" href="styles/main.css" />
   </head>
@@ -23,6 +23,7 @@
             <a class="docs-tab" href="#hue" data-docs-tab aria-controls="hue">HUE</a>
             <a class="docs-tab" href="#cms" data-docs-tab aria-controls="cms">CMS</a>
             <a class="docs-tab" href="#erp" data-docs-tab aria-controls="erp">ERP</a>
+            <a class="docs-tab" href="#tisch-tablets" data-docs-tab aria-controls="tisch-tablets">Tisch Tablets</a>
             <a class="docs-tab" href="#roboter-g1" data-docs-tab aria-controls="roboter-g1">Roboter G1</a>
             <a class="docs-tab" href="#nrok" data-docs-tab aria-controls="nrok">NROK</a>
           </aside>
@@ -139,23 +140,735 @@
             <article class="docs-panel" id="roboter-g1" data-docs-panel hidden>
               <div class="section-heading">
                 <p class="section-tag">Roboter G1</p>
-                <h2>Host-Robotik, Interaktion und operative Touchpoints am Gast.</h2>
+                <h2>REST-Service zur Ausführung von Unitree-G1-Armgesten über HTTP.</h2>
               </div>
-              <div class="docs-card-grid">
-                <section class="legal-card">
-                  <p class="card-kicker">OpenAPI</p>
-                  <h3>Roboter-Commands</h3>
-                  <p>Hier dokumentieren wir Bewegungsprofile, Begrüßungsskripte, Statusmeldungen und Trigger aus Reservierung oder Tischlogik.</p>
+              <section class="docs-detail-intro">
+                <p>
+                  <code>g1-api</code> stellt eine FastAPI-REST-Schnittstelle bereit, um
+                  Arm-Aktionen eines Unitree G1 auszuführen. Die API kapselt die native Binary
+                  <code>g1_arm_action_example</code>, ruft sie mit einer Action-ID auf und
+                  kommuniziert über CycloneDDS mit dem Roboter.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Architektur</p>
+                    <h3>Technischer Ablauf</h3>
+                  </div>
+                  <p>
+                    Client, UI oder Voice-Trigger senden einen HTTP-Request an FastAPI. Der
+                    Service delegiert an den <code>UnitreeArmActionAdapter</code>, startet die
+                    Binary mit einer Action-ID und übergibt die Kommunikation an CycloneDDS.
+                  </p>
+                  <div class="docs-inline-list">
+                    <span>Client</span>
+                    <span>FastAPI</span>
+                    <span>UnitreeArmActionAdapter</span>
+                    <span>g1_arm_action_example</span>
+                    <span>CycloneDDS</span>
+                    <span>Unitree G1</span>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Use Case</p>
-                  <h3>Rolle im Erlebnis</h3>
-                  <p>Der Roboter G1 begrüßt Gäste, unterstützt Orientierung und macht Technologie sichtbar, ohne das Ambiente zu stören.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">API</p>
+                    <h3>Endpoints</h3>
+                  </div>
+                  <div class="docs-endpoint-list">
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/arm/action</code>
+                      </div>
+                      <p>
+                        Führt eine Arm-Aktion aus. Der Request erwartet aktuell genau ein Feld:
+                        <code>id</code> vom Typ Integer. Im Schema ist als Beispiel
+                        <code>26 = wave_above_head</code> hinterlegt.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "id": 26
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "action_id": 26,
+  "output": "..."
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">GET</span>
+                        <code>/health</code>
+                      </div>
+                      <p>
+                        Liveness-Probe ohne Auth und ohne Hardware-Zugriff. Der Endpunkt liefert
+                        einen OK-Status, solange der API-Prozess läuft.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">GET</span>
+                        <code>/ready</code>
+                      </div>
+                      <p>
+                        Minimaler Readiness-Endpunkt. Aktuell liefert er nur
+                        <code>sdk: unknown</code> und <code>robot: unknown</code>; eine echte
+                        Prüfung von DDS, SDK oder Robot-Erreichbarkeit ist noch nicht
+                        implementiert.
+                      </p>
+                    </article>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Integration</p>
-                  <h3>Systemkopplung</h3>
-                  <p>Events aus Reservierung, CMS-Inhalten, Gästeprofilen und Licht-/Szenensteuerung werden hier fachlich zusammengeführt.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Security</p>
+                    <h3>Authentifizierung</h3>
+                  </div>
+                  <p>
+                    Der Bewegungs-Endpunkt ist über Bearer-JWT geschützt. Geprüft werden
+                    <code>HS256</code>, <code>iss</code>, <code>aud</code> und
+                    <code>exp</code>. Falls vorhanden, wird auch <code>nbf</code>
+                    berücksichtigt. Ohne gesetztes <code>JWT_SECRET</code> beantwortet der
+                    Service geschützte Requests mit einem Fehler.
+                  </p>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Default Issuer</p>
+                      <p><code>robot-api</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Default Audience</p>
+                      <p><code>robot-clients</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Algorithmus</p>
+                      <p><code>HS256</code></p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Betrieb</p>
+                    <h3>Konfiguration und Deployment</h3>
+                  </div>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Wichtige Variablen</p>
+                      <p>
+                        <code>JWT_SECRET</code>, <code>JWT_ISSUER</code>,
+                        <code>JWT_AUDIENCE</code>, <code>UNITREE_ARM_BINARY</code>,
+                        <code>CYCLONEDDS_URI</code>, <code>TZ</code>
+                      </p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Runtime</p>
+                      <p>FastAPI mit <code>uvicorn</code> auf Port <code>8080</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Compose-Setup</p>
+                      <p>
+                        <code>network_mode: host</code> und optional ein separater
+                        <code>ngrok</code>-Container für externen Zugriff
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Status</p>
+                    <h3>Aktueller Scope und Grenzen</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Im Repo ist aktuell nur die Ausführung von Arm-Aktionen dokumentiert.</li>
+                    <li>Ein Katalog gültiger Action-IDs ist nicht enthalten.</li>
+                    <li><code>/ready</code> validiert derzeit weder DDS noch die tatsächliche Erreichbarkeit des Roboters.</li>
+                    <li>Die API reicht Fehler aus dem Aufruf der nativen Binary als Serverfehler weiter.</li>
+                  </ul>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="tisch-tablets" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">Tisch Tablets</p>
+                <h2>Web-Tablet mit WebSocket-Anbindung für Menü, Status, Offers und Interaktion am Tisch.</h2>
+              </div>
+              <section class="docs-detail-intro">
+                <p>
+                  Die Tablet-Lösung besteht aus zwei Teilen: einem statischen Web-Client und
+                  einem FastAPI-basierten Event-Server. Der Client wird über Nginx ausgeliefert,
+                  verbindet sich per WebSocket mit <code>/ws?table=&lt;id&gt;</code> und erhält
+                  seine Inhalte ausschließlich über JSON-Events. Ein externer Orchestrator kann
+                  über <code>POST /api/push</code> Inhalte oder Statusupdates aktiv auf einzelne
+                  Tablets oder auf alle Tablets gleichzeitig schicken.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Architektur</p>
+                    <h3>Datenfluss</h3>
+                  </div>
+                  <p>
+                    Der Browser lädt die UI vom Client auf Port <code>8080</code>. Nginx
+                    proxyt <code>/ws</code> intern auf den Event-Server. Tablets senden
+                    Benutzeraktionen und Handshakes per WebSocket an den Event-Server; dieser
+                    validiert die Events und leitet sie mit Retries an einen externen Webhook
+                    weiter. In Gegenrichtung pusht der Orchestrator über HTTP neue Events auf
+                    konkrete Targets wie <code>table:12</code> oder auf <code>all</code>.
+                  </p>
+                  <div class="docs-inline-list">
+                    <span>Browser / Tablet</span>
+                    <span>Nginx</span>
+                    <span>WebSocket /ws</span>
+                    <span>Restaurant Event Server</span>
+                    <span>EXTERNAL_WEBHOOK_URL</span>
+                    <span>Orchestrator</span>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Client</p>
+                    <h3>Was das Tablet darstellen kann</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Menükategorien und Menüeinträge inklusive Quick-Drinks.</li>
+                    <li>Willkommensnachricht pro Tisch.</li>
+                    <li>Warenkorb, Bestellhistorie und simulierte Zahlung.</li>
+                    <li>Bestellstatus mit Progress-Bar und Sperrlogik für den Warenkorb.</li>
+                    <li>Serverseitig gepushte Offers mit direkter Übernahme in den Warenkorb.</li>
+                    <li>Fun Events wie Glücksrad inklusive Segmentdaten und Prize-Einlösung.</li>
+                  </ul>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">API</p>
+                    <h3>Schnittstellen</h3>
+                  </div>
+                  <div class="docs-endpoint-list">
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">WS</span>
+                        <code>/ws?table=&lt;TABLE_ID&gt;</code>
+                      </div>
+                      <p>
+                        Primäre Verbindung des Tablets. Nach dem Verbindungsaufbau sendet der
+                        Client automatisch <code>TABLE_CONNECTED</code> mit
+                        <code>appVersion</code> und <code>capabilities</code>. Der Server
+                        antwortet darauf mit <code>TABLE_CONNECTED_ACK</code> und leitet das
+                        Handshake optional an den Orchestrator weiter.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Tablet -&gt; Server</p>
+                          <pre class="docs-code"><code>{
+  "type": "TABLE_CONNECTED",
+  "payload": {
+    "appVersion": "1.0.0",
+    "capabilities": ["menu", "quick-drinks", "payment"]
+  }
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Server -&gt; Tablet</p>
+                          <pre class="docs-code"><code>{
+  "type": "TABLE_CONNECTED_ACK",
+  "payload": {
+    "serverTime": "2026-03-17T12:34:56Z"
+  }
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/push</code>
+                      </div>
+                      <p>
+                        HTTP-Push vom Orchestrator an ein oder mehrere Tablets. Der Event-Server
+                        erwartet eine Liste von Targets und ein freies Event-Objekt, das direkt an
+                        die aktiven WebSocket-Verbindungen weitergereicht wird.
+                      </p>
+                      <pre class="docs-code"><code>{
+  "targets": ["table:12"],
+  "event": {
+    "type": "WELCOME_MESSAGE",
+    "payload": {
+      "text": "Willkommen an Tisch 12"
+    }
+  }
+}</code></pre>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Events</p>
+                    <h3>Tablet -&gt; Server</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li><code>TABLE_CONNECTED</code> für Handshake nach <code>onopen</code>.</li>
+                    <li><code>CART_ADD</code> und <code>CART_REMOVE</code> für Warenkorbänderungen.</li>
+                    <li><code>ORDER_SUBMITTED</code> mit den aktuellen Warenkorbpositionen.</li>
+                    <li><code>SERVICE_CALLED</code> mit <code>tableId</code>.</li>
+                    <li><code>PAYMENT_CONFIRMED</code> mit Betrag, Currency, Items, Receipt und Timestamp.</li>
+                    <li><code>OFFER_ACCEPTED</code> und <code>OFFER_DECLINED</code> für Server-Promotions.</li>
+                  </ul>
+                  <p>
+                    Alle eingehenden Tablet-Events werden auf dem Event-Server per Pydantic als
+                    Objekt mit <code>type</code> und <code>payload</code> validiert und
+                    anschließend an den externen Webhook mit
+                    <code>source: table:&lt;id&gt;</code> weitergeleitet.
+                  </p>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Spezifikation</p>
+                    <h3>Event-Referenz mit Beispielpayloads</h3>
+                  </div>
+                  <p>
+                    Die folgende Übersicht beschreibt die im Code sichtbaren Nachrichten in einer
+                    konkreteren Form: Richtung, Pflichtfelder, optionale Felder und ein
+                    Beispielpayload pro Event. Wo der Code bestimmte Strukturen nicht hart
+                    validiert, ist das in den Hinweisen vermerkt.
+                  </p>
+                  <div class="docs-spec-list">
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>TABLE_CONNECTED</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.appVersion</code>, <code>payload.capabilities[]</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine weiteren im Client gesetzt</p></div>
+                      </div>
+                      <p>Wird direkt nach WebSocket-<code>onopen</code> gesendet.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "TABLE_CONNECTED",
+  "payload": {
+    "appVersion": "1.0.0",
+    "capabilities": ["menu", "quick-drinks", "payment"]
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>TABLE_CONNECTED_ACK</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.serverTime</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Beliebige Zusatzfelder theoretisch möglich</p></div>
+                      </div>
+                      <p>Wird im Client nur geloggt und als Popup genutzt.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "TABLE_CONNECTED_ACK",
+  "payload": {
+    "serverTime": "2026-03-17T12:34:56Z"
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>MENU_DATA</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.categories[]</code>, <code>payload.items[]</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Bei Items sichtbar: <code>quick</code></p></div>
+                      </div>
+                      <p>Ohne dieses Event bleibt das Menü leer. Struktur der Kategorie- und Item-Objekte ist nur indirekt aus dem Rendering ableitbar.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "MENU_DATA",
+  "payload": {
+    "categories": [
+      { "id": "drinks", "name": "Drinks" }
+    ],
+    "items": [
+      {
+        "id": "cola-33",
+        "category": "drinks",
+        "name": "Cola",
+        "price": 5.5,
+        "quick": true
+      }
+    ]
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>WELCOME_MESSAGE</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.text</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Reines Text-Event für Begrüßung oder Kontextansprache.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "WELCOME_MESSAGE",
+  "payload": {
+    "text": "Willkommen bei Bavarian RoboTaste."
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>CART_ADD</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.itemId</code>, <code>payload.qty</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Client sendet immer <code>qty: 1</code>.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "CART_ADD",
+  "payload": {
+    "itemId": "cola-33",
+    "qty": 1
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>CART_REMOVE</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.itemId</code>, <code>payload.qty</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Client sendet immer <code>qty: 1</code>.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "CART_REMOVE",
+  "payload": {
+    "itemId": "cola-33",
+    "qty": 1
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>ORDER_SUBMITTED</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.items[]</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Items werden direkt aus dem Warenkorb übertragen; sichtbar sind <code>itemId</code>, <code>name</code>, <code>price</code>, <code>qty</code>.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "ORDER_SUBMITTED",
+  "payload": {
+    "items": [
+      {
+        "itemId": "cola-33",
+        "name": "Cola",
+        "price": 5.5,
+        "qty": 2
+      }
+    ]
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>ORDER_STATUS</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.state</code>, <code>payload.progress</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p><code>payload.message</code></p></div>
+                      </div>
+                      <p>Im Client explizit behandelt: <code>SUBMITTED</code>, <code>IN_PREP</code>, <code>ALMOST_READY</code>, <code>READY</code>, <code>SERVED</code>, <code>CANCELLED</code>.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "ORDER_STATUS",
+  "payload": {
+    "state": "IN_PREP",
+    "progress": 45,
+    "message": "Ihre Getränke werden vorbereitet."
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>SERVICE_CALLED</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.tableId</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Wird nach Klick auf die Service-Schaltfläche gesendet.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "SERVICE_CALLED",
+  "payload": {
+    "tableId": "12"
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>PAYMENT_CONFIRMED</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.tableId</code>, <code>payload.amount</code>, <code>payload.currency</code>, <code>payload.items[]</code>, <code>payload.receiptId</code>, <code>payload.timestamp</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Explizit PoC; keine echte Zahlungsabwicklung im Client.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "PAYMENT_CONFIRMED",
+  "payload": {
+    "tableId": "12",
+    "amount": 11.0,
+    "currency": "CHF",
+    "items": [
+      {
+        "itemId": "cola-33",
+        "name": "Cola",
+        "qty": 2,
+        "price": 5.5
+      }
+    ],
+    "receiptId": "rec-20260317-001",
+    "timestamp": "2026-03-17T12:45:00Z"
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>PUSH_OFFER</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.id</code>, <code>payload.title</code>, <code>payload.description</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p><code>payload.cta</code>, <code>payload.itemId</code>, <code>payload.item</code>, <code>payload.priceOverride</code></p></div>
+                      </div>
+                      <p>Für Warenkorb-Übernahme muss entweder <code>itemId</code> auf ein Menü-Item zeigen oder <code>item</code> direkt mitgeliefert werden.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "PUSH_OFFER",
+  "payload": {
+    "id": "offer-aperitif",
+    "title": "Aperitif des Abends",
+    "description": "Heute zum Spezialpreis.",
+    "cta": "Jetzt hinzufügen",
+    "itemId": "spritz-01",
+    "priceOverride": 8.5
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>OFFER_ACCEPTED</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.offerId</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Wird nur gesendet, wenn das Offer erfolgreich angenommen wurde.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "OFFER_ACCEPTED",
+  "payload": {
+    "offerId": "offer-aperitif"
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>OFFER_DECLINED</code></h4>
+                        <span class="docs-direction-pill">Tablet -&gt; Server</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.offerId</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
+                      </div>
+                      <p>Wird bei Ablehnung des Offer-Modals gesendet.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "OFFER_DECLINED",
+  "payload": {
+    "offerId": "offer-aperitif"
+  }
+}</code></pre>
+                    </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>FUN_EVENT</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p>Keine hart validierten Pflichtfelder im Code</p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p><code>payload.title</code>, <code>payload.message</code>, <code>payload.cta</code>, <code>payload.segments[]</code></p></div>
+                      </div>
+                      <p>Für ein sinnvolles Glücksrad ist <code>segments[]</code> faktisch notwendig; jedes Segment sollte mindestens ein <code>label</code> tragen.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "FUN_EVENT",
+  "payload": {
+    "title": "Glücksrad",
+    "message": "Drehen Sie das Rad für eine Überraschung.",
+    "cta": "Jetzt drehen",
+    "segments": [
+      { "label": "Gratis Kaffee" },
+      { "label": "5% Rabatt" },
+      { "label": "Dessert des Hauses" }
+    ]
+  }
+}</code></pre>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Offene Punkte</p>
+                    <h3>Was für eine wirklich belastbare Implementierung noch fehlt</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Ein verbindliches JSON-Schema für die Objekte in <code>MENU_DATA.categories[]</code> und <code>MENU_DATA.items[]</code>.</li>
+                    <li>Eine Festlegung, ob <code>itemId</code> immer String oder immer Number sein soll.</li>
+                    <li>Eine klare Aussage, ob Push-Events Vollersatz oder Delta-Updates darstellen.</li>
+                    <li>Fehler- und ACK-Regeln für <code>/api/push</code> und für fachlich relevante Zustandswechsel.</li>
+                    <li>Reconnect-Regeln: ob ein Tablet nach Neuverbindung automatisch erneut befüllt werden muss.</li>
+                    <li>Eine Versionsstrategie für zukünftige Event-Erweiterungen.</li>
+                  </ul>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Events</p>
+                    <h3>Server -&gt; Tablet</h3>
+                  </div>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">MENU_DATA</p>
+                      <p>Befüllt Kategorien und Menüeinträge und schaltet die Menü-Ansicht frei.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">WELCOME_MESSAGE</p>
+                      <p>Zeigt eine Willkommensnachricht im Menübereich des Tablets an.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">ORDER_STATUS</p>
+                      <p>Aktualisiert State, Progress-Bar und sperrt bzw. entsperrt den Warenkorb.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">PUSH_OFFER</p>
+                      <p>Öffnet ein Offer-Modal und kann ein bestehendes oder direkt mitgegebenes Item in den Warenkorb übernehmen.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">FUN_EVENT</p>
+                      <p>Startet das Glücksrad-Modal mit frei definierbaren Segmenten und CTA-Texten.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">TABLE_CONNECTED_ACK</p>
+                      <p>Wird im Client geloggt und zeigt ein kurzes Willkommen-Popup.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Befüllung</p>
+                    <h3>Wie die Tablets Inhalte bekommen können</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li><strong>Initiale Befüllung per <code>MENU_DATA</code>:</strong> Kategorien und Items werden vom Server auf das Tablet gepusht. Ohne dieses Event bleibt das Menü leer.</li>
+                    <li><strong>Kontextuelle Ansprache per <code>WELCOME_MESSAGE</code>:</strong> individuelle Tisch-, Zeit- oder Gasttexte können als reines Text-Event eingespielt werden.</li>
+                    <li><strong>Operative Statusbefüllung per <code>ORDER_STATUS</code>:</strong> der Orchestrator kann den gesamten Bestellfortschritt inkl. Prozentwert und Nachricht steuern.</li>
+                    <li><strong>Verkaufsimpulse per <code>PUSH_OFFER</code>:</strong> Offers können ein bestehendes <code>itemId</code> referenzieren oder ein komplettes Item direkt mitliefern und optional den Preis überschreiben.</li>
+                    <li><strong>Engagement per <code>FUN_EVENT</code>:</strong> spielerische Inhalte lassen sich als Segmentliste mit Labels, CTA und Zusatzfeldern einspielen.</li>
+                    <li><strong>Broadcast oder gezielt:</strong> über <code>targets</code> in <code>/api/push</code> können Inhalte an ein einzelnes Tablet wie <code>table:12</code> oder an <code>all</code> gesendet werden.</li>
+                  </ul>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Konfiguration</p>
+                    <h3>Betrieb und Adressierung</h3>
+                  </div>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Table ID</p>
+                      <p>Der Client liest die Tisch-ID aus <code>?table=&lt;id&gt;</code>; Standard ist <code>1</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">WebSocket Proxy</p>
+                      <p>Nginx leitet <code>/ws</code> an <code>restaurant-event-server:8000</code> weiter.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Externer Webhook</p>
+                      <p>Der Event-Server leitet Tablet-Events an <code>EXTERNAL_WEBHOOK_URL</code> weiter.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Retry-Verhalten</p>
+                      <p>Webhook-Weiterleitung mit Timeout <code>2s</code>, bis zu <code>5</code> Versuche und <code>1s</code> Pause.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Grenzen</p>
+                    <h3>Aktueller Scope</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Es gibt keine REST-API für Menüabfragen; Inhalte kommen ausschließlich eventbasiert.</li>
+                    <li>Der Client kennt nur die im Code behandelten Event-Typen; unbekannte Events werden geloggt, aber nicht dargestellt.</li>
+                    <li><code>TABLE_CONNECTED_ACK</code> wird im UI nur sehr leicht genutzt und nicht in einen persistierten Tablet-Status übernommen.</li>
+                    <li>Die Zahlungsfunktion ist im Client explizit als PoC ohne echte Zahlungsabwicklung implementiert.</li>
+                  </ul>
                 </section>
               </div>
             </article>
