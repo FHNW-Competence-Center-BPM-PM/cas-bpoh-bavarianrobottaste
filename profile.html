@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Profil</title>
+    <meta
+      name="description"
+      content="Profilseite für registrierte Gäste von Bavarian RoboTaste."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header reveal">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="assets/logo/bavarian-robotaste-logo.svg" alt="Logo von Bavarian RoboTaste" />
+        </a>
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="reservation.html">Reservierung</a>
+          <a href="contact.html">Kontakt</a>
+          <a class="is-active" href="profile.html">Profil</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="section account-shell reveal">
+          <div class="panel account-copy">
+            <p class="section-tag">Mein Profil</p>
+            <h1>Deine Angaben und dein Passwort.</h1>
+            <p class="lead">
+              Hier kannst du deinen Vornamen, deine Telefonnummer und dein Passwort ändern.
+            </p>
+          </div>
+
+          <div class="account-stack">
+            <div class="panel account-panel">
+              <div class="registration-status" data-profile-status aria-live="polite"></div>
+              <form class="glass-form account-form" data-profile-form novalidate>
+                <label>
+                  Vorname
+                  <input type="text" name="firstName" placeholder="Achim" required />
+                </label>
+                <label>
+                  E-Mail
+                  <input type="email" name="email" placeholder="name@example.com" disabled />
+                </label>
+                <label class="field-span">
+                  Telefon optional
+                  <input type="tel" name="phone" placeholder="+41 79 555 55 55" />
+                </label>
+                <button class="button button-primary field-span" type="submit">Profil speichern</button>
+              </form>
+            </div>
+
+            <div class="panel account-panel">
+              <div class="registration-status" data-password-status aria-live="polite"></div>
+              <form class="glass-form account-form" data-change-password-form novalidate>
+                <label class="field-span">
+                  Aktuelles Passwort
+                  <input type="password" name="currentPassword" placeholder="Aktuelles Passwort" required />
+                </label>
+                <label>
+                  Neues Passwort
+                  <input type="password" name="newPassword" placeholder="Mindestens 8 Zeichen" required />
+                </label>
+                <label>
+                  Neues Passwort wiederholen
+                  <input type="password" name="newPasswordConfirm" placeholder="Passwort wiederholen" required />
+                </label>
+                <button class="button button-primary field-span" type="submit">Passwort ändern</button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div>
+          <strong>Bavarian RoboTaste</strong>
+          <p>Profilseite für registrierte Gäste.</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Start</a>
+          <a href="reservation.html">Reservierung</a>
+          <a href="contact.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

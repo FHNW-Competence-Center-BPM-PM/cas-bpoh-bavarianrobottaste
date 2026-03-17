@@ -1,0 +1,72 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Bavarian RoboTaste Logo -->
+  <!-- Transparent background -->
+
+  <defs>
+    <!-- Color palette -->
+    <style>
+      .navy { fill:#0B1F3B; }
+      .copper { fill:#C96A2B; }
+      .turquoise { fill:#19D3D1; }
+      .offwhite { fill:#F4F1EA; }
+      .line { stroke:#19D3D1; stroke-width:6; stroke-linecap:round; fill:none; }
+      .outline { stroke:#C96A2B; stroke-width:10; fill:none; }
+      .text { fill:#F4F1EA; font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; letter-spacing:4px; }
+    </style>
+  </defs>
+
+  <!-- Base circular signet -->
+  <circle cx="400" cy="400" r="300" class="navy"></circle>
+
+  <!-- Copper outer ring -->
+  <circle cx="400" cy="400" r="300" class="outline"></circle>
+
+  <!-- Futuristic monogram BRT -->
+  <g transform="translate(400,390)">
+
+    <!-- B -->
+    <path d="
+      M -120 -120
+      L -120 120
+      M -120 -120
+      C -10 -120 -10 -20 -120 -20
+      M -120 -20
+      C -10 -20 -10 120 -120 120" stroke="#F4F1EA" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+
+    <!-- R -->
+    <path d="
+      M -10 -120
+      L -10 120
+      M -10 -120
+      C 90 -120 90 -20 -10 -20
+      M -10 -20
+      L 90 120" stroke="#F4F1EA" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+
+    <!-- T -->
+    <path d="
+      M 150 -120
+      L 150 120
+      M 80 -120
+      L 220 -120" stroke="#F4F1EA" stroke-width="18" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+
+  </g>
+
+  <!-- Smart-tech circuit accents -->
+  <g class="line">
+    <path d="M250 540 L330 470"></path>
+    <circle cx="250" cy="540" r="6" fill="#19D3D1"></circle>
+    <circle cx="330" cy="470" r="6" fill="#19D3D1"></circle>
+
+    <path d="M550 540 L470 470"></path>
+    <circle cx="550" cy="540" r="6" fill="#19D3D1"></circle>
+    <circle cx="470" cy="470" r="6" fill="#19D3D1"></circle>
+  </g>
+
+  <!-- Brand name -->
+  <text x="400" y="670" font-size="48" text-anchor="middle" class="text">
+    BAVARIAN ROBOTASTE
+  </text>
+
+</svg>

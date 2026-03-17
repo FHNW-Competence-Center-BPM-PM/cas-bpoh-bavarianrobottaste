@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Kontakt</title>
+    <meta
+      name="description"
+      content="Kontaktseite für Bavarian RoboTaste mit Anfrageformular, Kontaktdaten und Standortinformationen."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header reveal">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="assets/logo/bavarian-robotaste-logo.svg" alt="Logo von Bavarian RoboTaste" />
+        </a>
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="reservation.html">Reservierung</a>
+          <a class="is-active" href="contact.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero hero-subpage reveal">
+          <div class="hero-copy">
+            <p class="eyebrow">Kontakt</p>
+            <h1>Fragen, Events oder Kooperationen? Wir hören zu.</h1>
+            <p class="lead">
+              Ob Reservierungsanfrage, Pressegespräch, Markenkooperation oder private
+              Dinner-Idee: Diese Kontaktseite ist der statische Einstieg für spätere
+              E-Mail- und CRM-Prozesse.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="register.html">Jetzt registrieren</a>
+            </div>
+          </div>
+          <div class="hero-media glow-frame">
+            <img
+              src="assets/exterior/bavarian-robotaste-exterior-evening.png"
+              alt="Bavarian RoboTaste bei Abendlicht"
+            />
+          </div>
+        </section>
+
+        <section class="section form-layout reveal">
+          <div class="panel panel-copy">
+            <p class="section-tag">Direkter Draht</p>
+            <h2>Für Events, Medien, Partnerschaften und Gäste.</h2>
+            <p>
+              Nach einer Anfrage soll die Person spaeter automatisch in eurer CRM-Datenbank
+              landen, eine Danke-Mail erhalten und direkt zur Registrierung motiviert werden.
+            </p>
+            <div class="contact-block">
+              <p><strong>E-Mail</strong><br />hello@bavarianrobotaste.example</p>
+              <p><strong>Telefon</strong><br />+41 44 555 20 80</p>
+              <p><strong>Adresse</strong><br />Innovationstraße 12, 8005 Zürich</p>
+              <p><strong>Öffnungszeiten</strong><br />Di bis So, 17:30 bis 23:30 Uhr</p>
+            </div>
+          </div>
+          <form class="glass-form" data-contact-form novalidate>
+            <div class="form-feedback field-span" data-contact-feedback aria-live="polite"></div>
+            <label>
+              Name
+              <input type="text" name="name" placeholder="Dein Name" required />
+            </label>
+            <label>
+              E-Mail
+              <input type="email" name="email" placeholder="name@example.com" required />
+            </label>
+            <fieldset class="topic-group field-span">
+              <legend>Thema</legend>
+              <div class="topic-options">
+                <label class="topic-option">
+                  <input type="radio" name="topic" value="Allgemeine Anfrage" checked />
+                  <span>Allgemeine Anfrage</span>
+                </label>
+                <label class="topic-option">
+                  <input type="radio" name="topic" value="Reservierung" />
+                  <span>Reservierung</span>
+                </label>
+                <label class="topic-option">
+                  <input type="radio" name="topic" value="Event / Private Dining" />
+                  <span>Event / Private Dining</span>
+                </label>
+                <label class="topic-option">
+                  <input type="radio" name="topic" value="Presse / Kooperation" />
+                  <span>Presse / Kooperation</span>
+                </label>
+              </div>
+            </fieldset>
+            <label class="field-span">
+              Nachricht
+              <textarea name="message" rows="6" placeholder="Wie können wir helfen?" required></textarea>
+            </label>
+            <button class="button button-primary" type="submit" data-contact-submit disabled>Nachricht senden</button>
+            <a class="button button-secondary field-span" href="register.html">Direkt registrieren</a>
+          </form>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div>
+          <strong>Bavarian RoboTaste</strong>
+          <p>Kontaktseite für alle Touchpoints rund um Besuch, Event und Marke.</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="reservation.html">Reservierung</a>
+          <a href="impressum.html">Impressum</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Login</title>
+    <meta
+      name="description"
+      content="Login für registrierte Gäste von Bavarian RoboTaste."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header reveal">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="assets/logo/bavarian-robotaste-logo.svg" alt="Logo von Bavarian RoboTaste" />
+        </a>
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="reservation.html">Reservierung</a>
+          <a href="contact.html">Kontakt</a>
+          <a class="is-active" href="login.html">Login</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="section account-shell reveal">
+          <div class="panel account-copy">
+            <p class="section-tag">Willkommen zurück</p>
+            <h1>Einloggen und dein Gastprofil öffnen.</h1>
+            <p class="lead">
+              Hier kannst du dich mit deiner E-Mail-Adresse und deinem Passwort anmelden.
+            </p>
+          </div>
+
+          <div class="panel account-panel">
+            <div class="registration-status" data-login-status aria-live="polite"></div>
+            <form class="glass-form account-form" data-login-form novalidate>
+              <label class="field-span">
+                E-Mail
+                <input type="email" name="email" placeholder="name@example.com" required />
+              </label>
+              <label class="field-span">
+                Passwort
+                <input type="password" name="password" placeholder="Dein Passwort" required />
+              </label>
+              <button class="button button-primary field-span" type="submit">Einloggen</button>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div>
+          <strong>Bavarian RoboTaste</strong>
+          <p>Login für registrierte Gäste.</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Start</a>
+          <a href="register.html">Registrierung</a>
+          <a href="contact.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

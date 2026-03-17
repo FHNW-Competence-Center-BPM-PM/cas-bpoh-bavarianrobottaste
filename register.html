@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Registrierung</title>
+    <meta
+      name="description"
+      content="Registrierung für Bavarian RoboTaste: Gastprofil anlegen, E-Mail-Code bestätigen und Passwort setzen."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header reveal">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="assets/logo/bavarian-robotaste-logo.svg" alt="Logo von Bavarian RoboTaste" />
+        </a>
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="reservation.html">Reservierung</a>
+          <a href="contact.html">Kontakt</a>
+          <a class="is-active" href="register.html">Registrierung</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="section registration-shell reveal">
+          <div class="panel panel-copy registration-copy">
+            <p class="section-tag">Gastprofil</p>
+            <h1>Registrieren lohnt sich.</h1>
+            <div class="registration-copy-story">
+              <div class="registration-copy-text">
+                <p class="lead">
+                  Wenn du dich registrierst, können wir deine Reservierungen und deine
+                  späteren Besuche besser begleiten.
+                </p>
+                <p>
+                  Und das Schönste daran: Bei jedem Wiederbesuch wartet eine kleine
+                  Überraschung auf dich.
+                </p>
+              </div>
+              <div class="registration-visual">
+                <img
+                  src="assets/social/bavarian-robotaste-registration-surprise.png"
+                  alt="Kleine Überraschung für registrierte Gäste bei Bavarian RoboTaste"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="registration-flow" data-registration-app>
+            <div class="registration-steps" aria-label="Registrierungsfortschritt">
+              <div class="registration-step is-active" data-step-indicator="1">
+                <span>1</span>
+                <strong>Daten</strong>
+              </div>
+              <div class="registration-step" data-step-indicator="2">
+                <span>2</span>
+                <strong>Code</strong>
+              </div>
+              <div class="registration-step" data-step-indicator="3">
+                <span>3</span>
+                <strong>Passwort</strong>
+              </div>
+            </div>
+
+            <div class="panel registration-panel">
+              <div class="registration-status" data-registration-status aria-live="polite"></div>
+
+              <section class="registration-stage is-active" data-stage="1">
+                <h2>Registrierung</h2>
+                <form class="glass-form registration-form" data-registration-form novalidate>
+                  <label>
+                    Vorname
+                    <input type="text" name="firstName" placeholder="Achim" required />
+                  </label>
+                  <label>
+                    E-Mail
+                    <input type="email" name="email" placeholder="name@example.com" required />
+                  </label>
+                  <label class="field-span">
+                    Telefon optional
+                    <input type="tel" name="phone" placeholder="+41 79 555 55 55" />
+                  </label>
+                  <button class="button button-primary field-span" type="submit">Code anfordern</button>
+                </form>
+              </section>
+
+              <section class="registration-stage" data-stage="2" hidden>
+                <h2>Code bestätigen</h2>
+                <p class="registration-intro">
+                  Wir haben dir einen Bestätigungscode per E-Mail geschickt.
+                </p>
+                <div class="verification-note" data-code-preview hidden></div>
+                <form class="glass-form registration-form" data-verification-form novalidate>
+                  <label class="field-span">
+                    6-stelliger Code
+                    <input
+                      type="text"
+                      name="verificationCode"
+                      inputmode="numeric"
+                      maxlength="6"
+                      placeholder="123456"
+                      required
+                    />
+                  </label>
+                  <div class="registration-actions field-span">
+                    <button class="button button-primary" type="submit">Code prüfen</button>
+                    <button class="button button-secondary" type="button" data-resend-code>Code neu senden</button>
+                  </div>
+                </form>
+              </section>
+
+              <section class="registration-stage" data-stage="3" hidden>
+                <h2>Passwort setzen</h2>
+                <p class="registration-intro">
+                  Lege jetzt dein Passwort für dein Gastprofil fest.
+                </p>
+                <form class="glass-form registration-form" data-password-form novalidate>
+                  <label>
+                    Passwort
+                    <input type="password" name="password" minlength="8" placeholder="Mindestens 8 Zeichen" required />
+                  </label>
+                  <label>
+                    Passwort wiederholen
+                    <input type="password" name="passwordConfirm" minlength="8" placeholder="Passwort wiederholen" required />
+                  </label>
+                  <button class="button button-primary field-span" type="submit">Registrierung abschließen</button>
+                </form>
+              </section>
+
+              <section class="registration-stage" data-stage="4" hidden>
+                <h2>Gastprofil angelegt</h2>
+                <div class="success-card">
+                  <p>
+                    Deine Registrierung war erfolgreich. Dein Gastprofil ist jetzt aktiv.
+                  </p>
+                  <div class="success-summary" data-success-summary></div>
+                  <div class="registration-actions">
+                    <a class="button button-primary" href="reservation.html">Jetzt reservieren</a>
+                    <a class="button button-secondary" href="contact.html">Zur Kontaktseite</a>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <section class="section reveal">
+          <div class="panel registration-disclaimer">
+            <p>
+              Wir möchten gar nicht viel von dir wissen, sondern nur das, was für die
+              Reservierung, den Wiederbesuch und deine kleine Überraschung wirklich notwendig ist :-)
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div>
+          <strong>Bavarian RoboTaste</strong>
+          <p>Registrierungsseite als Grundlage für CRM, Verifikation und spätere Loyalty-Flows.</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="contact.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

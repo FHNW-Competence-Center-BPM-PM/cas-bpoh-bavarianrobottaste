@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Reservierung</title>
+    <meta
+      name="description"
+      content="Reservierung für Bavarian RoboTaste: futuristische Tischbuchung für ein Restaurant mit IoT-Tischen und Premium-Dining."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header reveal">
+        <a class="brand" href="index.html">
+          <img class="brand-mark" src="assets/logo/bavarian-robotaste-logo.svg" alt="Logo von Bavarian RoboTaste" />
+        </a>
+        <nav class="site-nav" aria-label="Hauptnavigation">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a class="is-active" href="reservation.html">Reservierung</a>
+          <a href="contact.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero hero-subpage reveal">
+          <div class="hero-copy">
+            <p class="eyebrow">Reservierung</p>
+            <h1>Ein Tisch, der mehr kann als nur Platz bieten.</h1>
+            <p class="lead">
+              In der späteren Produktversion greifen Reservierung, Bestelllogik und
+              Kundenkonto ineinander. Diese Seite zeigt den statischen Einstieg in diesen Flow.
+            </p>
+          </div>
+          <div class="hero-media glow-frame">
+            <img
+              src="assets/smart-tables/bavarian-robotaste-smart-table.png"
+              alt="Smarte Tischtechnologie für Reservierungen"
+            />
+          </div>
+        </section>
+
+        <section class="section form-layout reveal">
+          <div class="panel panel-copy">
+            <p class="section-tag">Reservierungs-Flow</p>
+            <h2>Für Dinner, Events und besondere Abende.</h2>
+            <p>
+              Wunschtermin, Personenanzahl, besondere Anlässe und Tischpräferenzen können
+              hier später mit Account, E-Mail-Bestätigung und Bestellhistorie verknüpft
+              werden.
+            </p>
+            <ul class="detail-list">
+              <li>Reservierungen bis 8 Personen direkt über das Formular</li>
+              <li>Private Dining und Events auf Anfrage</li>
+              <li>Digitale Reservierungsbestätigung und Reminder als Zielbild</li>
+            </ul>
+          </div>
+          <form class="glass-form">
+            <label>
+              Name
+              <input type="text" placeholder="Vor- und Nachname" />
+            </label>
+            <label>
+              E-Mail
+              <input type="email" placeholder="name@example.com" />
+            </label>
+            <label>
+              Datum
+              <input type="date" />
+            </label>
+            <label>
+              Uhrzeit
+              <input type="time" />
+            </label>
+            <label>
+              Personen
+              <select>
+                <option>2 Personen</option>
+                <option>4 Personen</option>
+                <option>6 Personen</option>
+                <option>8 Personen</option>
+              </select>
+            </label>
+            <label>
+              Anlass
+              <select>
+                <option>Dinner</option>
+                <option>Date Night</option>
+                <option>Business Dinner</option>
+                <option>Geburtstag</option>
+              </select>
+            </label>
+            <label class="field-span">
+              Nachricht
+              <textarea rows="5" placeholder="Tischwunsch, Allergien, Anlass …"></textarea>
+            </label>
+            <button class="button button-primary" type="button">Reservierungsanfrage senden</button>
+          </form>
+        </section>
+      </main>
+
+      <footer class="site-footer reveal">
+        <div>
+          <strong>Bavarian RoboTaste</strong>
+          <p>Statischer Reservierungs-Flow als Grundlage für die spätere Produktlogik.</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Start</a>
+          <a href="menu.html">Menü</a>
+          <a href="drinks.html">Getränke</a>
+          <a href="stories.html">Stories</a>
+          <a href="contact.html">Kontakt</a>
+          <a href="impressum.html">Impressum</a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="scripts/main.js"></script>
+  </body>
+</html>

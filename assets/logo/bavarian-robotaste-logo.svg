@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" role="img" aria-labelledby="title desc">
+  <title id="title">Bavarian RoboTaste Logo</title>
+  <desc id="desc">Monogramm aus B und R mit futuristischem Rahmen und Wortmarke Bavarian RoboTaste.</desc>
+  <defs>
+    <linearGradient id="frameGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#77E5D8"/>
+      <stop offset="100%" stop-color="#F26A3D"/>
+    </linearGradient>
+    <linearGradient id="textGlow" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#EDF1F3"/>
+      <stop offset="100%" stop-color="#D9E6EA"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 8)">
+    <rect x="0" y="0" width="104" height="104" rx="24" fill="#0B1823" stroke="url(#frameGlow)" stroke-width="4"/>
+    <path d="M28 24h22c18 0 28 8 28 22 0 8-4 14-10 18 10 4 16 12 16 22 0 16-12 26-32 26H28V24zm20 16v18h10c8 0 12-3 12-9s-4-9-12-9H48zm0 33v21h13c10 0 15-4 15-10 0-8-5-11-15-11H48z" fill="#EDF1F3"/>
+    <path d="M58 25h18c19 0 31 10 31 27 0 11-5 19-15 24l16 24H87L74 79h-4v21H58V25zm18 15h-6v24h6c10 0 15-4 15-12 0-8-5-12-15-12z" fill="#77E5D8" fill-opacity=".88"/>
+  </g>
+  <g transform="translate(132 24)">
+    <text x="0" y="28" fill="url(#textGlow)" font-size="18" font-family="Trebuchet MS, Segoe UI, sans-serif" letter-spacing="6">BAVARIAN</text>
+    <text x="0" y="72" fill="#EDF1F3" font-size="44" font-family="Georgia, Times New Roman, serif" font-weight="700">RoboTaste</text>
+    <path d="M0 84H232" stroke="url(#frameGlow)" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>
