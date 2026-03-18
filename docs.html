@@ -92,23 +92,137 @@
             <article class="docs-panel" id="cms" data-docs-panel hidden>
               <div class="section-heading">
                 <p class="section-tag">CMS</p>
-                <h2>Content, Texte und mediale Inhalte für Frontend und Storytelling.</h2>
+                <h2>REST-Service für Produkttexte, Bildlinks und Preis-Synchronisation per ERP-ID.</h2>
               </div>
-              <div class="docs-card-grid">
-                <section class="legal-card">
-                  <p class="card-kicker">OpenAPI</p>
-                  <h3>Content-Endpunkte</h3>
-                  <p>Hier kommen später Produkttexte, Story-Blöcke, Bilder, Testimonials und Sprachvarianten hinein.</p>
+              <section class="docs-detail-intro">
+                <p>
+                  Das CMS stellt Produkttexte und Bildreferenzen auf Basis der
+                  <code>erpId</code> bereit. Preise können vom ERP über dieselbe
+                  fachliche Schlüssel-ID in das CMS zurückgeschrieben werden. So bleiben
+                  Texte und Medien im CMS, während Preislogik weiterhin vom ERP
+                  verantwortet wird.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">API</p>
+                    <h3>Endpoints</h3>
+                  </div>
+                  <div class="docs-endpoint-list">
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">GET</span>
+                        <code>/api/cms/products/{erpId}</code>
+                      </div>
+                      <p>
+                        Liefert genau den CMS-relevanten Produktausschnitt für eine gegebene
+                        ERP-Produkt-ID: Name, Beschreibung, Bildlink und den aktuell im CMS
+                        gespeicherten Preis.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "ok": true,
+  "product": {
+    "erpId": "ERP-10042",
+    "page": "menu",
+    "sectionKey": "main_frames",
+    "category": "Chef Signature",
+    "name": "Mechatronic Roast",
+    "description": "Langsam gegartes Rind, Dunkelbiersauce, Selleriepüree, Wurzelgemüse und knuspriger Zwiebel-Glanz.",
+    "imageUrl": "http://localhost:8080/assets/menu/bavarian-robotaste-mechatronic-roast.png",
+    "price": "CHF 39"
+  }
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Fehler</p>
+                          <pre class="docs-code"><code>{
+  "ok": false,
+  "error": "product_not_found",
+  "erpId": "ERP-10042"
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">PUT</span>
+                        <code>/api/cms/products/{erpId}/price</code>
+                      </div>
+                      <p>
+                        Aktualisiert den im CMS gespeicherten Preis über die ERP-ID. Gedacht
+                        als Rückkanal vom ERP in das CMS, damit Frontend, Doku oder Tablet-Cases
+                        denselben Preisstand anzeigen können.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "price": "CHF 17 / 102"
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "ok": true,
+  "product": {
+    "erpId": "ERP-20017",
+    "page": "drinks",
+    "sectionKey": "sparkling",
+    "category": "Sekt & Champagner",
+    "name": "Winzersekt Pinot Brut",
+    "description": "Pfalz · Grüner Apfel, Hefe, trockene Länge.",
+    "imageUrl": null,
+    "price": "CHF 17 / 102"
+  }
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Datenobjekte</p>
-                  <h3>Case-relevante Inhalte</h3>
-                  <p>Menütexte, Getränkebeschreibungen, Markenstories und mediale Assets für die Erlebnisinszenierung im Unterrichtscase.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Datenmodell</p>
+                    <h3>Welche Felder das CMS zurückgibt</h3>
+                  </div>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Schlüssel</p>
+                      <p><code>erpId</code> ist die fachliche Referenz zwischen ERP und CMS.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Texte</p>
+                      <p><code>name</code> und <code>description</code> kommen aus dem CMS-Datensatz.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Medien</p>
+                      <p><code>imageUrl</code> ist ein absoluter Link, falls für das Produkt ein Bild hinterlegt ist.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Preis</p>
+                      <p><code>price</code> ist im CMS gespeichert, wird fachlich aber vom ERP geliefert.</p>
+                    </div>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Integration</p>
-                  <h3>Publishing-Flows</h3>
-                  <p>Draft/Publish-Prozesse, Freigaben, Bildverwaltung und Ausspielung in Web, Displays und robotische Touchpoints.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Integration</p>
+                    <h3>Zusammenspiel mit ERP und Frontend</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Frontend oder Tablet kann über <code>erpId</code> gezielt Produkttexte und Bildlinks abfragen.</li>
+                    <li>Das ERP bleibt führend für Preislogik und stößt Preisupdates per <code>PUT /api/cms/products/{erpId}/price</code> an.</li>
+                    <li>Produkte ohne Bild liefern <code>imageUrl: null</code>; aktuell betrifft das vor allem Getränke.</li>
+                    <li>Solange noch keine finalen ERP-IDs gepflegt sind, antwortet die API für unbekannte IDs mit <code>404 product_not_found</code>.</li>
+                  </ul>
                 </section>
               </div>
             </article>

@@ -71,6 +71,56 @@ Liefert die Konsumhistorie.
 
 Liefert vergangene Besuche inklusive Begleitgaeste.
 
+## CMS-Produkte per ERP-ID
+
+### `GET /api/cms/products/{erpId}`
+
+Liefert den CMS-relevanten Produktausschnitt fuer eine ERP-ID.
+
+```json
+{
+  "ok": true,
+  "product": {
+    "erpId": "ERP-10042",
+    "page": "menu",
+    "sectionKey": "main_frames",
+    "category": "Chef Signature",
+    "name": "Mechatronic Roast",
+    "description": "Langsam gegartes Rind, Dunkelbiersauce, Selleriepueree, Wurzelgemuese und knuspriger Zwiebel-Glanz.",
+    "imageUrl": "http://localhost:8080/assets/menu/bavarian-robotaste-mechatronic-roast.png",
+    "price": "CHF 39"
+  }
+}
+```
+
+### `PUT /api/cms/products/{erpId}/price`
+
+Aktualisiert den im CMS gespeicherten Preis anhand der ERP-ID.
+
+```json
+{
+  "price": "CHF 17 / 102"
+}
+```
+
+Antwort:
+
+```json
+{
+  "ok": true,
+  "product": {
+    "erpId": "ERP-20017",
+    "page": "drinks",
+    "sectionKey": "sparkling",
+    "category": "Sekt & Champagner",
+    "name": "Winzersekt Pinot Brut",
+    "description": "Pfalz · Gruener Apfel, Hefe, trockene Laenge.",
+    "imageUrl": null,
+    "price": "CHF 17 / 102"
+  }
+}
+```
+
 ## Camunda-nahe Prozessschritte
 
 1. Kontaktanfrage validieren
