@@ -27,6 +27,7 @@ if ("IntersectionObserver" in window) {
 const getAuthToken = () => window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
 const setAuthToken = (token) => window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, token);
 const clearAuthToken = () => window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+const isProfilePage = window.location.pathname.endsWith("/profile.html") || window.location.pathname.endsWith("profile.html");
 
 const apiFetch = async (url, options = {}) => {
   const token = getAuthToken();
@@ -74,7 +75,7 @@ const renderAuthRail = (profile) => {
     rail.innerHTML = `
       <div class="auth-rail-card">
         <span class="auth-rail-name">Hallo, ${profileLabel(profile)}</span>
-        <a class="auth-rail-link" href="/profile.html">Profil</a>
+        <a class="auth-rail-link${isProfilePage ? " is-active" : ""}" href="/profile.html">Profil</a>
         <a class="auth-rail-link" href="/docs.html" target="_blank" rel="noopener noreferrer">Doku</a>
         <button class="auth-rail-button" type="button" data-auth-logout>Logout</button>
       </div>
@@ -104,7 +105,7 @@ const renderAuthRail = (profile) => {
 
     clearAuthToken();
     renderAuthRail(null);
-    if (window.location.pathname.endsWith("/profile.html") || window.location.pathname.endsWith("profile.html")) {
+    if (isProfilePage) {
       window.location.href = "/login.html";
     }
   });
@@ -142,6 +143,18 @@ const escapeHtml = (value) =>
     return entities[character] || character;
   });
 
+const formatDrinkPrice = (price) => {
+  const normalizedPrice = String(price ?? "").trim();
+  const splitPrice = normalizedPrice.match(/^CHF\s*([^/]+?)\s*\/\s*([^/]+)$/i);
+
+  if (!splitPrice) {
+    return normalizedPrice;
+  }
+
+  const [, glassPrice, bottlePrice] = splitPrice;
+  return `Glas CHF ${glassPrice.trim()} | Flasche CHF ${bottlePrice.trim()}`;
+};
+
 const productPageRoot = document.querySelector("[data-product-page]");
 
 const buildProductCard = (product, page) => {
@@ -156,14 +169,41 @@ const buildProductCard = (product, page) => {
   const imageMarkup = product.imagePath
     ? `<img class="menu-item-media" src="${escapeHtml(product.imagePath)}" alt="${escapeHtml(product.title)}" />`
     : "";
-  const textClass = page === "drinks" ? "drink-name" : "";
-  const descriptionClass = page === "drinks" ? "drink-description" : "";
+
+  if (page === "drinks") {
+    return `
+      <article
+        class="${classes.join(" ")} dish-trigger"
+        tabindex="0"
+        role="button"
+        data-erp-id="${escapeHtml(product.erpId || "")}"
+        data-dish-category="${escapeHtml(product.category)}"
+        data-dish-title="${escapeHtml(product.title)}"
+        data-dish-price="${escapeHtml(product.price)}"
+        data-dish-copy="${escapeHtml(product.ingredients)}"
+        data-dish-image="${escapeHtml(product.imagePath)}"
+        data-dish-quote="${escapeHtml(product.quote.text)}"
+        data-dish-author="${escapeHtml(product.quote.author)}"
+        data-dish-special-heading-1="${escapeHtml(product.specialSections[0]?.heading || "")}"
+        data-dish-special-content-1="${escapeHtml(product.specialSections[0]?.content || "")}"
+        data-dish-special-heading-2="${escapeHtml(product.specialSections[1]?.heading || "")}"
+        data-dish-special-content-2="${escapeHtml(product.specialSections[1]?.content || "")}"
+      >
+        <h3 class="drink-name">${escapeHtml(product.title)}</h3>
+        <div class="drink-meta">
+          <p class="drink-description">${escapeHtml(product.teaser)}</p>
+          <span class="price-tag drink-price">${escapeHtml(formatDrinkPrice(product.price))}</span>
+        </div>
+      </article>
+    `;
+  }
 
   return `
     <article
       class="${classes.join(" ")} dish-trigger"
       tabindex="0"
       role="button"
+      data-erp-id="${escapeHtml(product.erpId || "")}"
       data-dish-category="${escapeHtml(product.category)}"
       data-dish-title="${escapeHtml(product.title)}"
       data-dish-price="${escapeHtml(product.price)}"
@@ -178,8 +218,8 @@ const buildProductCard = (product, page) => {
     >
       ${imageMarkup}
       <div>
-        <h3 class="${textClass}">${escapeHtml(product.title)}</h3>
-        <p class="${descriptionClass}">${escapeHtml(product.teaser)}</p>
+        <h3>${escapeHtml(product.title)}</h3>
+        <p>${escapeHtml(product.teaser)}</p>
       </div>
       <span class="price-tag">${escapeHtml(product.price)}</span>
     </article>
@@ -772,6 +812,72 @@ if (profileForm && changePasswordForm) {
     profileForm.elements.namedItem("email").value = profile.email || "";
     profileForm.elements.namedItem("phone").value = profile.phone || "";
   };
+  const reservationsStatus = document.querySelector("[data-profile-reservations-status]");
+  const reservationsTarget = document.querySelector("[data-profile-reservations]");
+
+  const renderProfileReservations = (reservations) => {
+    if (!reservationsTarget) {
+      return;
+    }
+
+    if (!reservations.length) {
+      reservationsTarget.innerHTML = '<div class="profile-empty">Noch keine Reservierungen mit diesem Gastprofil verknüpft.</div>';
+      return;
+    }
+
+    reservationsTarget.innerHTML = reservations
+      .map((reservation) => {
+        const isCancelled = reservation.status === "cancelled";
+        const cancelAction = !isCancelled && reservation.cancelUrl
+          ? `<a class="button button-primary" href="${escapeHtml(reservation.cancelUrl)}" target="_blank" rel="noreferrer">Reservierung verwalten</a>`
+          : "";
+
+        return `
+          <article class="profile-reservation-card">
+            <div class="profile-reservation-head">
+              <div>
+                <p class="card-kicker">${escapeHtml(reservation.roomName)}</p>
+                <h3>${escapeHtml(reservation.scheduledLabel)}</h3>
+              </div>
+              <span class="profile-reservation-status${isCancelled ? " is-cancelled" : ""}">${escapeHtml(reservation.status)}</span>
+            </div>
+            <div class="profile-reservation-meta">
+              <p><strong>Code</strong><br /><span>${escapeHtml(reservation.reservationCode)}</span></p>
+              <p><strong>Tisch</strong><br /><span>${escapeHtml(reservation.tableLabel)}</span></p>
+              <p><strong>Personen</strong><br /><span>${escapeHtml(String(reservation.guests))}</span></p>
+              <p><strong>Anlass</strong><br /><span>${escapeHtml(reservation.occasion || "Kein Anlass hinterlegt")}</span></p>
+            </div>
+            <p class="profile-reservation-copy">${escapeHtml(reservation.notes || "Keine Zusatznotizen hinterlegt.")}</p>
+            <div class="profile-reservation-actions">
+              <a class="button button-secondary" href="${escapeHtml(reservation.qrCodeUrl)}" target="_blank" rel="noreferrer">QR öffnen</a>
+              ${cancelAction}
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+  };
+
+  const loadProfileReservations = async () => {
+    if (!reservationsTarget) {
+      return;
+    }
+
+    if (reservationsStatus) {
+      reservationsStatus.textContent = "";
+      reservationsStatus.className = "registration-status";
+    }
+
+    try {
+      const result = await apiFetch("/api/profile/reservations");
+      renderProfileReservations(result.reservations || []);
+    } catch (error) {
+      if (reservationsStatus) {
+        reservationsStatus.textContent = `Die Reservierungen konnten nicht geladen werden: ${error.message}`;
+        reservationsStatus.className = "registration-status is-visible is-error";
+      }
+    }
+  };
 
   authReady.then((profile) => {
     if (!profile) {
@@ -780,6 +886,7 @@ if (profileForm && changePasswordForm) {
     }
 
     fillProfileForm(profile);
+    loadProfileReservations();
   });
 
   profileForm.addEventListener("submit", async (event) => {
@@ -835,4 +942,523 @@ if (profileForm && changePasswordForm) {
       setBoxStatus(passwordStatus, `Das Passwort konnte nicht geändert werden: ${error.message}`, "error");
     }
   });
+}
+
+const reservationApp = document.querySelector("[data-reservation-app]");
+
+if (reservationApp) {
+  const reservationForm = reservationApp.querySelector("[data-reservation-form]");
+  const statusBox = reservationApp.querySelector("[data-reservation-status]");
+  const roomsTarget = reservationApp.querySelector("[data-reservation-rooms]");
+  const slotsTarget = reservationApp.querySelector("[data-reservation-slots]");
+  const tablesTarget = reservationApp.querySelector("[data-reservation-tables]");
+  const calendarTarget = document.querySelector("[data-reservation-calendar]");
+  const calendarModal = document.querySelector("[data-reservation-calendar-modal]");
+  const calendarOpenButton = reservationApp.querySelector("[data-calendar-open]");
+  const calendarCloseButtons = document.querySelectorAll("[data-calendar-close]");
+  const confirmationModal = document.querySelector("[data-reservation-confirmation-modal]");
+  const confirmationCloseButtons = document.querySelectorAll("[data-confirmation-close]");
+  const processingModal = document.querySelector("[data-reservation-processing-modal]");
+  const selectedDateLabel = reservationApp.querySelector("[data-selected-date-label]");
+  const selectedRoomLabel = reservationApp.querySelector("[data-selected-room]");
+  const availabilitySummary = reservationApp.querySelector("[data-availability-summary]");
+  const confirmationCode = document.querySelector("[data-confirmation-code]");
+  const confirmationRoom = document.querySelector("[data-confirmation-room]");
+  const confirmationTime = document.querySelector("[data-confirmation-time]");
+  const confirmationTable = document.querySelector("[data-confirmation-table]");
+  const confirmationMail = document.querySelector("[data-confirmation-mail]");
+  const confirmationQr = document.querySelector("[data-confirmation-qr]");
+  const confirmationCancel = document.querySelector("[data-confirmation-cancel]");
+
+  let reservationConfig = null;
+  let selectedRoomId = "";
+  let selectedSlotKey = "";
+  let selectedTableId = "";
+  let calendarDays = [];
+
+  const showReservationStatus = (message, kind = "success") => {
+    if (!statusBox) {
+      return;
+    }
+    statusBox.textContent = message;
+    statusBox.className = `registration-status is-visible is-${kind}`;
+  };
+
+  const clearReservationStatus = () => {
+    if (!statusBox) {
+      return;
+    }
+    statusBox.textContent = "";
+    statusBox.className = "registration-status";
+  };
+
+  const syncSelectedDateLabel = () => {
+    if (!selectedDateLabel) {
+      return;
+    }
+    const selectedDate = reservationForm.elements.namedItem("date")?.value || "";
+    selectedDateLabel.textContent = selectedDate
+      ? `Ausgewählt: ${selectedDate}`
+      : "Bitte einen Tag auswählen.";
+  };
+
+  const openCalendarModal = () => {
+    if (!calendarModal) {
+      return;
+    }
+    calendarModal.hidden = false;
+    document.body.classList.add("is-modal-open");
+  };
+
+  const closeCalendarModal = () => {
+    if (!calendarModal) {
+      return;
+    }
+    calendarModal.hidden = true;
+    document.body.classList.remove("is-modal-open");
+  };
+
+  const openConfirmationModal = (reservation, room, mailStatus) => {
+    if (!confirmationModal) {
+      return;
+    }
+    if (confirmationCode) {
+      confirmationCode.textContent = reservation.reservationCode || "–";
+    }
+    if (confirmationRoom) {
+      confirmationRoom.textContent = room?.name || reservation.roomName || "–";
+    }
+    if (confirmationTime) {
+      confirmationTime.textContent = reservation.scheduledLabel || `${reservation.date} · ${reservation.slotLabel || ""}`;
+    }
+    if (confirmationTable) {
+      confirmationTable.textContent = reservation.tableLabel || reservation.tableId || "–";
+    }
+    if (confirmationMail) {
+      confirmationMail.textContent =
+        mailStatus === "failed"
+          ? "Die Reservierung steht, aber die Bestätigungs-Mail konnte gerade nicht gesendet werden."
+          : "Die Bestätigungs-Mail mit QR-Code ist unterwegs.";
+    }
+    if (confirmationQr) {
+      confirmationQr.href = reservation.qrCodeUrl || "#";
+    }
+    if (confirmationCancel) {
+      confirmationCancel.href = reservation.cancelUrl || "#";
+    }
+    confirmationModal.hidden = false;
+    document.body.classList.add("is-modal-open");
+  };
+
+  const closeConfirmationModal = () => {
+    if (!confirmationModal) {
+      return;
+    }
+    confirmationModal.hidden = true;
+    document.body.classList.remove("is-modal-open");
+  };
+
+  const openProcessingModal = () => {
+    if (!processingModal) {
+      return;
+    }
+    processingModal.hidden = false;
+    document.body.classList.add("is-modal-open");
+  };
+
+  const closeProcessingModal = () => {
+    if (!processingModal) {
+      return;
+    }
+    processingModal.hidden = true;
+    document.body.classList.remove("is-modal-open");
+  };
+
+  const currentRoom = () =>
+    reservationConfig?.rooms?.find((room) => room.id === selectedRoomId) || null;
+
+  const currentSlot = () =>
+    reservationConfig?.slots?.find((slot) => slot.key === selectedSlotKey) || null;
+
+  const renderRooms = () => {
+    if (!roomsTarget || !reservationConfig) {
+      return;
+    }
+
+    const orderedRooms = [...reservationConfig.rooms].sort((left, right) => {
+      if (left.status === right.status) {
+        return 0;
+      }
+      return left.status === "bookable" ? -1 : 1;
+    });
+
+    roomsTarget.innerHTML = orderedRooms
+      .map((room) => {
+        const isActive = room.id === selectedRoomId;
+        const tags =
+          room.status === "bookable"
+            ? `<span class="reservation-room-pill">Buchbar</span>`
+            : `<span class="reservation-room-pill is-muted">${escapeHtml(room.eventTableRange)}</span>`;
+
+        return `
+          <button
+            class="reservation-room-card${isActive ? " is-active" : ""}"
+            type="button"
+            data-room-id="${escapeHtml(room.id)}"
+          >
+            <p class="card-kicker">${escapeHtml(room.name)}</p>
+            <h3>${escapeHtml(room.tagline)}</h3>
+            <p>${escapeHtml(room.theme)}</p>
+            <div class="reservation-room-meta">
+              ${tags}
+              <span>${escapeHtml(room.defaultStatusNote)}</span>
+            </div>
+          </button>
+        `;
+      })
+      .join("");
+
+    roomsTarget.querySelectorAll("[data-room-id]").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedRoomId = button.dataset.roomId || "";
+        selectedTableId = "";
+        renderRooms();
+        updateCalendar();
+        updateAvailability();
+      });
+    });
+  };
+
+  const renderSlots = () => {
+    if (!slotsTarget || !reservationConfig) {
+      return;
+    }
+
+    slotsTarget.innerHTML = reservationConfig.slots
+      .map(
+        (slot) => `
+          <button
+            class="reservation-slot-button${slot.key === selectedSlotKey ? " is-active" : ""}"
+            type="button"
+            data-slot-key="${escapeHtml(slot.key)}"
+          >
+            ${escapeHtml(slot.label)}
+          </button>
+        `
+      )
+      .join("");
+
+    slotsTarget.querySelectorAll("[data-slot-key]").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedSlotKey = button.dataset.slotKey || "";
+        selectedTableId = "";
+        renderSlots();
+        updateCalendar();
+        updateAvailability();
+      });
+    });
+  };
+
+  const renderTables = (tables, room) => {
+    if (!tablesTarget) {
+      return;
+    }
+
+    if (!room) {
+      tablesTarget.innerHTML = `<p class="reservation-empty">Bitte zuerst einen Raum auswählen.</p>`;
+      return;
+    }
+
+    if (room.status !== "bookable") {
+      tablesTarget.innerHTML = `
+        <div class="reservation-empty">
+          <strong>${escapeHtml(room.name)}</strong><br />
+          Dieser Raum ist aktuell für Veranstaltungen reserviert.
+        </div>
+      `;
+      return;
+    }
+
+    if (!tables.length) {
+      tablesTarget.innerHTML = `<p class="reservation-empty">Für diese Auswahl konnten keine Tische geladen werden.</p>`;
+      return;
+    }
+
+    tablesTarget.innerHTML = tables
+      .map((table) => {
+        const isSelected = table.id === selectedTableId;
+        const isDisabled = !table.isAvailable;
+        const statusLabel =
+          table.availability === "reserved"
+            ? "Bereits reserviert"
+            : table.availability === "capacity_mismatch"
+              ? "Passt nicht zur Personenzahl"
+              : "Frei";
+
+        return `
+          <button
+            class="reservation-table-card${isSelected ? " is-active" : ""}"
+            type="button"
+            data-table-id="${escapeHtml(table.id)}"
+            ${isDisabled ? "disabled" : ""}
+          >
+            <div class="reservation-table-head">
+              <strong>${escapeHtml(table.label)}</strong>
+              <span class="reservation-table-pill${table.isAvailable ? "" : " is-muted"}">${escapeHtml(statusLabel)}</span>
+            </div>
+            <p>${escapeHtml(table.kindLabel)} · ${escapeHtml(table.capacityMin)}-${escapeHtml(table.capacityMax)} Gäste</p>
+            <p>${escapeHtml(table.description)}</p>
+          </button>
+        `;
+      })
+      .join("");
+
+    tablesTarget.querySelectorAll("[data-table-id]").forEach((button) => {
+      button.addEventListener("click", () => {
+        selectedTableId = button.dataset.tableId || "";
+        renderTables(tables, room);
+      });
+    });
+  };
+
+  const renderCalendar = () => {
+    if (!calendarTarget || !calendarDays.length) {
+      return;
+    }
+
+    const selectedDate = reservationForm.elements.namedItem("date")?.value || "";
+    const weekdayLabels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+    const firstCalendarDate = new Date(`${calendarDays[0].date}T00:00:00`);
+    const leadingPadCount = (firstCalendarDate.getDay() + 6) % 7;
+    const leadingPad = Array.from({ length: leadingPadCount }, () => `<span class="reservation-calendar-pad"></span>`).join("");
+
+    calendarTarget.innerHTML = `
+      <div class="reservation-calendar-weekdays">
+        ${weekdayLabels.map((label) => `<span>${label}</span>`).join("")}
+      </div>
+      <div class="reservation-calendar-days">
+        ${leadingPad}
+        ${calendarDays
+          .map((day) => {
+            const [year, month, date] = day.date.split("-");
+            const isActive = day.date === selectedDate;
+            const isDisabled = !["available", "fully_booked"].includes(day.state);
+
+            return `
+              <button
+                class="reservation-calendar-day is-${day.state}${isActive ? " is-active" : ""}"
+                type="button"
+                data-calendar-date="${escapeHtml(day.date)}"
+                title="${escapeHtml(day.summary)}"
+                ${isDisabled ? "disabled" : ""}
+              >
+                <strong>${escapeHtml(`${date}.${month}.`)}</strong>
+                <span>${escapeHtml(day.summary)}</span>
+                <small class="reservation-calendar-slots">
+                  <span>1. Schicht: ${escapeHtml(String(day.slotCounts?.early ?? 0))}</span>
+                  <span>2. Schicht: ${escapeHtml(String(day.slotCounts?.late ?? 0))}</span>
+                </small>
+              </button>
+            `;
+          })
+          .join("")}
+      </div>
+    `;
+
+    calendarTarget.querySelectorAll("[data-calendar-date]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextDate = button.dataset.calendarDate || "";
+        reservationForm.elements.namedItem("date").value = nextDate;
+        selectedTableId = "";
+        syncSelectedDateLabel();
+        renderCalendar();
+        updateAvailability();
+        closeCalendarModal();
+      });
+    });
+  };
+
+  const updateCalendar = async () => {
+    if (!reservationConfig || !calendarTarget) {
+      return;
+    }
+
+    try {
+      const guests = reservationForm.elements.namedItem("guests")?.value || "";
+      const result = await apiFetch(
+        `/api/reservations/calendar?start=${encodeURIComponent(reservationConfig.minDate)}&days=28&slotKey=${encodeURIComponent(selectedSlotKey)}&roomId=${encodeURIComponent(selectedRoomId)}&guests=${encodeURIComponent(guests)}`,
+        { auth: false }
+      );
+      calendarDays = result.days;
+      syncSelectedDateLabel();
+      renderCalendar();
+    } catch (error) {
+      calendarTarget.innerHTML = `<div class="reservation-empty">${escapeHtml(error.message)}</div>`;
+    }
+  };
+
+  const updateAvailability = async () => {
+    const room = currentRoom();
+    const slot = currentSlot();
+    const date = reservationForm.elements.namedItem("date")?.value || "";
+    const guests = reservationForm.elements.namedItem("guests")?.value || "";
+
+    selectedRoomLabel.textContent = room
+      ? `${room.name} · ${room.status === "bookable" ? "individuell buchbar" : "für Events blockiert"}`
+      : "Bitte einen Raum auswählen.";
+
+    if (!room || !slot || !date || !guests) {
+      availabilitySummary.textContent = "Bitte Datum, Personenanzahl, Slot und Raum auswählen.";
+      renderTables([], room);
+      return;
+    }
+
+    if (room.status !== "bookable") {
+      availabilitySummary.textContent = `${room.name} ist standardmäßig durch Veranstaltungen blockiert.`;
+      renderTables([], room);
+      return;
+    }
+
+    try {
+      const result = await apiFetch(
+        `/api/reservations/availability?date=${encodeURIComponent(date)}&slotKey=${encodeURIComponent(selectedSlotKey)}&roomId=${encodeURIComponent(selectedRoomId)}&guests=${encodeURIComponent(guests)}`,
+        { auth: false }
+      );
+      const freeCount = result.tables.filter((table) => table.isAvailable).length;
+      availabilitySummary.textContent =
+        freeCount > 0
+          ? `${freeCount} Tisch(e) sind für ${date} im Slot ${slot.label} frei.`
+          : `Für ${date} im Slot ${slot.label} ist kein passender Tisch mehr frei.`;
+      renderTables(result.tables, room);
+    } catch (error) {
+      availabilitySummary.textContent = error.message;
+      renderTables([], room);
+    }
+  };
+
+  const applyReservationConfig = (config) => {
+    reservationConfig = config;
+    selectedRoomId = config.rooms.find((room) => room.status === "bookable")?.id || config.rooms[0]?.id || "";
+    selectedSlotKey = config.slots[0]?.key || "";
+    selectedTableId = "";
+
+    const dateInput = reservationForm.elements.namedItem("date");
+    if (dateInput) {
+      dateInput.min = config.minDate;
+      dateInput.max = config.maxDate;
+      dateInput.value = config.minDate;
+    }
+
+    syncSelectedDateLabel();
+    renderRooms();
+    renderSlots();
+    updateCalendar();
+    updateAvailability();
+  };
+
+  ["date", "guests"].forEach((fieldName) => {
+    reservationForm.elements.namedItem(fieldName)?.addEventListener("change", () => {
+      selectedTableId = "";
+      if (fieldName === "guests") {
+        updateCalendar();
+      } else {
+        syncSelectedDateLabel();
+        renderCalendar();
+      }
+      updateAvailability();
+    });
+  });
+
+  calendarOpenButton?.addEventListener("click", () => {
+    openCalendarModal();
+  });
+
+  calendarCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      closeCalendarModal();
+    });
+  });
+
+  confirmationCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      closeConfirmationModal();
+    });
+  });
+
+  reservationForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearReservationStatus();
+    openProcessingModal();
+
+    const room = currentRoom();
+    const slot = currentSlot();
+    const payload = {
+      name: reservationForm.elements.namedItem("name")?.value.trim() || "",
+      email: reservationForm.elements.namedItem("email")?.value.trim() || "",
+      phone: reservationForm.elements.namedItem("phone")?.value.trim() || "",
+      date: reservationForm.elements.namedItem("date")?.value || "",
+      guests: reservationForm.elements.namedItem("guests")?.value || "",
+      occasion: reservationForm.elements.namedItem("occasion")?.value || "",
+      notes: reservationForm.elements.namedItem("notes")?.value.trim() || "",
+      roomId: selectedRoomId,
+      slotKey: selectedSlotKey,
+      tableId: selectedTableId,
+    };
+
+    if (!room || !slot) {
+      closeProcessingModal();
+      showReservationStatus("Bitte Raum und Zeitslot auswählen.", "error");
+      return;
+    }
+
+    if (!selectedTableId) {
+      closeProcessingModal();
+      showReservationStatus("Bitte einen freien Tisch auswählen.", "error");
+      return;
+    }
+
+    try {
+      const result = await apiFetch("/api/reservations", {
+        method: "POST",
+        body: JSON.stringify(payload),
+        auth: false,
+      });
+
+      const reservation = result.reservation;
+      const mailHint =
+        result.mailStatus === "failed"
+          ? " Die Reservierung steht, aber die Bestätigungs-Mail konnte gerade nicht gesendet werden."
+          : " Die Bestätigungs-Mail mit QR-Code ist unterwegs.";
+      showReservationStatus(
+        `Reservierung ${reservation.reservationCode} aufgenommen: ${room.name}, ${slot.label}, ${reservation.date}.${mailHint}`,
+        "success"
+      );
+      closeProcessingModal();
+      openConfirmationModal(reservation, room, result.mailStatus);
+      reservationForm.reset();
+      reservationForm.elements.namedItem("guests").value = "2";
+      reservationForm.elements.namedItem("date").value = reservationConfig.minDate;
+      selectedTableId = "";
+      updateCalendar();
+      updateAvailability();
+    } catch (error) {
+      closeProcessingModal();
+      showReservationStatus(`Die Reservierung konnte nicht erstellt werden: ${error.message}`, "error");
+    }
+  });
+
+  authReady.then((profile) => {
+    if (!profile || !reservationForm) {
+      return;
+    }
+    reservationForm.elements.namedItem("name").value = profile.firstName || "";
+    reservationForm.elements.namedItem("email").value = profile.email || "";
+    reservationForm.elements.namedItem("phone").value = profile.phone || "";
+  });
+
+  apiFetch("/api/reservations/config", { auth: false })
+    .then((result) => applyReservationConfig(result.config))
+    .catch((error) => {
+      showReservationStatus(`Die Reservierungskonfiguration konnte nicht geladen werden: ${error.message}`, "error");
+    });
 }

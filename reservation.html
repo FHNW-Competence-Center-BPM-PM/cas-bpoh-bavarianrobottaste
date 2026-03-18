@@ -32,64 +32,174 @@
           </div>
         </section>
 
-        <section class="section form-layout reveal">
+        <section class="section form-layout reservation-layout reveal">
           <div class="panel panel-copy">
             <p class="section-tag">Reservierungs-Flow</p>
-            <h2>Für Dinner, Events und besondere Abende.</h2>
+            <h2>Vier Räume, zwei Slots pro Abend und nur drei Wochen im Voraus.</h2>
             <p>
-              Wunschtermin, Personenanzahl, besondere Anlässe und Tischpräferenzen können
-              hier später mit Account, E-Mail-Bestätigung und Bestellhistorie verknüpft
-              werden.
+              Drei Event-Räume sind bewusst blockiert. Buchbar ist die
+              <strong>Servierwerk Lounge</strong> mit konfigurierbaren Tischen für Dinner,
+              Aperitif und reine Drinks. Wähle zuerst Datum, Slot und Raum, dann zeigen wir dir
+              direkt die freien Tische.
             </p>
             <ul class="detail-list">
-              <li>Reservierungen bis 8 Personen direkt über das Formular</li>
-              <li>Private Dining und Events auf Anfrage</li>
-              <li>Digitale Reservierungsbestätigung und Reminder als Zielbild</li>
+              <li>Nur zwei Abend-Slots: 17:30 - 20:00 und 20:30 - 23:30</li>
+              <li>Reservierbar nur bis drei Wochen im Voraus</li>
+              <li>Vier Themenräume mit klarer Raumlogik und Tischkapazitäten</li>
             </ul>
           </div>
-          <form class="glass-form">
-            <label>
-              Name
-              <input type="text" placeholder="Vor- und Nachname" />
-            </label>
-            <label>
-              E-Mail
-              <input type="email" placeholder="name@example.com" />
-            </label>
-            <label>
-              Datum
-              <input type="date" />
-            </label>
-            <label>
-              Uhrzeit
-              <input type="time" />
-            </label>
-            <label>
-              Personen
-              <select>
-                <option>2 Personen</option>
-                <option>4 Personen</option>
-                <option>6 Personen</option>
-                <option>8 Personen</option>
-              </select>
-            </label>
-            <label>
-              Anlass
-              <select>
-                <option>Dinner</option>
-                <option>Date Night</option>
-                <option>Business Dinner</option>
-                <option>Geburtstag</option>
-              </select>
-            </label>
-            <label class="field-span">
-              Nachricht
-              <textarea rows="5" placeholder="Tischwunsch, Allergien, Anlass …"></textarea>
-            </label>
-            <button class="button button-primary" type="button">Reservierungsanfrage senden</button>
-          </form>
+          <div class="reservation-builder" data-reservation-app>
+            <div class="registration-status" data-reservation-status aria-live="polite"></div>
+            <div class="reservation-room-grid" data-reservation-rooms></div>
+
+            <form class="glass-form reservation-form" data-reservation-form novalidate>
+              <label>
+                Name
+                <input type="text" name="name" placeholder="Vor- und Nachname" required />
+              </label>
+              <label>
+                E-Mail
+                <input type="email" name="email" placeholder="name@example.com" required />
+              </label>
+              <label>
+                Telefon optional
+                <input type="tel" name="phone" placeholder="+41 79 555 55 55" />
+              </label>
+              <label>
+                Datum
+                <input type="date" name="date" required />
+              </label>
+              <label>
+                Personen
+                <select name="guests" required>
+                  <option value="1">1 Person</option>
+                  <option value="2" selected>2 Personen</option>
+                  <option value="3">3 Personen</option>
+                  <option value="4">4 Personen</option>
+                </select>
+              </label>
+              <label>
+                Anlass
+                <select name="occasion">
+                  <option value="">Anlass auswählen</option>
+                  <option>Dinner</option>
+                  <option>Date Night</option>
+                  <option>Business Dinner</option>
+                  <option>Geburtstag</option>
+                  <option>Afterwork Drinks</option>
+                </select>
+              </label>
+
+              <div class="field-span reservation-date-picker">
+                <div>
+                  <p class="card-kicker">Reservierungstag</p>
+                  <p class="reservation-calendar-copy" data-selected-date-label>Bitte einen Tag auswählen.</p>
+                </div>
+                <button class="button button-secondary" type="button" data-calendar-open>Tag auswählen</button>
+              </div>
+
+              <div class="field-span reservation-slot-group">
+                <p class="card-kicker">Zeitslot</p>
+                <div class="reservation-slot-grid" data-reservation-slots></div>
+              </div>
+
+              <div class="field-span reservation-selection">
+                <div>
+                  <p class="card-kicker">Ausgewählter Raum</p>
+                  <p data-selected-room>Bitte einen Raum auswählen.</p>
+                </div>
+                <div>
+                  <p class="card-kicker">Freie Tische</p>
+                  <p data-availability-summary>Bitte Datum, Personenanzahl, Slot und Raum auswählen.</p>
+                </div>
+              </div>
+
+              <div class="field-span reservation-table-section">
+                <p class="card-kicker">Verfügbare Tische</p>
+                <div class="reservation-table-grid" data-reservation-tables></div>
+              </div>
+
+              <label class="field-span">
+                Nachricht
+                <textarea name="notes" rows="4" placeholder="Tischwunsch, Allergien, Anlass …"></textarea>
+              </label>
+              <button class="button button-primary" type="submit">Reservierung anfragen</button>
+            </form>
+          </div>
         </section>
       </main>
+
+      <div class="reservation-calendar-modal" data-reservation-calendar-modal hidden>
+        <div class="reservation-calendar-modal-backdrop" data-calendar-close></div>
+        <div class="reservation-calendar-modal-panel">
+          <button class="dish-modal-close" type="button" aria-label="Kalender schließen" data-calendar-close>×</button>
+          <div class="reservation-calendar-head">
+            <div>
+              <p class="card-kicker">Kalender</p>
+              <p class="reservation-calendar-copy">Farbig markiert nach Verfügbarkeit, Event-Block und 3‑Wochen‑Fenster.</p>
+            </div>
+            <div class="reservation-calendar-legend">
+              <span class="reservation-legend-item"><i class="is-available"></i>Buchbar</span>
+              <span class="reservation-legend-item"><i class="is-event"></i>Event</span>
+              <span class="reservation-legend-item"><i class="is-full"></i>Voll</span>
+              <span class="reservation-legend-item"><i class="is-outside"></i>Außerhalb Fenster</span>
+            </div>
+          </div>
+          <div class="reservation-calendar-grid" data-reservation-calendar></div>
+        </div>
+      </div>
+
+      <div class="reservation-confirmation-modal" data-reservation-confirmation-modal hidden>
+        <div class="reservation-calendar-modal-backdrop" data-confirmation-close></div>
+        <div class="reservation-confirmation-panel">
+          <button class="dish-modal-close" type="button" aria-label="Bestätigung schließen" data-confirmation-close>×</button>
+          <div class="reservation-confirmation-head">
+            <p class="card-kicker">Reservierung versendet</p>
+            <h2>Dein Abend ist vorgemerkt.</h2>
+            <p class="reservation-calendar-copy" data-confirmation-mail>
+              Die Bestätigungs-Mail mit QR-Code ist unterwegs.
+            </p>
+          </div>
+          <div class="reservation-confirmation-grid">
+            <div class="reservation-confirmation-card">
+              <p class="card-kicker">Reservierungsdaten</p>
+              <div class="reservation-confirmation-stack">
+                <p><strong>Code</strong><br /><span data-confirmation-code>–</span></p>
+                <p><strong>Raum</strong><br /><span data-confirmation-room>–</span></p>
+                <p><strong>Zeit</strong><br /><span data-confirmation-time>–</span></p>
+                <p><strong>Tisch</strong><br /><span data-confirmation-table>–</span></p>
+              </div>
+            </div>
+            <div class="reservation-confirmation-card reservation-confirmation-card-accent">
+              <p class="card-kicker">Nächster Schritt</p>
+              <p>
+                Bitte öffne die Mail für den QR-Code und den Verwaltungslink. Eine Löschung ist nur bis
+                <strong>5 Stunden vor dem Termin</strong> möglich.
+              </p>
+              <div class="reservation-confirmation-actions">
+                <a class="button button-secondary" href="#" target="_blank" rel="noreferrer" data-confirmation-qr>QR öffnen</a>
+                <a class="button button-primary" href="#" target="_blank" rel="noreferrer" data-confirmation-cancel>Storno-Link</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reservation-processing-modal" data-reservation-processing-modal hidden>
+        <div class="reservation-calendar-modal-backdrop"></div>
+        <div class="reservation-processing-panel" aria-live="polite" aria-busy="true">
+          <div class="reservation-processing-spinner" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p class="card-kicker">Reservierung</p>
+          <h2>Dein Abend wird gerade vorbereitet.</h2>
+          <p class="reservation-calendar-copy">
+            Wir prüfen Tisch, Slot und senden danach sofort die Bestätigung mit QR-Code.
+          </p>
+        </div>
+      </div>
 
       <footer class="site-footer reveal" data-site-footer></footer>
     </div>
