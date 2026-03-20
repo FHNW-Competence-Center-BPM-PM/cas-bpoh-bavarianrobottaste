@@ -1,12 +1,36 @@
 services:
-  web:
+  app:
     build:
       context: .
-    container_name: bavarian-robotaste-web
+    container_name: bavarian-robotaste-app
     env_file:
       - .env
-    ports:
-      - "8080:8080"
+    environment:
+      PORT: 8080
+      APP_BASE_URL: https://${DOMAIN}
+      REGISTRATION_URL: https://${DOMAIN}/register.html
+    expose:
+      - "8080"
     volumes:
       - ./data:/app/data
     restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8-alpine
+    container_name: bavarian-robotaste-caddy
+    depends_on:
+      - app
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

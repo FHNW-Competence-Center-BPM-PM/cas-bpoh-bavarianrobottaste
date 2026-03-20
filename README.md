@@ -26,6 +26,39 @@ py -m http.server 8080
 
 3. Danach im Browser `http://localhost:8080` oeffnen.
 
+## Docker mit HTTPS
+
+Die Website laesst sich per Docker Compose unter `https://www.bpoh.space` betreiben.
+Das Setup nutzt:
+
+- die bestehende Python-App als internen Webdienst auf Port `8080`
+- `Caddy` als Reverse-Proxy auf Port `80` und `443`
+- automatische TLS-Zertifikate von Let's Encrypt
+
+### Voraussetzungen
+
+- DNS fuer `www.bpoh.space` zeigt auf den Server
+- Ports `80` und `443` sind von aussen erreichbar
+- Docker und Docker Compose Plugin sind installiert
+
+### Start
+
+1. Die lokale `.env` pruefen und `LETSENCRYPT_EMAIL` bei Bedarf anpassen.
+2. Container starten:
+
+```bash
+docker compose up -d --build
+```
+
+3. Logs pruefen:
+
+```bash
+docker compose logs -f caddy
+```
+
+Wenn DNS und Firewall stimmen, beantragt `Caddy` das Zertifikat automatisch und
+liefert die Seite anschliessend unter `https://www.bpoh.space` aus.
+
 ## Projektstruktur
 
 ```text

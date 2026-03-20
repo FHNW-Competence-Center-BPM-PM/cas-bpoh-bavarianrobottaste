@@ -861,7 +861,7 @@ def reservation_public_base_url(host: str | None = None) -> str:
     if configured:
         return configured
     if host:
-        return f"http://{host}"
+        return f"https://{host}"
     return f"http://localhost:{PORT}"
 
 
@@ -2034,7 +2034,9 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def absolute_url(self, path: str) -> str:
         host = self.headers.get("Host", f"{HOST}:{PORT}")
-        return f"http://{host}/{path.lstrip('/')}"
+        forwarded_proto = self.headers.get("X-Forwarded-Proto", "").strip()
+        scheme = forwarded_proto or ("https" if host and host != f"localhost:{PORT}" else "http")
+        return f"{scheme}://{host}/{path.lstrip('/')}"
 
     def public_base_url(self) -> str:
         return reservation_public_base_url(self.headers.get("Host"))
