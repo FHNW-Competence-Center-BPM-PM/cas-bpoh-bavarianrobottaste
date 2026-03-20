@@ -1744,9 +1744,7 @@ body.is-modal-open {
 }
 
 .account-shell {
-  display: grid;
-  grid-template-columns: 0.86fr 1.14fr;
-  gap: 22px;
+  display: block;
 }
 
 .account-copy,
@@ -1765,6 +1763,79 @@ body.is-modal-open {
   gap: 22px;
 }
 
+.account-workspace {
+  display: grid;
+  grid-template-areas:
+    "heading heading"
+    "tabs content";
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.account-heading {
+  grid-area: heading;
+  margin-bottom: 4px;
+}
+
+.account-title {
+  max-width: none;
+  font-size: clamp(2.4rem, 4vw, 3.6rem);
+}
+
+.account-tabs {
+  grid-area: tabs;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  position: sticky;
+  top: 110px;
+}
+
+.account-tab {
+  display: block;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    var(--surface-strong);
+  color: var(--muted);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.account-tab:hover,
+.account-tab.is-active {
+  color: var(--text);
+  border-color: rgba(119, 229, 216, 0.34);
+  transform: translateY(-1px);
+}
+
+.account-tab.is-active {
+  background:
+    linear-gradient(135deg, rgba(119, 229, 216, 0.18), rgba(242, 106, 61, 0.08)),
+    var(--surface-strong);
+}
+
+.account-content,
+.account-pane {
+  display: grid;
+  gap: 18px;
+}
+
+.account-content {
+  grid-area: content;
+}
+
+.account-pane[hidden] {
+  display: none;
+}
+
 .account-panel {
   display: grid;
   gap: 16px;
@@ -1776,39 +1847,54 @@ body.is-modal-open {
 
 .profile-reservations {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .profile-reservation-card {
   display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(140px, auto) auto;
+  align-items: center;
   gap: 14px;
-  padding: 18px;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.profile-reservation-card:hover,
+.profile-reservation-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(119, 229, 216, 0.24);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.2);
+  outline: none;
 }
 
 .profile-reservation-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.profile-reservation-meta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 4px;
 }
 
-.profile-reservation-meta p,
+.profile-reservation-head h3 {
+  font-size: 1.15rem;
+  line-height: 1.15;
+}
+
+.profile-reservation-facts {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+}
+
+.profile-reservation-facts p,
 .profile-reservation-card p {
   margin: 0;
 }
 
-.profile-reservation-meta span,
-.profile-reservation-copy {
+.profile-reservation-facts span,
+.profile-reservation-copy,
+.profile-reservation-note {
   color: var(--muted);
 }
 
@@ -1837,6 +1923,31 @@ body.is-modal-open {
   gap: 10px;
 }
 
+.profile-reservation-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.profile-reservation-detail-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.profile-reservation-modal[hidden] {
+  display: none;
+}
+
+.profile-reservation-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 76;
+}
+
+.profile-reservation-modal-panel {
+  margin-top: 8vh;
+}
+
 .profile-empty {
   padding: 18px;
   border: 1px dashed rgba(255, 255, 255, 0.12);
@@ -1844,7 +1955,6 @@ body.is-modal-open {
   background: rgba(255, 255, 255, 0.02);
   color: var(--muted);
 }
-
 .login-shell {
   grid-template-columns: minmax(280px, 0.9fr) minmax(380px, 1.1fr);
   align-items: stretch;
@@ -2120,7 +2230,8 @@ body.is-modal-open {
   .reservation-selection,
   .reservation-date-picker,
   .reservation-confirmation-grid,
-  .profile-reservation-meta,
+  .account-workspace,
+  .profile-reservation-detail-grid,
   .account-form,
   .registration-steps,
   .dish-modal-hero,
@@ -2156,6 +2267,19 @@ body.is-modal-open {
     grid-template-columns: 1fr;
   }
 
+  .account-tabs {
+    position: static;
+  }
+
+  .profile-reservation-card {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .profile-reservation-facts {
+    text-align: left;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .hero {
     min-height: unset;
   }

@@ -798,6 +798,18 @@ const changePasswordForm = document.querySelector("[data-change-password-form]")
 if (profileForm && changePasswordForm) {
   const profileStatus = document.querySelector("[data-profile-status]");
   const passwordStatus = document.querySelector("[data-password-status]");
+  const accountTabs = document.querySelectorAll("[data-account-tab]");
+  const accountPanes = document.querySelectorAll("[data-account-pane]");
+  const reservationModal = document.querySelector("[data-profile-reservation-modal]");
+  const reservationModalCloseButtons = document.querySelectorAll("[data-profile-reservation-close]");
+  const reservationModalTitle = document.querySelector("[data-profile-reservation-title]");
+  const reservationModalSubtitle = document.querySelector("[data-profile-reservation-subtitle]");
+  const reservationModalMeta = document.querySelector("[data-profile-reservation-meta]");
+  const reservationModalNotes = document.querySelector("[data-profile-reservation-notes]");
+  const reservationModalActions = document.querySelector("[data-profile-reservation-actions]");
+  const reservationsStatus = document.querySelector("[data-profile-reservations-status]");
+  const reservationsTarget = document.querySelector("[data-profile-reservations]");
+  const reservationStore = new Map();
 
   const setBoxStatus = (box, message, kind = "success") => {
     if (!box) {
@@ -812,51 +824,151 @@ if (profileForm && changePasswordForm) {
     profileForm.elements.namedItem("email").value = profile.email || "";
     profileForm.elements.namedItem("phone").value = profile.phone || "";
   };
-  const reservationsStatus = document.querySelector("[data-profile-reservations-status]");
-  const reservationsTarget = document.querySelector("[data-profile-reservations]");
 
   const renderProfileReservations = (reservations) => {
     if (!reservationsTarget) {
       return;
     }
 
+    reservationStore.clear();
+
     if (!reservations.length) {
       reservationsTarget.innerHTML = '<div class="profile-empty">Noch keine Reservierungen mit diesem Gastprofil verknüpft.</div>';
       return;
     }
 
-    reservationsTarget.innerHTML = reservations
+    const sortedReservations = [...reservations].sort((left, right) => {
+      const leftValue = `${left.date || ""}-${left.slotKey || ""}`;
+      const rightValue = `${right.date || ""}-${right.slotKey || ""}`;
+      return rightValue.localeCompare(leftValue);
+    });
+
+    sortedReservations.forEach((reservation) => {
+      if (reservation?.reservationId) {
+        reservationStore.set(reservation.reservationId, reservation);
+      }
+    });
+
+    reservationsTarget.innerHTML = sortedReservations
       .map((reservation) => {
         const isCancelled = reservation.status === "cancelled";
-        const cancelAction = !isCancelled && reservation.cancelUrl
-          ? `<a class="button button-primary" href="${escapeHtml(reservation.cancelUrl)}" target="_blank" rel="noreferrer">Reservierung verwalten</a>`
-          : "";
 
         return `
-          <article class="profile-reservation-card">
+          <article class="profile-reservation-card" tabindex="0" role="button" data-profile-reservation-id="${escapeHtml(reservation.reservationId || "")}">
             <div class="profile-reservation-head">
-              <div>
-                <p class="card-kicker">${escapeHtml(reservation.roomName)}</p>
-                <h3>${escapeHtml(reservation.scheduledLabel)}</h3>
-              </div>
-              <span class="profile-reservation-status${isCancelled ? " is-cancelled" : ""}">${escapeHtml(reservation.status)}</span>
+              <p class="card-kicker">${escapeHtml(reservation.roomName)}</p>
+              <h3>${escapeHtml(reservation.scheduledLabel)}</h3>
+              <p class="profile-reservation-note">${escapeHtml(reservation.tableLabel)} | ${escapeHtml(reservation.occasion || "Kein Anlass")}</p>
             </div>
-            <div class="profile-reservation-meta">
+            <div class="profile-reservation-facts">
               <p><strong>Code</strong><br /><span>${escapeHtml(reservation.reservationCode)}</span></p>
-              <p><strong>Tisch</strong><br /><span>${escapeHtml(reservation.tableLabel)}</span></p>
-              <p><strong>Personen</strong><br /><span>${escapeHtml(String(reservation.guests))}</span></p>
-              <p><strong>Anlass</strong><br /><span>${escapeHtml(reservation.occasion || "Kein Anlass hinterlegt")}</span></p>
+              <p><strong>Gäste</strong><br /><span>${escapeHtml(String(reservation.guests))}</span></p>
             </div>
-            <p class="profile-reservation-copy">${escapeHtml(reservation.notes || "Keine Zusatznotizen hinterlegt.")}</p>
-            <div class="profile-reservation-actions">
-              <a class="button button-secondary" href="${escapeHtml(reservation.qrCodeUrl)}" target="_blank" rel="noreferrer">QR öffnen</a>
-              ${cancelAction}
-            </div>
+            <span class="profile-reservation-status${isCancelled ? " is-cancelled" : ""}">${escapeHtml(reservation.status)}</span>
           </article>
         `;
       })
       .join("");
+
+    reservationsTarget.querySelectorAll("[data-profile-reservation-id]").forEach((entry) => {
+      const openDetails = () => {
+        const reservation = reservationStore.get(entry.dataset.profileReservationId || "");
+        if (reservation) {
+          openProfileReservationModal(reservation);
+        }
+      };
+
+      entry.addEventListener("click", openDetails);
+      entry.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openDetails();
+        }
+      });
+    });
   };
+
+  const switchAccountPane = (nextPane) => {
+    accountTabs.forEach((tab) => {
+      const isActive = tab.dataset.accountTab === nextPane;
+      tab.classList.toggle("is-active", isActive);
+      tab.setAttribute("aria-selected", String(isActive));
+    });
+
+    accountPanes.forEach((pane) => {
+      const isActive = pane.dataset.accountPane === nextPane;
+      pane.hidden = !isActive;
+      pane.classList.toggle("is-active", isActive);
+    });
+  };
+
+  const openProfileReservationModal = (reservation) => {
+    if (!reservationModal) {
+      return;
+    }
+
+    if (reservationModalTitle) {
+      reservationModalTitle.textContent = reservation.roomName || "Reservierung";
+    }
+    if (reservationModalSubtitle) {
+      reservationModalSubtitle.textContent = reservation.scheduledLabel || "";
+    }
+    if (reservationModalMeta) {
+      reservationModalMeta.innerHTML = `
+        <p><strong>Reservierungscode</strong><br />${escapeHtml(reservation.reservationCode || "-")}</p>
+        <p><strong>Status</strong><br />${escapeHtml(reservation.status || "-")}</p>
+        <p><strong>Tisch</strong><br />${escapeHtml(reservation.tableLabel || "-")}</p>
+        <p><strong>Gäste</strong><br />${escapeHtml(String(reservation.guests || "-"))}</p>
+        <p><strong>Anlass</strong><br />${escapeHtml(reservation.occasion || "Kein Anlass hinterlegt")}</p>
+      `;
+    }
+    if (reservationModalNotes) {
+      reservationModalNotes.innerHTML = `
+        <p><strong>Notizen</strong><br />${escapeHtml(reservation.notes || "Keine Zusatznotizen hinterlegt.")}</p>
+        <p><strong>Storno-Frist</strong><br />${escapeHtml(reservation.cancellationDeadlineLabel || "-")}</p>
+      `;
+    }
+    if (reservationModalActions) {
+      const cancelAction =
+        reservation.status !== "cancelled" && reservation.cancelUrl
+          ? `<a class="button button-primary" href="${escapeHtml(reservation.cancelUrl)}" target="_blank" rel="noreferrer">Reservierung verwalten</a>`
+          : "";
+      reservationModalActions.innerHTML = `
+        <a class="button button-secondary" href="${escapeHtml(reservation.qrCodeUrl || "#")}" target="_blank" rel="noreferrer">QR öffnen</a>
+        ${cancelAction}
+      `;
+    }
+
+    reservationModal.hidden = false;
+    document.body.classList.add("is-modal-open");
+  };
+
+  const closeProfileReservationModal = () => {
+    if (!reservationModal) {
+      return;
+    }
+
+    reservationModal.hidden = true;
+    document.body.classList.remove("is-modal-open");
+  };
+
+  accountTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      switchAccountPane(tab.dataset.accountTab || "settings");
+    });
+  });
+
+  reservationModalCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      closeProfileReservationModal();
+    });
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && reservationModal && !reservationModal.hidden) {
+      closeProfileReservationModal();
+    }
+  });
 
   const loadProfileReservations = async () => {
     if (!reservationsTarget) {
@@ -885,6 +997,7 @@ if (profileForm && changePasswordForm) {
       return;
     }
 
+    switchAccountPane("settings");
     fillProfileForm(profile);
     loadProfileReservations();
   });
@@ -943,7 +1056,6 @@ if (profileForm && changePasswordForm) {
     }
   });
 }
-
 const reservationApp = document.querySelector("[data-reservation-app]");
 
 if (reservationApp) {

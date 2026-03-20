@@ -7,4 +7,5 @@ coverage/
 .vscode/
 .env
 data/*.json
+data/*.log
 __pycache__/

@@ -16,64 +16,111 @@
 
       <main>
         <section class="section account-shell reveal">
-          <div class="panel account-copy">
-            <p class="section-tag">Mein Profil</p>
-            <h1>Deine Angaben und dein Passwort.</h1>
-            <p class="lead">
-              Hier kannst du deinen Vornamen, deine Telefonnummer und dein Passwort ändern.
-            </p>
-          </div>
-
-          <div class="account-stack">
-            <div class="panel account-panel">
-              <div class="registration-status" data-profile-status aria-live="polite"></div>
-              <form class="glass-form account-form" data-profile-form novalidate>
-                <label>
-                  Vorname
-                  <input type="text" name="firstName" placeholder="Achim" required />
-                </label>
-                <label>
-                  E-Mail
-                  <input type="email" name="email" placeholder="name@example.com" disabled />
-                </label>
-                <label class="field-span">
-                  Telefon optional
-                  <input type="tel" name="phone" placeholder="+41 79 555 55 55" />
-                </label>
-                <button class="button button-primary field-span" type="submit">Profil speichern</button>
-              </form>
+          <div class="panel account-workspace">
+            <div class="section-heading account-heading">
+              <p class="section-tag">Mein Profil</p>
+              <h1 class="account-title">Profil und Einstellungen.</h1>
+              <p class="lead">
+                Verwalte deine persönlichen Einstellungen, Reservierungen und späteren Besuche direkt an einem Ort.
+              </p>
             </div>
 
-            <div class="panel account-panel">
-              <div class="registration-status" data-password-status aria-live="polite"></div>
-              <form class="glass-form account-form" data-change-password-form novalidate>
-                <label class="field-span">
-                  Aktuelles Passwort
-                  <input type="password" name="currentPassword" placeholder="Aktuelles Passwort" required />
-                </label>
-                <label>
-                  Neues Passwort
-                  <input type="password" name="newPassword" placeholder="Mindestens 8 Zeichen" required />
-                </label>
-                <label>
-                  Neues Passwort wiederholen
-                  <input type="password" name="newPasswordConfirm" placeholder="Passwort wiederholen" required />
-                </label>
-                <button class="button button-primary field-span" type="submit">Passwort ändern</button>
-              </form>
-            </div>
+            <aside class="account-tabs" aria-label="Profilbereiche">
+              <button class="account-tab is-active" type="button" data-account-tab="settings" aria-selected="true">Persönliche Einstellungen</button>
+              <button class="account-tab" type="button" data-account-tab="reservations" aria-selected="false">Reservierungen</button>
+              <button class="account-tab" type="button" data-account-tab="visits" aria-selected="false">Besuche</button>
+            </aside>
 
-            <div class="panel account-panel">
-              <div class="section-heading">
-                <p class="section-tag">Meine Reservierungen</p>
-                <p class="lead">Hier siehst du alle Reservierungen, die mit deinem Gastprofil verknüpft sind.</p>
-              </div>
-              <div class="registration-status" data-profile-reservations-status aria-live="polite"></div>
-              <div class="profile-reservations" data-profile-reservations></div>
+            <div class="account-content">
+              <section class="account-pane is-active" data-account-pane="settings">
+                <div class="account-stack">
+                  <div class="panel account-panel">
+                    <div class="registration-status" data-profile-status aria-live="polite"></div>
+                    <form class="glass-form account-form" data-profile-form novalidate>
+                      <label>
+                        Vorname
+                        <input type="text" name="firstName" placeholder="Achim" required />
+                      </label>
+                      <label>
+                        E-Mail
+                        <input type="email" name="email" placeholder="name@example.com" disabled />
+                      </label>
+                      <label class="field-span">
+                        Telefon optional
+                        <input type="tel" name="phone" placeholder="+41 79 555 55 55" />
+                      </label>
+                      <button class="button button-primary field-span" type="submit">Profil speichern</button>
+                    </form>
+                  </div>
+
+                  <div class="panel account-panel">
+                    <div class="registration-status" data-password-status aria-live="polite"></div>
+                    <form class="glass-form account-form" data-change-password-form novalidate>
+                      <label class="field-span">
+                        Aktuelles Passwort
+                        <input type="password" name="currentPassword" placeholder="Aktuelles Passwort" required />
+                      </label>
+                      <label>
+                        Neues Passwort
+                        <input type="password" name="newPassword" placeholder="Mindestens 8 Zeichen" required />
+                      </label>
+                      <label>
+                        Neues Passwort wiederholen
+                        <input type="password" name="newPasswordConfirm" placeholder="Passwort wiederholen" required />
+                      </label>
+                      <button class="button button-primary field-span" type="submit">Passwort ändern</button>
+                    </form>
+                  </div>
+                </div>
+              </section>
+
+              <section class="account-pane" data-account-pane="reservations" hidden>
+                <div class="section-heading">
+                  <p class="section-tag">Meine Reservierungen</p>
+                  <p class="lead">Kompakt gelistet. Die Details öffnest du bei Bedarf im Overlay.</p>
+                </div>
+                <div class="registration-status" data-profile-reservations-status aria-live="polite"></div>
+                <div class="profile-reservations" data-profile-reservations></div>
+              </section>
+
+              <section class="account-pane" data-account-pane="visits" hidden>
+                <div class="panel account-panel">
+                  <div class="section-heading">
+                    <p class="section-tag">Besuche</p>
+                    <p class="lead">Hier erscheinen später abgeschlossene Restaurantbesuche, Check-ins und Rückblicke.</p>
+                  </div>
+                  <div class="profile-empty">
+                    Noch keine Besuche erfasst. Sobald du vor Ort eingecheckt hast, tauchen sie hier auf.
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </section>
       </main>
+
+      <div class="profile-reservation-modal" data-profile-reservation-modal hidden>
+        <div class="reservation-calendar-modal-backdrop" data-profile-reservation-close></div>
+        <div class="dish-modal-panel profile-reservation-modal-panel">
+          <button class="dish-modal-close" type="button" aria-label="Reservierungsdetails schliessen" data-profile-reservation-close>&times;</button>
+          <div class="section-heading">
+            <p class="section-tag">Reservierungsdetails</p>
+            <h2 data-profile-reservation-title>Reservierung</h2>
+            <p class="lead" data-profile-reservation-subtitle>Details werden geladen.</p>
+          </div>
+          <div class="profile-reservation-detail-grid">
+            <div class="legal-card">
+              <p class="card-kicker">Rahmen</p>
+              <div class="profile-reservation-detail-stack" data-profile-reservation-meta></div>
+            </div>
+            <div class="legal-card">
+              <p class="card-kicker">Notizen &amp; Aktionen</p>
+              <div class="profile-reservation-detail-stack" data-profile-reservation-notes></div>
+              <div class="profile-reservation-actions" data-profile-reservation-actions></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <footer class="site-footer reveal" data-site-footer></footer>
     </div>

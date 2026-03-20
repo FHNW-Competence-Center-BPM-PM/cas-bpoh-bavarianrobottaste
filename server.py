@@ -1084,7 +1084,7 @@ def reservation_qr_svg(payload: str, module_size: int = 14, quiet_zone: int = 4)
     )
 
 
-def reservation_qr_email_markup(payload: str, module_size: int = 6, quiet_zone: int = 4) -> str:
+def reservation_qr_email_markup(payload: str, module_size: int = 5, quiet_zone: int = 4) -> str:
     matrix = reservation_qr_matrix(payload)
     full_size = len(matrix) + quiet_zone * 2
     rows = []
@@ -1099,9 +1099,13 @@ def reservation_qr_email_markup(payload: str, module_size: int = 6, quiet_zone: 
             )
         rows.append(f"<tr>{''.join(cells)}</tr>")
     return (
-        '<div style="display:inline-block;margin:0 auto 14px;padding:14px;border-radius:18px;background:#ffffff;">'
-        '<table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">'
-        f"{''.join(rows)}</table></div>"
+        '<table role="presentation" align="center" cellspacing="0" cellpadding="0" '
+        'style="margin:0 auto 14px auto;border-collapse:separate;border-spacing:0;background:#ffffff;'
+        'border-radius:18px;">'
+        '<tr><td style="padding:14px;">'
+        '<table role="presentation" align="center" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">'
+        f"{''.join(rows)}</table>"
+        "</td></tr></table>"
     )
 
 
@@ -1183,73 +1187,98 @@ def build_reservation_confirmation_email(reservation: dict, base_url: str) -> Em
     html_body = f"""
 <!DOCTYPE html>
 <html lang="de">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
   <body style="margin:0;padding:0;background:#07131c;color:#edf1f3;font-family:Trebuchet MS,Segoe UI,sans-serif;">
-    <div style="padding:24px 12px;background:radial-gradient(circle at top right, rgba(242,106,61,0.22), transparent 34%), #07131c;">
-      <div style="max-width:720px;margin:0 auto;border:1px solid rgba(255,255,255,0.1);border-radius:28px;overflow:hidden;background:rgba(11,24,35,0.92);">
-        <div style="padding:28px 28px 12px;">
-          <div style="color:#77e5d8;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">Reservierung bestätigt</div>
-          <h1 style="margin:0 0 14px;font-family:Georgia,Times New Roman,serif;font-size:40px;line-height:1.04;">Dein Abend steht.</h1>
-          <p style="margin:0;color:#a7b4bc;font-size:17px;line-height:1.7;">
-            Hallo {guest_name}, wir freuen uns auf deinen Besuch im <strong style="color:#edf1f3;">{room_name}</strong>.
-            Unten findest du deinen QR-Code für den Check-in, alle Eckdaten und den Storno-Link.
-          </p>
-        </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#07131c;">
+      <tr>
+        <td style="padding:12px 8px;background:radial-gradient(circle at top right, rgba(242,106,61,0.22), transparent 34%), #07131c;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;max-width:560px;margin:0 auto;border-collapse:separate;border-spacing:0;border:1px solid rgba(255,255,255,0.1);border-radius:24px;overflow:hidden;background:rgba(11,24,35,0.92);">
+            <tr>
+              <td style="padding:20px 16px 10px;">
+                <div style="color:#77e5d8;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">Reservierung bestätigt</div>
+                <div style="margin:0 0 12px;font-family:Georgia,Times New Roman,serif;font-size:28px;line-height:1.08;font-weight:700;">Dein Abend steht.</div>
+                <p style="margin:0;color:#a7b4bc;font-size:15px;line-height:1.7;">
+                  Hallo {guest_name}, wir freuen uns auf deinen Besuch im <strong style="color:#edf1f3;">{room_name}</strong>.
+                  Unten findest du deinen QR-Code für den Check-in, alle Eckdaten und den Storno-Link.
+                </p>
+              </td>
+            </tr>
 
-        <div style="padding:16px 28px 28px;">
-          <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;">
-            <div style="padding:22px;border:1px solid rgba(255,255,255,0.08);border-radius:22px;background:rgba(255,255,255,0.03);">
-              <div style="display:grid;gap:14px;">
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Zeitfenster</div>
-                  <div style="margin-top:6px;font-size:22px;font-weight:700;line-height:1.3;">{scheduled_label}</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Raum & Tisch</div>
-                  <div style="margin-top:6px;font-size:18px;font-weight:700;">{room_name} · {table_label}</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Personen</div>
-                  <div style="margin-top:6px;font-size:18px;font-weight:700;">{reservation['guests']} Gäste</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Anlass</div>
-                  <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{occasion}</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Notizen</div>
-                  <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{notes}</div>
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:10px;padding-top:6px;">
-                  <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:999px;background:rgba(119,229,216,0.12);color:#77e5d8;font-weight:700;">Code {reservation_code}</span>
-                  <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:999px;background:rgba(242,106,61,0.14);color:#ffd9cd;font-weight:700;">ID {reservation_id}</span>
-                </div>
-              </div>
-            </div>
+            <tr>
+              <td style="padding:8px 16px 0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+                  <tr>
+                    <td style="padding:16px;border:1px solid rgba(119,229,216,0.18);border-radius:20px;background:linear-gradient(180deg, rgba(119,229,216,0.08), rgba(255,255,255,0.03));text-align:center;">
+                      <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;">Check-in QR</div>
+                      {qr_media_markup}
+                      <p style="margin:0;color:#a7b4bc;line-height:1.6;">
+                        Tippe auf den QR-Code, um ihn im Browser groß zu öffnen. Darin steckt deine lange Reservierungs-ID.
+                      </p>
+                      <p style="margin:12px 0 0;color:#a7b4bc;font-size:13px;line-height:1.6;">
+                        Falls dein Mailprogramm eingebettete Bilder blockiert, kannst du den Code auch direkt hier öffnen:<br />
+                        <a href="{qr_image}" style="color:#77e5d8;">QR-Code direkt laden</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
 
-            <div style="padding:22px;border:1px solid rgba(119,229,216,0.18);border-radius:22px;background:linear-gradient(180deg, rgba(119,229,216,0.08), rgba(255,255,255,0.03));text-align:center;">
-              <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;">Check-in QR</div>
-              {qr_media_markup}
-              <p style="margin:0;color:#a7b4bc;line-height:1.6;">
-                Tippe auf den QR-Code, um ihn im Browser groß zu öffnen. Darin steckt deine lange Reservierungs-ID.
-              </p>
-              <p style="margin:12px 0 0;color:#a7b4bc;font-size:13px;line-height:1.6;">
-                Falls dein Mailprogramm eingebettete Bilder blockiert, kannst du den Code auch direkt hier öffnen:<br />
-                <a href="{qr_image}" style="color:#77e5d8;">QR-Code extern laden</a>
-              </p>
-            </div>
-          </div>
+            <tr>
+              <td style="padding:14px 16px 0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+                  <tr>
+                    <td style="padding:18px;border:1px solid rgba(255,255,255,0.08);border-radius:20px;background:rgba(255,255,255,0.03);">
+                      <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Zeitfenster</div>
+                      <div style="margin-top:6px;font-size:20px;font-weight:700;line-height:1.35;word-break:break-word;">{scheduled_label}</div>
 
-          <div style="margin-top:18px;padding:18px 20px;border:1px solid rgba(242,106,61,0.24);border-radius:20px;background:rgba(242,106,61,0.08);">
-            <div style="font-weight:700;font-size:18px;margin-bottom:8px;">Reservierung verwalten</div>
-            <p style="margin:0 0 14px;color:#ffd9cd;line-height:1.7;">
-              Falls sich etwas ändert, kannst du deine Reservierung über den Link unten löschen.
-              Bitte beachte: Das geht nur bis <strong>{cancellation_deadline}</strong>, also spätestens {RESERVATION_CANCELLATION_NOTICE_HOURS} Stunden vor Beginn.
-            </p>
-            <a href="{cancel_link}" style="display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;background:linear-gradient(135deg, #f26a3d, #db4d1f);color:#fff5f0;text-decoration:none;font-weight:700;">Reservierung löschen</a>
-          </div>
-        </div>
-      </div>
-    </div>
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Raum &amp; Tisch</div>
+                      <div style="margin-top:6px;font-size:17px;font-weight:700;line-height:1.45;word-break:break-word;">{room_name} · {table_label}</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Personen</div>
+                      <div style="margin-top:6px;font-size:18px;font-weight:700;">{reservation['guests']} Gäste</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Anlass</div>
+                      <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{occasion}</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Notizen</div>
+                      <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{notes}</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Code</div>
+                      <div style="margin-top:6px;">
+                        <span style="display:inline-block;margin:0 8px 8px 0;padding:9px 12px;border-radius:999px;background:rgba(119,229,216,0.12);color:#77e5d8;font-weight:700;">Code {reservation_code}</span>
+                      </div>
+
+                      <div style="margin-top:10px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Reservierungs-ID</div>
+                      <div style="margin-top:6px;padding:12px 14px;border-radius:16px;background:rgba(242,106,61,0.12);color:#ffd9cd;font-weight:700;line-height:1.55;word-break:break-all;">{reservation_id}</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:14px 16px 20px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+                  <tr>
+                    <td style="padding:18px 18px;border:1px solid rgba(242,106,61,0.24);border-radius:20px;background:rgba(242,106,61,0.08);">
+                      <div style="font-weight:700;font-size:18px;margin-bottom:8px;">Reservierung verwalten</div>
+                      <p style="margin:0 0 14px;color:#ffd9cd;line-height:1.7;">
+                        Falls sich etwas ändert, kannst du deine Reservierung über den Link unten löschen.
+                        Bitte beachte: Das geht nur bis <strong>{cancellation_deadline}</strong>, also spätestens {RESERVATION_CANCELLATION_NOTICE_HOURS} Stunden vor Beginn.
+                      </p>
+                      <a href="{cancel_link}" style="display:inline-block;padding:15px 22px;border-radius:999px;background:linear-gradient(135deg, #f26a3d, #db4d1f);color:#fff5f0;text-decoration:none;font-weight:700;">Reservierung löschen</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
 """
