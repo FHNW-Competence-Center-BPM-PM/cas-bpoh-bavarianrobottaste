@@ -1,0 +1,127 @@
+{
+  "view": "hw-network",
+  "title": "HW & Netzwerk",
+  "description": "Overlay-Inhalte für die Infrastruktur-Grafik Hardware und Netzwerk.",
+  "hotspots": [
+    {
+      "id": "vm-cas-bpoh",
+      "title": "VM CAS BPOH",
+      "text": "Dummytext: Einstieg in die Cloud-nahe Infrastruktur mit Hosting, Zugriffspfad und Betriebsverantwortung.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "Cloud / VM"
+        },
+        {
+          "label": "Beispiel",
+          "value": "IP, Rolle, Security, Wartungsfenster"
+        }
+      ]
+    },
+    {
+      "id": "kassensystem",
+      "title": "Kassensystem",
+      "text": "Dummytext: Operativer Integrationspunkt für Buchungen, Zahlungen und Datenfluss im Restaurant.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "POS / Business Device"
+        },
+        {
+          "label": "Schnittstellen",
+          "value": "ERP, Tablets, lokale Services"
+        }
+      ]
+    },
+    {
+      "id": "raspberry-pi",
+      "title": "Raspberry Pi",
+      "text": "Dummytext: Lokaler Edge-Knoten für Adapter, Automationen oder Steuerlogik.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "On-Prem Edge Node"
+        },
+        {
+          "label": "Mögliche Inhalte",
+          "value": "Docker, Adapter, lokale Prozesse"
+        }
+      ]
+    },
+    {
+      "id": "unitree-g1",
+      "title": "Unitree G1 Roboter",
+      "text": "Dummytext: Robotik-Knoten für Bewegungslogik, Sicherheit und Erlebnisprozesse.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "Robotik / Device"
+        },
+        {
+          "label": "Anknüpfung",
+          "value": "G1 API, Steuerung, Aufgaben"
+        }
+      ]
+    },
+    {
+      "id": "hue-hub",
+      "title": "HUE IoT Hub",
+      "text": "Dummytext: Lichtzentrale für Räume, Szenen und Trigger im Restaurant.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "IoT Hub"
+        },
+        {
+          "label": "Verknüpfungen",
+          "value": "HUE API, Lampen, Light Strips"
+        }
+      ]
+    },
+    {
+      "id": "hue-light-strips",
+      "title": "HUE Light Strips",
+      "text": "Dummytext: Physischer Licht-Aktor für Effekte, Zonen und Stimmungswechsel.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "Licht-Aktor"
+        },
+        {
+          "label": "Später denkbar",
+          "value": "Szenen, Events, Raumzuordnung"
+        }
+      ]
+    },
+    {
+      "id": "hue-lampe",
+      "title": "HUE Lampe",
+      "text": "Dummytext: Einzelner Licht-Aktor zur feineren Dokumentation der Gerätekategorien.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "Licht-Aktor"
+        },
+        {
+          "label": "Hinweis",
+          "value": "Kann später gruppiert oder einzeln beschrieben werden"
+        }
+      ]
+    },
+    {
+      "id": "tablet-cluster",
+      "title": "Tablet-Cluster",
+      "text": "Dummytext: Gruppe von Tisch-Tablets für Bedienung, Information oder Interaktion.",
+      "meta": [
+        {
+          "label": "Typ",
+          "value": "Client Devices"
+        },
+        {
+          "label": "Strukturidee",
+          "value": "Ein Hotspot für Gruppe oder später je Tablet"
+        }
+      ]
+    }
+  ]
+}

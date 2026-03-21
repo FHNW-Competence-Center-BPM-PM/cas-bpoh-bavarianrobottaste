@@ -7,6 +7,7 @@ import secrets
 import smtplib
 import sqlite3
 import threading
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -326,6 +327,19 @@ def ensure_reservations_db() -> None:
                 status TEXT NOT NULL DEFAULT 'requested',
                 cancelled_at TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS reservation_invoices (
+                id TEXT PRIMARY KEY,
+                reservation_id TEXT NOT NULL,
+                guest_email TEXT NOT NULL,
+                invoice_id TEXT NOT NULL UNIQUE,
+                currency TEXT NOT NULL DEFAULT 'CHF',
+                total_amount REAL NOT NULL DEFAULT 0,
+                items_json TEXT NOT NULL DEFAULT '[]',
+                paid_at TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             );
             """
         )
@@ -763,6 +777,173 @@ def reservations_for_guest_email(email: str, base_url: str | None = None) -> lis
 
     resolved_base_url = base_url or reservation_public_base_url()
     return [reservation_details_payload(row, resolved_base_url) for row in rows]
+
+
+def reservation_stats_for_guest_email(email: str) -> dict:
+    normalized_email = normalize_email(email)
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT status, reservation_date
+            FROM reservations
+            WHERE lower(guest_email) = ?
+            """,
+            (normalized_email,),
+        ).fetchall()
+
+    made = len(rows)
+    cancelled = sum(1 for row in rows if row["status"] == "cancelled")
+    arrived = sum(1 for row in rows if row["status"] == "arrived")
+    open_count = sum(1 for row in rows if row["status"] not in {"cancelled", "arrived"})
+    return {
+        "made": made,
+        "cancelled": cancelled,
+        "arrived": arrived,
+        "open": open_count,
+    }
+
+
+def crm_invoice_payload(row: sqlite3.Row | dict) -> dict:
+    try:
+        items = json.loads(row["items_json"] or "[]")
+    except (TypeError, json.JSONDecodeError):
+        items = []
+
+    return {
+        "id": row["id"],
+        "reservationId": row["reservation_id"],
+        "guestEmail": row["guest_email"],
+        "invoiceId": row["invoice_id"],
+        "currency": row["currency"],
+        "totalAmount": float(row["total_amount"]),
+        "items": items if isinstance(items, list) else [],
+        "paidAt": row["paid_at"],
+        "createdAt": row["created_at"],
+        "updatedAt": row["updated_at"],
+    }
+
+
+def invoices_for_guest_email(email: str) -> list[dict]:
+    normalized_email = normalize_email(email)
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, reservation_id, guest_email, invoice_id, currency, total_amount, items_json, paid_at, created_at, updated_at
+            FROM reservation_invoices
+            WHERE lower(guest_email) = ?
+            ORDER BY paid_at DESC, created_at DESC
+            """,
+            (normalized_email,),
+        ).fetchall()
+
+    return [crm_invoice_payload(row) for row in rows]
+
+
+def customer_revenue_for_guest_email(email: str) -> dict:
+    invoices = invoices_for_guest_email(email)
+    total_amount = round(sum(invoice["totalAmount"] for invoice in invoices), 2)
+    currency = invoices[0]["currency"] if invoices else "CHF"
+    return {
+        "currency": currency,
+        "totalAmount": total_amount,
+        "invoiceCount": len(invoices),
+        "invoices": invoices,
+    }
+
+
+def update_reservation_status_for_guest(email: str, reservation_id: str, status: str) -> dict:
+    normalized_email = normalize_email(email)
+    normalized_status = status.strip().lower()
+    allowed_statuses = {"requested", "cancelled", "arrived"}
+    if normalized_status == "open":
+        normalized_status = "requested"
+    if normalized_status not in allowed_statuses:
+        raise ValueError("Der Reservierungsstatus ist nicht gültig.")
+
+    reservation_row = reservation_by_id(reservation_id)
+    if not reservation_row or normalize_email(reservation_row["guest_email"]) != normalized_email:
+        raise ValueError("Die Reservierung wurde für diesen Gast nicht gefunden.")
+
+    cancelled_at = reservation_row["cancelled_at"]
+    if normalized_status == "cancelled" and not cancelled_at:
+        cancelled_at = now_iso()
+    if normalized_status != "cancelled":
+        cancelled_at = ""
+
+    with db_connection() as connection:
+        connection.execute(
+            """
+            UPDATE reservations
+            SET status = ?, cancelled_at = ?
+            WHERE id = ?
+            """,
+            (normalized_status, cancelled_at, reservation_id),
+        )
+
+    refreshed_row = reservation_by_id(reservation_id)
+    return reservation_details_payload(refreshed_row)
+
+
+def store_invoice_for_guest(
+    email: str,
+    reservation_id: str,
+    invoice_id: str,
+    total_amount: float,
+    currency: str,
+    items: list[dict],
+    paid_at: str,
+) -> dict:
+    normalized_email = normalize_email(email)
+    reservation_row = reservation_by_id(reservation_id)
+    if not reservation_row or normalize_email(reservation_row["guest_email"]) != normalized_email:
+        raise ValueError("Die Reservierung wurde für diesen Gast nicht gefunden.")
+    if not invoice_id.strip():
+        raise ValueError("Die Rechnungs-ID fehlt.")
+    if total_amount < 0:
+        raise ValueError("Der Gesamtbetrag darf nicht negativ sein.")
+
+    invoice_row_id = f"invoice_{secrets.token_hex(16)}"
+    timestamp = now_iso()
+    payload = (
+        invoice_row_id,
+        reservation_id,
+        normalized_email,
+        invoice_id.strip(),
+        (currency or "CHF").strip().upper(),
+        float(total_amount),
+        json.dumps(items or [], ensure_ascii=False),
+        paid_at.strip() or timestamp,
+        timestamp,
+        timestamp,
+    )
+
+    with db_connection() as connection:
+        connection.execute(
+            """
+            INSERT INTO reservation_invoices (
+                id, reservation_id, guest_email, invoice_id, currency, total_amount, items_json, paid_at, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(invoice_id) DO UPDATE SET
+                reservation_id = excluded.reservation_id,
+                guest_email = excluded.guest_email,
+                currency = excluded.currency,
+                total_amount = excluded.total_amount,
+                items_json = excluded.items_json,
+                paid_at = excluded.paid_at,
+                updated_at = excluded.updated_at
+            """,
+            payload,
+        )
+        row = connection.execute(
+            """
+            SELECT id, reservation_id, guest_email, invoice_id, currency, total_amount, items_json, paid_at, created_at, updated_at
+            FROM reservation_invoices
+            WHERE invoice_id = ?
+            """,
+            (invoice_id.strip(),),
+        ).fetchone()
+
+    return crm_invoice_payload(row)
 
 
 def available_tables(date_value: str, slot_key: str, room_id: str, guests: int | None = None) -> list[dict]:
@@ -1842,6 +2023,72 @@ def bearer_token(handler) -> str | None:
     return authorization.removeprefix("Bearer ").strip()
 
 
+SOAP_ENV_NS = "http://schemas.xmlsoap.org/soap/envelope/"
+CRM_SOAP_NS = "http://bavarian-robotaste.local/crm"
+SOAP_NAMESPACES = {"soapenv": SOAP_ENV_NS, "crm": CRM_SOAP_NS}
+ET.register_namespace("soapenv", SOAP_ENV_NS)
+ET.register_namespace("crm", CRM_SOAP_NS)
+
+
+class CRMSoapError(Exception):
+    def __init__(self, fault_code: str, message: str, status: int = 400, error_code: str = "validation_error", details: dict | None = None):
+        super().__init__(message)
+        self.fault_code = fault_code
+        self.message = message
+        self.status = status
+        self.error_code = error_code
+        self.details = details or {}
+
+
+def xml_local_name(tag: str) -> str:
+    return tag.split("}", 1)[-1] if "}" in tag else tag
+
+
+def parse_xml_body(handler) -> ET.Element:
+    content_length = int(handler.headers.get("Content-Length", "0"))
+    raw_body = handler.rfile.read(content_length)
+    return ET.fromstring(raw_body.decode("utf-8"))
+
+
+def xml_text(node: ET.Element | None, name: str, default: str = "") -> str:
+    if node is None:
+        return default
+    for child in list(node):
+        if xml_local_name(child.tag) == name:
+            return (child.text or "").strip()
+    return default
+
+
+def append_xml_text(parent: ET.Element, name: str, value) -> ET.Element:
+    child = ET.SubElement(parent, f"{{{CRM_SOAP_NS}}}{name}")
+    child.text = "" if value is None else str(value)
+    return child
+
+
+def soap_envelope(body_builder) -> bytes:
+    envelope = ET.Element(f"{{{SOAP_ENV_NS}}}Envelope")
+    body = ET.SubElement(envelope, f"{{{SOAP_ENV_NS}}}Body")
+    body_builder(body)
+    return ET.tostring(envelope, encoding="utf-8", xml_declaration=True)
+
+
+def soap_fault(code: str, message: str, status: int = 400, error_code: str = "validation_error", details: dict | None = None) -> tuple[int, bytes]:
+    def build(body: ET.Element):
+        fault = ET.SubElement(body, f"{{{SOAP_ENV_NS}}}Fault")
+        faultcode = ET.SubElement(fault, "faultcode")
+        faultcode.text = code
+        faultstring = ET.SubElement(fault, "faultstring")
+        faultstring.text = message
+        detail = ET.SubElement(fault, "detail")
+        error = ET.SubElement(detail, f"{{{CRM_SOAP_NS}}}error")
+        append_xml_text(error, "code", error_code)
+        append_xml_text(error, "message", message)
+        for key, value in (details or {}).items():
+            append_xml_text(error, key, value)
+
+    return status, soap_envelope(build)
+
+
 class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -1886,6 +2133,10 @@ class AppHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
+        if self.path == "/api/crm/soap":
+            self.handle_crm_soap()
+            return
+
         routes = {
             "/api/contact": self.handle_contact,
             "/api/reservations": self.handle_reservations_create,
@@ -2046,6 +2297,308 @@ class AppHandler(SimpleHTTPRequestHandler):
             200,
             {"ok": True, "reservations": reservations_for_guest_email(profile["email"], self.public_base_url())},
         )
+
+    def handle_crm_soap(self):
+        try:
+            envelope = parse_xml_body(self)
+        except ET.ParseError:
+            status, body = soap_fault(
+                "soap:Client",
+                "Ungültiges XML in der SOAP-Anfrage.",
+                400,
+                "invalid_xml",
+            )
+            self.respond_xml(status, body)
+            return
+
+        if xml_local_name(envelope.tag) != "Envelope":
+            status, body = soap_fault(
+                "soap:Client",
+                "Die SOAP-Anfrage muss mit einem Envelope beginnen.",
+                400,
+                "invalid_envelope",
+            )
+            self.respond_xml(status, body)
+            return
+
+        body_node = next((child for child in list(envelope) if xml_local_name(child.tag) == "Body"), None)
+        operation_node = list(body_node)[0] if body_node is not None and list(body_node) else None
+        if operation_node is None:
+            status, body = soap_fault(
+                "soap:Client",
+                "SOAP Body ohne Operation.",
+                400,
+                "missing_operation",
+            )
+            self.respond_xml(status, body)
+            return
+
+        operation = xml_local_name(operation_node.tag)
+        _, authenticated_profile = self.authenticated_profile()
+
+        try:
+            if operation == "GetCustomerIdByEmail":
+                response = self.crm_get_customer_id_by_email(operation_node)
+            elif operation == "GetCustomerReservations":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_get_customer_reservations(profile)
+            elif operation == "GetCustomerReservationStats":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_get_customer_reservation_stats(profile)
+            elif operation == "UpdateReservationStatus":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_update_reservation_status(profile, operation_node)
+            elif operation == "UpsertCustomerInvoice":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_upsert_customer_invoice(profile, operation_node)
+            elif operation == "GetCustomerRevenue":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_get_customer_revenue(profile)
+            else:
+                status, body = soap_fault(
+                    "soap:Client",
+                    f"Unbekannte CRM-Operation: {operation}",
+                    400,
+                    "unknown_operation",
+                    {"operation": operation},
+                )
+                self.respond_xml(status, body)
+                return
+        except CRMSoapError as exc:
+            status, body = soap_fault(exc.fault_code, exc.message, exc.status, exc.error_code, exc.details)
+            self.respond_xml(status, body)
+            return
+        except Exception as exc:
+            status, body = soap_fault("soap:Server", str(exc), 500, "server_error")
+            self.respond_xml(status, body)
+            return
+
+        self.respond_xml(200, response)
+
+    def crm_get_customer_id_by_email(self, operation_node: ET.Element) -> bytes:
+        customer_email = normalize_email(xml_text(operation_node, "customerEmail"))
+        if not customer_email:
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "customerEmail ist erforderlich.",
+                400,
+                "missing_customer_email",
+            )
+
+        profile = find_profile_by_email(customer_email)
+        if not profile:
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "Der angegebene customerEmail-Kontext wurde nicht gefunden.",
+                404,
+                "customer_not_found",
+                {"customerEmail": customer_email},
+            )
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerIdByEmailResponse")
+            customer = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}customer")
+            append_xml_text(customer, "id", profile["id"])
+            append_xml_text(customer, "email", profile["email"])
+            append_xml_text(customer, "firstName", profile.get("firstName", ""))
+
+        return soap_envelope(build)
+
+    def crm_profile_context(self, operation_node: ET.Element, authenticated_profile: dict | None) -> dict:
+        customer_id = xml_text(operation_node, "customerId")
+
+        if authenticated_profile and not customer_id:
+            return authenticated_profile
+
+        profile_by_id = find_profile_by_id(customer_id) if customer_id else None
+
+        if customer_id and not profile_by_id:
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "Der angegebene customerId-Kontext wurde nicht gefunden.",
+                404,
+                "customer_not_found",
+                {"customerId": customer_id},
+            )
+        if not customer_id and xml_text(operation_node, "customerEmail"):
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "Für diese Operation wird customerId erwartet. Verwende zuerst GetCustomerIdByEmail.",
+                400,
+                "customer_id_required",
+            )
+
+        resolved_profile = profile_by_id or authenticated_profile
+        if not resolved_profile:
+            raise CRMSoapError(
+                "soap:Client.Authentication",
+                "Es wird entweder ein Bearer-Token oder customerId benötigt.",
+                401,
+                "missing_customer_context",
+            )
+
+        return resolved_profile
+
+    def crm_get_customer_reservations(self, profile: dict) -> bytes:
+        reservations = reservations_for_guest_email(profile["email"], self.public_base_url())
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerReservationsResponse")
+            customer = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}customer")
+            append_xml_text(customer, "id", profile["id"])
+            append_xml_text(customer, "email", profile["email"])
+            append_xml_text(customer, "firstName", profile.get("firstName", ""))
+
+            reservations_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}reservations")
+            for reservation in reservations:
+                item = ET.SubElement(reservations_node, f"{{{CRM_SOAP_NS}}}reservation")
+                for field in (
+                    "id",
+                    "reservationCode",
+                    "date",
+                    "slotKey",
+                    "slotLabel",
+                    "roomId",
+                    "roomName",
+                    "tableId",
+                    "tableLabel",
+                    "guests",
+                    "occasion",
+                    "status",
+                    "createdAt",
+                    "cancelledAt",
+                    "scheduledLabel",
+                ):
+                    append_xml_text(item, field, reservation.get(field, ""))
+
+        return soap_envelope(build)
+
+    def crm_get_customer_reservation_stats(self, profile: dict) -> bytes:
+        stats = reservation_stats_for_guest_email(profile["email"])
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerReservationStatsResponse")
+            append_xml_text(response, "customerId", profile["id"])
+            append_xml_text(response, "email", profile["email"])
+            summary = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}summary")
+            append_xml_text(summary, "made", stats["made"])
+            append_xml_text(summary, "cancelled", stats["cancelled"])
+            append_xml_text(summary, "arrived", stats["arrived"])
+            append_xml_text(summary, "open", stats["open"])
+
+        return soap_envelope(build)
+
+    def crm_update_reservation_status(self, profile: dict, operation_node: ET.Element) -> bytes:
+        reservation_id = xml_text(operation_node, "reservationId")
+        status_value = xml_text(operation_node, "status")
+        if not reservation_id:
+            raise CRMSoapError("soap:Client.Validation", "reservationId ist erforderlich.", 400, "missing_reservation_id")
+        if not status_value:
+            raise CRMSoapError("soap:Client.Validation", "status ist erforderlich.", 400, "missing_status")
+
+        try:
+            reservation = update_reservation_status_for_guest(profile["email"], reservation_id, status_value)
+        except ValueError as exc:
+            raise CRMSoapError("soap:Client.Validation", str(exc), 400, "reservation_status_update_failed")
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}UpdateReservationStatusResponse")
+            reservation_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}reservation")
+            append_xml_text(reservation_node, "id", reservation["id"])
+            append_xml_text(reservation_node, "status", reservation["status"])
+            append_xml_text(reservation_node, "cancelledAt", reservation["cancelledAt"])
+            append_xml_text(reservation_node, "scheduledLabel", reservation["scheduledLabel"])
+
+        return soap_envelope(build)
+
+    def crm_upsert_customer_invoice(self, profile: dict, operation_node: ET.Element) -> bytes:
+        reservation_id = xml_text(operation_node, "reservationId")
+        invoice_id = xml_text(operation_node, "invoiceId")
+        currency = xml_text(operation_node, "currency", "CHF") or "CHF"
+        paid_at = xml_text(operation_node, "paidAt", now_iso())
+        total_raw = xml_text(operation_node, "totalAmount", "0")
+        if not reservation_id:
+            raise CRMSoapError("soap:Client.Validation", "reservationId ist erforderlich.", 400, "missing_reservation_id")
+        if not invoice_id:
+            raise CRMSoapError("soap:Client.Validation", "invoiceId ist erforderlich.", 400, "missing_invoice_id")
+        try:
+            total_amount = float(total_raw)
+        except ValueError:
+            raise CRMSoapError("soap:Client.Validation", "totalAmount muss numerisch sein.", 400, "invalid_total_amount")
+
+        items_node = next((child for child in list(operation_node) if xml_local_name(child.tag) == "items"), None)
+        items = []
+        if items_node is not None:
+            for item_node in list(items_node):
+                if xml_local_name(item_node.tag) != "item":
+                    continue
+                try:
+                    qty = int(xml_text(item_node, "qty", "1") or "1")
+                except ValueError:
+                    qty = 1
+                try:
+                    price = float(xml_text(item_node, "price", "0") or "0")
+                except ValueError:
+                    price = 0.0
+                items.append(
+                    {
+                        "itemId": xml_text(item_node, "itemId"),
+                        "name": xml_text(item_node, "name"),
+                        "qty": qty,
+                        "price": price,
+                    }
+                )
+
+        try:
+            invoice = store_invoice_for_guest(
+                profile["email"],
+                reservation_id,
+                invoice_id,
+                total_amount,
+                currency,
+                items,
+                paid_at,
+            )
+        except ValueError as exc:
+            raise CRMSoapError("soap:Client.Validation", str(exc), 400, "invoice_upsert_failed")
+        revenue = customer_revenue_for_guest_email(profile["email"])
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}UpsertCustomerInvoiceResponse")
+            invoice_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}invoice")
+            append_xml_text(invoice_node, "invoiceId", invoice["invoiceId"])
+            append_xml_text(invoice_node, "reservationId", invoice["reservationId"])
+            append_xml_text(invoice_node, "currency", invoice["currency"])
+            append_xml_text(invoice_node, "totalAmount", invoice["totalAmount"])
+            append_xml_text(invoice_node, "paidAt", invoice["paidAt"])
+
+            revenue_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}revenue")
+            append_xml_text(revenue_node, "currency", revenue["currency"])
+            append_xml_text(revenue_node, "totalAmount", revenue["totalAmount"])
+            append_xml_text(revenue_node, "invoiceCount", revenue["invoiceCount"])
+
+        return soap_envelope(build)
+
+    def crm_get_customer_revenue(self, profile: dict) -> bytes:
+        revenue = customer_revenue_for_guest_email(profile["email"])
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerRevenueResponse")
+            append_xml_text(response, "customerId", profile["id"])
+            append_xml_text(response, "email", profile["email"])
+            append_xml_text(response, "currency", revenue["currency"])
+            append_xml_text(response, "totalAmount", revenue["totalAmount"])
+            append_xml_text(response, "invoiceCount", revenue["invoiceCount"])
+            invoices_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}invoices")
+            for invoice in revenue["invoices"]:
+                item = ET.SubElement(invoices_node, f"{{{CRM_SOAP_NS}}}invoice")
+                append_xml_text(item, "invoiceId", invoice["invoiceId"])
+                append_xml_text(item, "reservationId", invoice["reservationId"])
+                append_xml_text(item, "currency", invoice["currency"])
+                append_xml_text(item, "totalAmount", invoice["totalAmount"])
+                append_xml_text(item, "paidAt", invoice["paidAt"])
+
+        return soap_envelope(build)
 
     def cms_product_payload(self, product: sqlite3.Row) -> dict:
         image_path = product["image_path"] or ""
@@ -2343,6 +2896,13 @@ class AppHandler(SimpleHTTPRequestHandler):
         body = document.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def respond_xml(self, status: int, body: bytes):
+        self.send_response(status)
+        self.send_header("Content-Type", "text/xml; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)

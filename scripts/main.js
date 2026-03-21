@@ -1,4 +1,4 @@
-const AUTH_TOKEN_STORAGE_KEY = "bavarianRoboTasteAuthToken";
+﻿const AUTH_TOKEN_STORAGE_KEY = "bavarianRoboTasteAuthToken";
 
 const revealItems = document.querySelectorAll(".reveal");
 
@@ -65,8 +65,7 @@ const renderAuthRail = (profile) => {
   if (existingRail) {
     existingRail.remove();
   }
-
-  document.body.classList.add("has-auth-rail");
+  const authHost = document.querySelector("[data-site-header-auth]");
 
   const rail = document.createElement("div");
   rail.className = "auth-rail";
@@ -90,7 +89,13 @@ const renderAuthRail = (profile) => {
     `;
   }
 
-  document.body.prepend(rail);
+  if (authHost) {
+    authHost.replaceChildren(rail);
+    document.body.classList.add("has-auth-rail");
+  } else {
+    document.body.prepend(rail);
+    document.body.classList.add("has-auth-rail");
+  }
 
   const logoutButton = rail.querySelector("[data-auth-logout]");
   logoutButton?.addEventListener("click", async () => {
@@ -399,6 +404,8 @@ const docsTabs = Array.from(document.querySelectorAll("[data-docs-tab]"));
 const docsPanels = Array.from(document.querySelectorAll("[data-docs-panel]"));
 
 if (docsTabs.length > 0 && docsPanels.length > 0) {
+  const docsShell = document.querySelector(".docs-shell");
+
   const activateDocsSection = (sectionId, updateUrl = true) => {
     const nextId = sectionId || docsPanels[0]?.id || "";
 
@@ -417,6 +424,11 @@ if (docsTabs.length > 0 && docsPanels.length > 0) {
     if (updateUrl && nextId) {
       window.history.replaceState(null, "", `#${nextId}`);
     }
+
+    const topOffset = docsShell
+      ? docsShell.getBoundingClientRect().top + window.scrollY - 96
+      : 0;
+    window.scrollTo({ top: Math.max(0, topOffset), behavior: "auto" });
   };
 
   docsTabs.forEach((tab) => {
@@ -428,6 +440,828 @@ if (docsTabs.length > 0 && docsPanels.length > 0) {
 
   const initialId = window.location.hash.replace("#", "") || docsPanels[0]?.id || "";
   activateDocsSection(initialId, Boolean(window.location.hash));
+}
+
+const infrastructureApp = document.querySelector("[data-infra-app]");
+
+if (infrastructureApp) {
+  const infrastructureViews = {
+    "hw-network": {
+      title: "HW & Netzwerk",
+      intro: "Interaktive Übersicht für Hardware, Netzwerk und angebundene Geräte.",
+      hotspots: [
+        {
+          id: "vm-cas-bpoh",
+          selectors: ['rect[x="657"][y="93"][width="166"][height="99"]'],
+          title: "VM CAS BPOH",
+          text: "Dummytext: Einstieg in die Cloud-nahe Infrastruktur mit Hosting, Zugriffspfad und Betriebsverantwortung.",
+          meta: [
+            { label: "Typ", value: "Cloud / VM" },
+            { label: "Beispiel", value: "IP, Rolle, Security, Wartungsfenster" },
+          ],
+        },
+        {
+          id: "kassensystem",
+          selectors: ['rect[x="974"][y="243"][width="167"][height="99"]'],
+          title: "Kassensystem",
+          text: "Dummytext: Operativer Integrationspunkt für Buchungen, Zahlungen und Datenfluss im Restaurant.",
+          meta: [
+            { label: "Typ", value: "POS / Business Device" },
+            { label: "Schnittstellen", value: "ERP, Tablets, lokale Services" },
+          ],
+        },
+        {
+          id: "raspberry-pi",
+          selectors: ['rect[x="366"][y="295"][width="166"][height="98"]'],
+          title: "Raspberry Pi",
+          text: "Dummytext: Lokaler Edge-Knoten für Adapter, Automationen oder Steuerlogik.",
+          meta: [
+            { label: "Typ", value: "On-Prem Edge Node" },
+            { label: "Mögliche Inhalte", value: "Docker, Adapter, lokale Prozesse" },
+          ],
+        },
+        {
+          id: "unitree-g1",
+          selectors: ['rect[x="106"][y="489"][width="167"][height="98"]'],
+          title: "Unitree G1 Roboter",
+          text: "Dummytext: Robotik-Knoten für Bewegungslogik, Sicherheit und Erlebnisprozesse.",
+          meta: [
+            { label: "Typ", value: "Robotik / Device" },
+            { label: "Anknüpfung", value: "G1 API, Steuerung, Aufgaben" },
+          ],
+        },
+        {
+          id: "hue-hub",
+          selectors: ['rect[x="593"][y="511"][width="166"][height="73"]'],
+          title: "HUE IoT Hub",
+          text: "Dummytext: Lichtzentrale für Räume, Szenen und Trigger im Restaurant.",
+          meta: [
+            { label: "Typ", value: "IoT Hub" },
+            { label: "Verknüpfungen", value: "HUE API, Lampen, Light Strips" },
+          ],
+        },
+        {
+          id: "hue-light-strips",
+          selectors: ['rect[x="498"][y="615"][width="102"][height="60"]'],
+          title: "HUE Light Strips",
+          text: "Dummytext: Physischer Licht-Aktor für Effekte, Zonen und Stimmungswechsel.",
+          meta: [
+            { label: "Typ", value: "Licht-Aktor" },
+            { label: "Später denkbar", value: "Szenen, Events, Raumzuordnung" },
+          ],
+        },
+        {
+          id: "hue-lampe",
+          selectors: ['rect[x="742"][y="614"][width="102"][height="60"]'],
+          title: "HUE Lampe",
+          text: "Dummytext: Einzelner Licht-Aktor zur feineren Dokumentation der Gerätekategorien.",
+          meta: [
+            { label: "Typ", value: "Licht-Aktor" },
+            { label: "Hinweis", value: "Kann später gruppiert oder einzeln beschrieben werden" },
+          ],
+        },
+        {
+          id: "tablet-cluster",
+          selectors: [
+            'rect[x="1057"][y="383"][width="103"][height="60"]',
+            'rect[x="1056"][y="451"][width="102"][height="60"]',
+            'rect[x="1056"][y="518"][width="102"][height="60"]',
+            'rect[x="1056"][y="587"][width="102"][height="60"]',
+          ],
+          title: "Tablet-Cluster",
+          text: "Dummytext: Gruppe von Tisch-Tablets für Bedienung, Information oder Interaktion.",
+          meta: [
+            { label: "Typ", value: "Client Devices" },
+            { label: "Strukturidee", value: "Ein Hotspot für Gruppe oder später je Tablet" },
+          ],
+        },
+      ],
+    },
+    services: {
+      title: "Services",
+      intro: "Interaktive Übersicht für Cloud- und On-Premise-Services.",
+      hotspots: [
+        {
+          id: "camunda",
+          selectors: ['rect[x="169"][y="246"][width="164"][height="69"]'],
+          title: "Camunda",
+          text: "Dummytext: Workflow- und Orchestrierungsengine für Prozesse und BPMN-Flows.",
+          meta: [
+            { label: "Ebene", value: "Cloud" },
+            { label: "Später sinnvoll", value: "Trigger, Inputs, Outputs, Owner" },
+          ],
+        },
+        {
+          id: "n8n",
+          selectors: ['rect[x="353"][y="246"][width="164"][height="69"]'],
+          title: "n8n",
+          text: "Dummytext: Automation und Glue-Code für schnelle Integrationsstrecken.",
+          meta: [
+            { label: "Ebene", value: "Cloud" },
+            { label: "Typ", value: "Automation / Integration" },
+          ],
+        },
+        {
+          id: "power-automate",
+          selectors: ['rect[x="541"][y="246"][width="164"][height="69"]'],
+          title: "Power Automate",
+          text: "Dummytext: Microsoft-nahe Workflow-Schicht für Freigaben und Benachrichtigungen.",
+          meta: [
+            { label: "Ebene", value: "Cloud" },
+            { label: "Anwendungsfall", value: "M365-Workflows und Notifications" },
+          ],
+        },
+        {
+          id: "crm",
+          selectors: ['rect[x="169"][y="335"][width="164"][height="68"]'],
+          title: "CRM",
+          text: "Dummytext: Kundendaten, Historie und Kommunikationsbezug für Gäste.",
+          meta: [
+            { label: "Ebene", value: "Cloud" },
+            { label: "Datenfokus", value: "Gastprofil, Historie, Touchpoints" },
+          ],
+        },
+        {
+          id: "erp-ready2order",
+          selectors: ['rect[x="353"][y="333"][width="352"][height="69"]'],
+          title: "ERP / Ready2Order API",
+          text: "Dummytext: Zentrale Business-Schnittstelle für Artikel, Preise und operative Daten.",
+          meta: [
+            { label: "Ebene", value: "Cloud" },
+            { label: "Schwerpunkt", value: "Artikel, Preise, Synchronisation" },
+          ],
+        },
+        {
+          id: "ngrok-traefik",
+          selectors: ['rect[x="169"][y="515"][width="164"][height="69"]'],
+          title: "NGROK / Traefik",
+          text: "Dummytext: Routing- und Zugangsschicht für Exponierung, Domains und TLS.",
+          meta: [
+            { label: "Ebene", value: "On-Premise" },
+            { label: "Typ", value: "Ingress / Routing" },
+          ],
+        },
+        {
+          id: "hue-rest-api",
+          selectors: ['rect[x="357"][y="515"][width="164"][height="68"]'],
+          title: "HUE Rest API",
+          text: "Dummytext: API für die Steuerung der lokalen Lichtinfrastruktur.",
+          meta: [
+            { label: "Ebene", value: "On-Premise" },
+            { label: "Typ", value: "Device API" },
+          ],
+        },
+        {
+          id: "g1-api",
+          selectors: ['rect[x="543"][y="515"][width="165"][height="68"]'],
+          title: "G1 API",
+          text: "Dummytext: Steuer-API für Roboterbefehle, Status und Sicherheitsregeln.",
+          meta: [
+            { label: "Ebene", value: "On-Premise" },
+            { label: "Typ", value: "Robot API" },
+          ],
+        },
+      ],
+    },
+  };
+
+  const infrastructureOverlayFiles = {
+    "hw-network": "/assets/docs/infrastructure/hw-network-overlays.json",
+    services: "/assets/docs/infrastructure/services-overlays.json",
+  };
+
+  const viewButtons = Array.from(infrastructureApp.querySelectorAll("[data-infra-view-button]"));
+  const controlButtons = Array.from(document.querySelectorAll("[data-infra-action]"));
+  const inlineViews = Array.from(infrastructureApp.querySelectorAll("[data-infra-view]"));
+  const inlineObjects = Array.from(infrastructureApp.querySelectorAll("[data-infra-svg]"));
+  const inlineOverlay = infrastructureApp.querySelector("[data-infra-overlay]");
+  const inlineOverlayTitle = infrastructureApp.querySelector("[data-infra-title]");
+  const inlineOverlayText = infrastructureApp.querySelector("[data-infra-text]");
+  const inlineOverlayMeta = infrastructureApp.querySelector("[data-infra-meta]");
+  const zoomButton = infrastructureApp.querySelector("[data-infra-zoom]");
+  const lightbox = document.querySelector("[data-infra-lightbox]");
+  const lightboxCloseButtons = Array.from(document.querySelectorAll("[data-infra-lightbox-close]"));
+  const lightboxViews = Array.from(document.querySelectorAll("[data-infra-lightbox-view]"));
+  const lightboxObjects = Array.from(document.querySelectorAll("[data-infra-lightbox-svg]"));
+  const lightboxOverlay = document.querySelector("[data-infra-lightbox-overlay]");
+  const lightboxOverlayTitle = document.querySelector("[data-infra-lightbox-title]");
+  const lightboxOverlayText = document.querySelector("[data-infra-lightbox-text]");
+  const lightboxOverlayMeta = document.querySelector("[data-infra-lightbox-meta]");
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  const state = {
+    view: "hw-network",
+    activeHotspot: {},
+  };
+
+  const instances = [];
+  const hotspotNodeState = new WeakMap();
+
+  const mergeInfrastructureOverlayContent = (payload) => {
+    const viewKey = payload?.view;
+    const viewConfig = infrastructureViews[viewKey];
+    if (!viewConfig || !Array.isArray(payload?.hotspots)) {
+      return;
+    }
+
+    const overlayById = new Map(
+      payload.hotspots
+        .filter((item) => item && typeof item.id === "string")
+        .map((item) => [item.id, item])
+    );
+
+    viewConfig.hotspots = viewConfig.hotspots.map((hotspot) => {
+      const external = overlayById.get(hotspot.id);
+      if (!external) {
+        return hotspot;
+      }
+
+      return {
+        ...hotspot,
+        title: external.title || hotspot.title,
+        text: external.text || hotspot.text,
+        meta: Array.isArray(external.meta) ? external.meta : hotspot.meta,
+      };
+    });
+  };
+
+  const loadInfrastructureOverlays = async () => {
+    const fileEntries = Object.entries(infrastructureOverlayFiles);
+    await Promise.all(
+      fileEntries.map(async ([viewKey, filePath]) => {
+        try {
+          const response = await fetch(filePath, { cache: "no-store" });
+          if (!response.ok) {
+            return;
+          }
+          const payload = await response.json();
+          if (!payload.view) {
+            payload.view = viewKey;
+          }
+          mergeInfrastructureOverlayContent(payload);
+        } catch (_) {
+          // Fallback remains the inline hotspot content when overlay files are unavailable.
+        }
+      })
+    );
+  };
+
+  const renderMeta = (target, items) => {
+    if (!target) {
+      return;
+    }
+
+    target.innerHTML = items
+      .map(
+        (item) => `
+          <div>
+            <p class="card-kicker">${escapeHtml(item.label)}</p>
+            <p>${escapeHtml(item.value)}</p>
+          </div>
+        `
+      )
+      .join("");
+  };
+
+  const findInstance = (mode, view) => instances.find((entry) => entry.mode === mode && entry.view === view) || null;
+
+  const runtimeOverlays = new Map();
+
+  const getOverlayParts = (mode) => {
+    if (runtimeOverlays.has(mode)) {
+      return runtimeOverlays.get(mode);
+    }
+
+    const overlay = document.createElement("div");
+    overlay.style.display = "none";
+    overlay.style.position = "fixed";
+    overlay.style.left = mode === "lightbox" ? "32px" : "24px";
+    overlay.style.top = mode === "lightbox" ? "88px" : "96px";
+    overlay.style.zIndex = "99999";
+    overlay.style.width = "320px";
+    overlay.style.maxWidth = "calc(100vw - 48px)";
+    overlay.style.padding = "16px 18px";
+    overlay.style.borderRadius = "20px";
+    overlay.style.background = "rgba(7, 19, 28, 0.96)";
+    overlay.style.border = "1px solid rgba(255,255,255,0.08)";
+    overlay.style.boxShadow = "0 20px 40px rgba(0,0,0,0.35)";
+    overlay.style.color = "#f4f7fb";
+    overlay.style.pointerEvents = "none";
+    overlay.style.fontFamily = "Arial, sans-serif";
+    overlay.style.gap = "10px";
+
+    const kicker = document.createElement("p");
+    kicker.textContent = mode === "lightbox" ? "VOLLBILD" : "HOTSPOT";
+    kicker.style.margin = "0";
+    kicker.style.fontSize = "12px";
+    kicker.style.letterSpacing = "0.18em";
+    kicker.style.textTransform = "uppercase";
+    kicker.style.fontWeight = "700";
+    kicker.style.color = "#77e5d8";
+
+    const title = document.createElement("h3");
+    title.style.margin = "6px 0 0";
+    title.style.fontSize = "28px";
+    title.style.lineHeight = "1.1";
+    title.style.color = "#ffffff";
+
+    const text = document.createElement("p");
+    text.style.margin = "10px 0 0";
+    text.style.fontSize = "16px";
+    text.style.lineHeight = "1.5";
+    text.style.color = "rgba(244,247,251,0.92)";
+
+    const meta = document.createElement("div");
+    meta.style.display = "grid";
+    meta.style.gap = "10px";
+    meta.style.marginTop = "10px";
+
+    overlay.appendChild(kicker);
+    overlay.appendChild(title);
+    overlay.appendChild(text);
+    overlay.appendChild(meta);
+
+    document.body.appendChild(overlay);
+
+    const parts = {
+      overlay,
+      title,
+      text,
+      meta,
+    };
+
+    runtimeOverlays.set(mode, parts);
+    return parts;
+  };
+
+  const hideOverlay = (mode) => {
+    const parts = getOverlayParts(mode);
+    if (parts.overlay) {
+      parts.overlay.style.display = "none";
+    }
+  };
+
+  const showOverlay = (mode, hotspot, triggerRect, figureRect) => {
+    const parts = getOverlayParts(mode);
+    if (!parts.overlay || !parts.title || !parts.text || !parts.meta) {
+      return;
+    }
+
+    parts.title.textContent = hotspot.title;
+    parts.text.textContent = hotspot.text;
+    renderMeta(parts.meta, hotspot.meta || []);
+    parts.overlay.style.display = "grid";
+
+    const overlayRect = parts.overlay.getBoundingClientRect();
+    const margin = 16;
+    let left = triggerRect.right + margin;
+    let top = triggerRect.top;
+
+    if (left + overlayRect.width > window.innerWidth - margin) {
+      left = triggerRect.left - overlayRect.width - margin;
+    }
+    if (left < margin) {
+      left = margin;
+    }
+    if (top + overlayRect.height > window.innerHeight - margin) {
+      top = Math.max(margin, window.innerHeight - overlayRect.height - margin);
+    }
+
+    parts.overlay.style.left = `${Math.round(left)}px`;
+    parts.overlay.style.top = `${Math.round(top)}px`;
+  };
+
+  const setActiveHotspot = (mode, view, hotspotId) => {
+    state.activeHotspot[`${mode}:${view}`] = hotspotId || "";
+    const instance = findInstance(mode, view);
+    if (!instance) {
+      hideOverlay(mode);
+      return;
+    }
+
+    instance.hotspots.forEach((entry) => {
+      entry.trigger.classList.toggle("is-active", entry.hotspot.id === hotspotId);
+      entry.sourceNodes.forEach((node) => {
+        const original =
+          hotspotNodeState.get(node) || {
+            fill: node.getAttribute("fill"),
+            stroke: node.getAttribute("stroke"),
+            strokeWidth: node.getAttribute("stroke-width"),
+            filter: node.style.filter || "",
+            opacity: node.style.opacity || "",
+          };
+
+        hotspotNodeState.set(node, original);
+
+        if (entry.hotspot.id === hotspotId) {
+          if (node.tagName.toLowerCase() === "rect") {
+            node.setAttribute("fill", "#FFF36A");
+            node.setAttribute("stroke", "#77E5D8");
+            node.setAttribute("stroke-width", "4");
+          } else if (node.tagName.toLowerCase() === "text") {
+            node.style.filter = "drop-shadow(0 0 10px rgba(119, 229, 216, 0.45))";
+            node.style.opacity = "1";
+          }
+        } else {
+          if (node.tagName.toLowerCase() === "rect") {
+            if (original.fill === null) {
+              node.removeAttribute("fill");
+            } else {
+              node.setAttribute("fill", original.fill);
+            }
+            if (original.stroke === null) {
+              node.removeAttribute("stroke");
+            } else {
+              node.setAttribute("stroke", original.stroke);
+            }
+            if (original.strokeWidth === null) {
+              node.removeAttribute("stroke-width");
+            } else {
+              node.setAttribute("stroke-width", original.strokeWidth);
+            }
+          } else if (node.tagName.toLowerCase() === "text") {
+            node.style.filter = original.filter;
+            node.style.opacity = original.opacity;
+          }
+        }
+      });
+    });
+
+    const activeEntry = instance.hotspots.find((entry) => entry.hotspot.id === hotspotId);
+    if (!activeEntry) {
+      hideOverlay(mode);
+      return;
+    }
+
+    showOverlay(mode, activeEntry.hotspot, activeEntry.trigger.getBoundingClientRect(), instance.figure.getBoundingClientRect());
+  };
+
+  const fitSvgToFigure = (instance) => {
+    const { svg, figure } = instance;
+    const width = svg.viewBox.baseVal.width || Number(svg.getAttribute("width")) || 1280;
+    const height = svg.viewBox.baseVal.height || Number(svg.getAttribute("height")) || 720;
+
+    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    instance.minScale = 1;
+    if (!instance.scale || instance.scale < 1) {
+      instance.scale = 1;
+      instance.translateX = 0;
+      instance.translateY = 0;
+    }
+  };
+
+  const clampPan = (instance) => {
+    const figureWidth = instance.figure.clientWidth || 0;
+    const figureHeight = instance.figure.clientHeight || 0;
+    const scaledWidth = figureWidth * instance.scale;
+    const scaledHeight = figureHeight * instance.scale;
+    const maxX = Math.max(0, (scaledWidth - figureWidth) / 2);
+    const maxY = Math.max(0, (scaledHeight - figureHeight) / 2);
+
+    instance.translateX = Math.max(-maxX, Math.min(maxX, instance.translateX));
+    instance.translateY = Math.max(-maxY, Math.min(maxY, instance.translateY));
+  };
+
+  const syncPanState = (instance) => {
+    const isDraggable = instance.scale > instance.minScale + 0.001;
+    instance.figure.classList.toggle("is-draggable", isDraggable);
+    if (!isDraggable) {
+      instance.figure.classList.remove("is-panning");
+    }
+    instance.svg.style.cursor = isDraggable ? "grab" : "";
+  };
+
+  const applyTransform = (instance) => {
+    instance.svg.style.transformOrigin = "50% 50%";
+    instance.svg.style.transform = `translate(${instance.translateX}px, ${instance.translateY}px) scale(${instance.scale})`;
+    syncPanState(instance);
+    const hotspotId = state.activeHotspot[`${instance.mode}:${instance.view}`];
+    if (hotspotId) {
+      setActiveHotspot(instance.mode, instance.view, hotspotId);
+    }
+  };
+
+  const resetViewTransform = (instance) => {
+    fitSvgToFigure(instance);
+    instance.translateX = 0;
+    instance.translateY = 0;
+    instance.scale = instance.minScale;
+    applyTransform(instance);
+  };
+
+  const zoomInstance = (instance, delta) => {
+    const nextScale = Math.max(instance.minScale, Math.min(instance.minScale * 4, instance.scale + delta));
+    instance.scale = nextScale;
+    clampPan(instance);
+    applyTransform(instance);
+  };
+
+  const setView = (viewKey) => {
+    state.view = infrastructureViews[viewKey] ? viewKey : "hw-network";
+
+    viewButtons.forEach((button) => {
+      const isActive = button.dataset.infraViewButton === state.view;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-selected", String(isActive));
+    });
+
+    inlineViews.forEach((figure) => {
+      const isActive = figure.dataset.infraView === state.view;
+      figure.hidden = !isActive;
+      figure.classList.toggle("is-active", isActive);
+    });
+
+    lightboxViews.forEach((figure) => {
+      const isActive = figure.dataset.infraLightboxView === state.view;
+      figure.hidden = !isActive;
+      figure.classList.toggle("is-active", isActive);
+    });
+
+    hideOverlay("inline");
+    hideOverlay("lightbox");
+  };
+
+  const getTextUnionBounds = (svg, baseBounds) => {
+    const nearbyTexts = Array.from(svg.querySelectorAll("text")).filter((node) => {
+      const box = node.getBBox();
+      const horizontallyNear = box.x + box.width >= baseBounds.x - 24 && box.x <= baseBounds.x + baseBounds.width + 24;
+      const verticallyNear = box.y + box.height >= baseBounds.y - 24 && box.y <= baseBounds.y + baseBounds.height + 24;
+      return horizontallyNear && verticallyNear;
+    });
+
+    return nearbyTexts.reduce(
+      (bounds, node) => {
+        const box = node.getBBox();
+        const minX = Math.min(bounds.x, box.x);
+        const minY = Math.min(bounds.y, box.y);
+        const maxX = Math.max(bounds.x + bounds.width, box.x + box.width);
+        const maxY = Math.max(bounds.y + bounds.height, box.y + box.height);
+        return {
+          x: minX,
+          y: minY,
+          width: maxX - minX,
+          height: maxY - minY,
+        };
+      },
+      { ...baseBounds }
+    );
+  };
+
+  const bindHotspots = (instance) => {
+    const viewConfig = infrastructureViews[instance.view];
+    if (!viewConfig) {
+      return;
+    }
+
+    instance.hotspots = [];
+
+    viewConfig.hotspots.forEach((hotspot) => {
+      const rectNodes = hotspot.selectors.flatMap((selector) => Array.from(instance.svg.querySelectorAll(selector)));
+      if (!rectNodes.length) {
+        return;
+      }
+
+      const sourceNodes = [...rectNodes];
+      const trigger = rectNodes[0];
+
+      sourceNodes.forEach((node) => {
+        node.setAttribute("data-infra-source", hotspot.id);
+        node.style.cursor = "pointer";
+        node.style.transition = "filter 160ms ease, opacity 160ms ease";
+        node.style.userSelect = "none";
+      });
+
+      let clearTimer = null;
+      const activate = () => setActiveHotspot(instance.mode, instance.view, hotspot.id);
+      const scheduleClear = () => {
+        window.clearTimeout(clearTimer);
+        clearTimer = window.setTimeout(() => {
+          setActiveHotspot(instance.mode, instance.view, "");
+        }, 40);
+      };
+      const cancelClear = () => {
+        window.clearTimeout(clearTimer);
+      };
+
+      sourceNodes.forEach((node) => {
+        node.addEventListener("mouseenter", () => {
+          cancelClear();
+          activate();
+        });
+        node.addEventListener("mousemove", () => {
+          cancelClear();
+          activate();
+        });
+        node.addEventListener("mouseleave", scheduleClear);
+        node.addEventListener("pointerenter", () => {
+          cancelClear();
+          activate();
+        });
+        node.addEventListener("pointermove", () => {
+          cancelClear();
+          activate();
+        });
+        node.addEventListener("pointerleave", scheduleClear);
+        node.addEventListener("focus", activate);
+        node.addEventListener("blur", scheduleClear);
+        node.addEventListener("click", activate);
+      });
+
+      instance.hotspots.push({ hotspot, trigger, sourceNodes });
+    });
+  };
+
+  const bindPanZoom = (instance) => {
+    const startPan = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+    const interactionTarget = instance.svg;
+
+    interactionTarget.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      zoomInstance(instance, event.deltaY < 0 ? instance.minScale * 0.16 : -instance.minScale * 0.16);
+    }, { passive: false });
+
+    interactionTarget.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || instance.scale <= instance.minScale + 0.001) {
+        return;
+      }
+
+      if (event.target.closest?.("[data-infra-trigger]")) {
+        return;
+      }
+
+      startPan.active = true;
+      startPan.startX = event.clientX;
+      startPan.startY = event.clientY;
+      startPan.x = instance.translateX;
+      startPan.y = instance.translateY;
+      instance.figure.classList.add("is-panning");
+      interactionTarget.setPointerCapture(event.pointerId);
+    });
+
+    interactionTarget.addEventListener("pointermove", (event) => {
+      if (!startPan.active) {
+        return;
+      }
+      instance.translateX = startPan.x + (event.clientX - startPan.startX);
+      instance.translateY = startPan.y + (event.clientY - startPan.startY);
+      clampPan(instance);
+      applyTransform(instance);
+    });
+
+    const stopPan = (event) => {
+      if (startPan.active && interactionTarget.hasPointerCapture(event.pointerId)) {
+        interactionTarget.releasePointerCapture(event.pointerId);
+      }
+      startPan.active = false;
+      instance.figure.classList.remove("is-panning");
+      syncPanState(instance);
+    };
+
+    interactionTarget.addEventListener("pointerup", stopPan);
+    interactionTarget.addEventListener("pointercancel", stopPan);
+  };
+
+  const decorateSvg = (mode, view, objectNode, figure) => {
+    const sourceSvg = objectNode.contentDocument?.querySelector("svg");
+    if (!sourceSvg) {
+      return;
+    }
+
+    const existingInlineSvg = figure.querySelector("svg.docs-infra-svg");
+    existingInlineSvg?.remove();
+
+    const svg = sourceSvg.cloneNode(true);
+    svg.classList.add("docs-infra-svg");
+    svg.setAttribute("data-inline-infra-svg", view);
+    objectNode.hidden = true;
+    objectNode.style.display = "none";
+    figure.appendChild(svg);
+
+    svg.style.width = "100%";
+    svg.style.height = "100%";
+    svg.style.display = "block";
+    svg.style.transformBox = "fill-box";
+    svg.style.cursor = "";
+    svg.style.userSelect = "none";
+    svg.style.webkitUserSelect = "none";
+
+    const existingLayer = svg.querySelector('[data-brt-trigger-layer="true"]');
+    existingLayer?.remove();
+
+    const instance = {
+      mode,
+      view,
+      objectNode,
+      figure,
+      svg,
+      hotspots: [],
+      minScale: 1,
+      scale: 1,
+      translateX: 0,
+      translateY: 0,
+    };
+
+    instances.push(instance);
+    bindHotspots(instance);
+    bindPanZoom(instance);
+    resetViewTransform(instance);
+
+    const activeHotspotId = state.activeHotspot[`${mode}:${view}`];
+    if (activeHotspotId) {
+      setActiveHotspot(mode, view, activeHotspotId);
+    }
+  };
+
+  const setupObject = (mode, view, objectNode, figure) => {
+    const load = () => decorateSvg(mode, view, objectNode, figure);
+    if (objectNode.contentDocument?.querySelector("svg")) {
+      load();
+      return;
+    }
+    objectNode.addEventListener("load", load, { once: true });
+  };
+
+  const initInfrastructureApp = async () => {
+    await loadInfrastructureOverlays();
+
+    inlineObjects.forEach((objectNode) => {
+      const view = objectNode.dataset.infraSvg || "";
+      const figure = objectNode.closest("[data-infra-view]");
+      if (view && figure) {
+        setupObject("inline", view, objectNode, figure);
+      }
+    });
+
+    lightboxObjects.forEach((objectNode) => {
+      const view = objectNode.dataset.infraLightboxSvg || "";
+      const figure = objectNode.closest("[data-infra-lightbox-view]");
+      if (view && figure) {
+        setupObject("lightbox", view, objectNode, figure);
+      }
+    });
+
+    viewButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setView(button.dataset.infraViewButton || "hw-network");
+      });
+    });
+
+    controlButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const mode = button.dataset.infraMode || "inline";
+        const instance = findInstance(mode, state.view);
+        if (!instance) {
+          return;
+        }
+
+        const action = button.dataset.infraAction;
+        if (action === "zoom-in") {
+          zoomInstance(instance, instance.minScale * 0.2);
+        } else if (action === "zoom-out") {
+          zoomInstance(instance, -instance.minScale * 0.2);
+        } else if (action === "reset") {
+          resetViewTransform(instance);
+        }
+      });
+    });
+
+    zoomButton?.addEventListener("click", () => {
+      if (!lightbox) {
+        return;
+      }
+      lightbox.hidden = false;
+      document.body.classList.add("is-modal-open");
+      setView(state.view);
+      requestAnimationFrame(() => {
+        const instance = findInstance("lightbox", state.view);
+        if (instance) {
+          resetViewTransform(instance);
+        }
+      });
+    });
+
+    lightboxCloseButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!lightbox) {
+          return;
+        }
+        lightbox.hidden = true;
+        document.body.classList.remove("is-modal-open");
+        hideOverlay("lightbox");
+      });
+    });
+
+    window.addEventListener("resize", () => {
+      instances.forEach((instance) => {
+        resetViewTransform(instance);
+      });
+    });
+
+    setView("hw-network");
+  };
+
+  initInfrastructureApp();
 }
 
 const registrationApp = document.querySelector("[data-registration-app]");
@@ -1574,3 +2408,4 @@ if (reservationApp) {
       showReservationStatus(`Die Reservierungskonfiguration konnte nicht geladen werden: ${error.message}`, "error");
     });
 }
+

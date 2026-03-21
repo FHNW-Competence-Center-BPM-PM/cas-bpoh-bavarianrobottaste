@@ -1,0 +1,127 @@
+{
+  "view": "services",
+  "title": "Services",
+  "description": "Overlay-Inhalte für die Infrastruktur-Grafik Services.",
+  "hotspots": [
+    {
+      "id": "camunda",
+      "title": "Camunda",
+      "text": "Dummytext: Workflow- und Orchestrierungsengine für Prozesse und BPMN-Flows.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "Cloud"
+        },
+        {
+          "label": "Später sinnvoll",
+          "value": "Trigger, Inputs, Outputs, Owner"
+        }
+      ]
+    },
+    {
+      "id": "n8n",
+      "title": "n8n",
+      "text": "Dummytext: Automation und Glue-Code für schnelle Integrationsstrecken.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "Cloud"
+        },
+        {
+          "label": "Typ",
+          "value": "Automation / Integration"
+        }
+      ]
+    },
+    {
+      "id": "power-automate",
+      "title": "Power Automate",
+      "text": "Dummytext: Microsoft-nahe Workflow-Schicht für Freigaben und Benachrichtigungen.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "Cloud"
+        },
+        {
+          "label": "Anwendungsfall",
+          "value": "M365-Workflows und Notifications"
+        }
+      ]
+    },
+    {
+      "id": "crm",
+      "title": "CRM",
+      "text": "Dummytext: Kundendaten, Historie und Kommunikationsbezug für Gäste.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "Cloud"
+        },
+        {
+          "label": "Datenfokus",
+          "value": "Gastprofil, Historie, Touchpoints"
+        }
+      ]
+    },
+    {
+      "id": "erp-ready2order",
+      "title": "ERP / Ready2Order API",
+      "text": "Dummytext: Zentrale Business-Schnittstelle für Artikel, Preise und operative Daten.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "Cloud"
+        },
+        {
+          "label": "Schwerpunkt",
+          "value": "Artikel, Preise, Synchronisation"
+        }
+      ]
+    },
+    {
+      "id": "ngrok-traefik",
+      "title": "NGROK / Traefik",
+      "text": "Dummytext: Routing- und Zugangsschicht für Exponierung, Domains und TLS.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "On-Premise"
+        },
+        {
+          "label": "Typ",
+          "value": "Ingress / Routing"
+        }
+      ]
+    },
+    {
+      "id": "hue-rest-api",
+      "title": "HUE Rest API",
+      "text": "Dummytext: API für die Steuerung der lokalen Lichtinfrastruktur.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "On-Premise"
+        },
+        {
+          "label": "Typ",
+          "value": "Device API"
+        }
+      ]
+    },
+    {
+      "id": "g1-api",
+      "title": "G1 API",
+      "text": "Dummytext: Steuer-API für Roboterbefehle, Status und Sicherheitsregeln.",
+      "meta": [
+        {
+          "label": "Ebene",
+          "value": "On-Premise"
+        },
+        {
+          "label": "Typ",
+          "value": "Robot API"
+        }
+      ]
+    }
+  ]
+}
