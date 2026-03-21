@@ -484,10 +484,11 @@ if (infrastructureApp) {
           id: "unitree-g1",
           selectors: ['rect[x="106"][y="489"][width="167"][height="98"]'],
           title: "Unitree G1 Roboter",
-          text: "Dummytext: Robotik-Knoten für Bewegungslogik, Sicherheit und Erlebnisprozesse.",
+          text: "Physischer Service-Roboter im On-Prem-Netz. Er wird über die G1 API angesteuert und ist aktuell mit Armbewegungen, LED-Signalen, deutscher Sprachausgabe und QR-gestützten Abläufen gekoppelt.",
           meta: [
             { label: "Typ", value: "Robotik / Device" },
             { label: "Anknüpfung", value: "G1 API, Steuerung, Aufgaben" },
+            { label: "Funktionen", value: "Motion, LED, Speech, QR Flow" },
           ],
         },
         {
@@ -615,10 +616,11 @@ if (infrastructureApp) {
           id: "g1-api",
           selectors: ['rect[x="543"][y="515"][width="165"][height="68"]'],
           title: "G1 API",
-          text: "Dummytext: Steuer-API für Roboterbefehle, Status und Sicherheitsregeln.",
+          text: "Lokale FastAPI für Unitree-G1-Steuerung. Die Schnittstelle deckt Arm-Aktionen, LED-Blinken, deutsche TTS-Ausgabe sowie Start, Status und Stop eines QR-Scan-Workers ab.",
           meta: [
             { label: "Ebene", value: "On-Premise" },
             { label: "Typ", value: "Robot API" },
+            { label: "Scope", value: "Arm, LED, Speech, QR Scan" },
           ],
         },
       ],
@@ -1639,11 +1641,19 @@ if (profileForm && changePasswordForm) {
   const reservationModalTitle = document.querySelector("[data-profile-reservation-title]");
   const reservationModalSubtitle = document.querySelector("[data-profile-reservation-subtitle]");
   const reservationModalMeta = document.querySelector("[data-profile-reservation-meta]");
+  const reservationModalQr = document.querySelector("[data-profile-reservation-qr]");
+  const reservationModalQrOpen = document.querySelector("[data-profile-reservation-qr-open]");
+  const reservationModalQrHint = document.querySelector("[data-profile-reservation-qr-hint]");
   const reservationModalNotes = document.querySelector("[data-profile-reservation-notes]");
   const reservationModalActions = document.querySelector("[data-profile-reservation-actions]");
+  const profileQrModal = document.querySelector("[data-profile-qr-modal]");
+  const profileQrImage = document.querySelector("[data-profile-qr-image]");
+  const profileQrDownload = document.querySelector("[data-profile-qr-download]");
+  const profileQrCloseButtons = document.querySelectorAll("[data-profile-qr-close]");
   const reservationsStatus = document.querySelector("[data-profile-reservations-status]");
   const reservationsTarget = document.querySelector("[data-profile-reservations]");
   const reservationStore = new Map();
+  let activeReservationQr = null;
 
   const setBoxStatus = (box, message, kind = "success") => {
     if (!box) {
@@ -1653,10 +1663,34 @@ if (profileForm && changePasswordForm) {
     box.className = `registration-status is-visible is-${kind}`;
   };
 
+  const reservationQrImageUrl = (reservation) => {
+    if (reservation?.qrImageUrl) {
+      return reservation.qrImageUrl;
+    }
+
+    const reservationId = reservation?.reservationId || reservation?.id || "";
+    if (!reservationId) {
+      return "";
+    }
+
+    return `${window.location.origin}/reservations/qr-image/${encodeURIComponent(reservationId)}.svg`;
+  };
+
   const fillProfileForm = (profile) => {
     profileForm.elements.namedItem("firstName").value = profile.firstName || "";
     profileForm.elements.namedItem("email").value = profile.email || "";
     profileForm.elements.namedItem("phone").value = profile.phone || "";
+  };
+
+  const setActiveReservationQr = (reservation) => {
+    const qrImageUrl = reservationQrImageUrl(reservation);
+    activeReservationQr = qrImageUrl
+      ? {
+          imageUrl: qrImageUrl,
+          code: reservation?.reservationCode || reservation?.reservationId || reservation?.id || "reservation",
+        }
+      : null;
+    return qrImageUrl;
   };
 
   const renderProfileReservations = (reservations) => {
@@ -1678,22 +1712,34 @@ if (profileForm && changePasswordForm) {
     });
 
     sortedReservations.forEach((reservation) => {
-      if (reservation?.reservationId) {
-        reservationStore.set(reservation.reservationId, reservation);
+      const reservationId = reservation?.reservationId || reservation?.id || "";
+      if (reservationId) {
+        reservationStore.set(reservationId, reservation);
       }
     });
 
     reservationsTarget.innerHTML = sortedReservations
       .map((reservation) => {
         const isCancelled = reservation.status === "cancelled";
+        const qrImageUrl = reservationQrImageUrl(reservation);
+        const reservationId = reservation?.reservationId || reservation?.id || "";
 
         return `
-          <article class="profile-reservation-card" tabindex="0" role="button" data-profile-reservation-id="${escapeHtml(reservation.reservationId || "")}">
+          <article class="profile-reservation-card" tabindex="0" role="button" data-profile-reservation-id="${escapeHtml(reservationId)}">
             <div class="profile-reservation-head">
               <p class="card-kicker">${escapeHtml(reservation.roomName)}</p>
               <h3>${escapeHtml(reservation.scheduledLabel)}</h3>
               <p class="profile-reservation-note">${escapeHtml(reservation.tableLabel)} | ${escapeHtml(reservation.occasion || "Kein Anlass")}</p>
             </div>
+            <button class="profile-reservation-qr-preview" type="button" data-profile-card-qr="${escapeHtml(reservationId)}" aria-label="QR-Code gross öffnen">
+              ${
+                qrImageUrl
+                  ? `<img src="${escapeHtml(qrImageUrl)}" alt="QR-Code für Reservierung ${escapeHtml(
+                      reservation.reservationCode || "",
+                    )}" loading="lazy" decoding="async" />`
+                  : `<span>QR nicht verfügbar</span>`
+              }
+            </button>
             <div class="profile-reservation-facts">
               <p><strong>Code</strong><br /><span>${escapeHtml(reservation.reservationCode)}</span></p>
               <p><strong>Gäste</strong><br /><span>${escapeHtml(String(reservation.guests))}</span></p>
@@ -1720,6 +1766,19 @@ if (profileForm && changePasswordForm) {
         }
       });
     });
+
+    reservationsTarget.querySelectorAll("[data-profile-card-qr]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const reservation = reservationStore.get(button.dataset.profileCardQr || "");
+        if (!reservation) {
+          return;
+        }
+        setActiveReservationQr(reservation);
+        openProfileQrModal();
+      });
+    });
   };
 
   const switchAccountPane = (nextPane) => {
@@ -1736,10 +1795,42 @@ if (profileForm && changePasswordForm) {
     });
   };
 
+  const openProfileQrModal = () => {
+    if (!profileQrModal || !profileQrImage || !activeReservationQr?.imageUrl) {
+      return;
+    }
+
+    profileQrImage.innerHTML = `<img src="${escapeHtml(activeReservationQr.imageUrl)}" alt="QR-Code für Reservierung ${escapeHtml(
+      activeReservationQr.code || "",
+    )}" decoding="async" />`;
+
+    if (profileQrDownload) {
+      profileQrDownload.href = activeReservationQr.imageUrl;
+      profileQrDownload.download = `qr-${activeReservationQr.code || "reservation"}.svg`;
+    }
+
+    profileQrModal.hidden = false;
+    document.body.classList.add("is-modal-open");
+  };
+
+  const closeProfileQrModal = () => {
+    if (!profileQrModal) {
+      return;
+    }
+
+    profileQrModal.hidden = true;
+    if (profileQrImage) {
+      profileQrImage.innerHTML = "";
+    }
+    document.body.classList.toggle("is-modal-open", Boolean(reservationModal && !reservationModal.hidden));
+  };
+
   const openProfileReservationModal = (reservation) => {
     if (!reservationModal) {
       return;
     }
+
+    const qrImageUrl = setActiveReservationQr(reservation);
 
     if (reservationModalTitle) {
       reservationModalTitle.textContent = reservation.roomName || "Reservierung";
@@ -1756,6 +1847,21 @@ if (profileForm && changePasswordForm) {
         <p><strong>Anlass</strong><br />${escapeHtml(reservation.occasion || "Kein Anlass hinterlegt")}</p>
       `;
     }
+    if (reservationModalQr) {
+      reservationModalQr.innerHTML = qrImageUrl
+        ? `<img src="${escapeHtml(qrImageUrl)}" alt="QR-Code für Reservierung ${escapeHtml(
+            reservation.reservationCode || "",
+          )}" decoding="async" />`
+        : `<div class="profile-reservation-qr-empty">QR-Code nicht verfügbar.</div>`;
+    }
+    if (reservationModalQrOpen) {
+      reservationModalQrOpen.disabled = !qrImageUrl;
+    }
+    if (reservationModalQrHint) {
+      reservationModalQrHint.textContent = qrImageUrl
+        ? "Klicke auf den kleinen QR-Code, um ihn gross zu öffnen."
+        : "Für diese Reservierung steht gerade kein QR-Code bereit.";
+    }
     if (reservationModalNotes) {
       reservationModalNotes.innerHTML = `
         <p><strong>Notizen</strong><br />${escapeHtml(reservation.notes || "Keine Zusatznotizen hinterlegt.")}</p>
@@ -1768,7 +1874,6 @@ if (profileForm && changePasswordForm) {
           ? `<a class="button button-primary" href="${escapeHtml(reservation.cancelUrl)}" target="_blank" rel="noreferrer">Reservierung verwalten</a>`
           : "";
       reservationModalActions.innerHTML = `
-        <a class="button button-secondary" href="${escapeHtml(reservation.qrCodeUrl || "#")}" target="_blank" rel="noreferrer">QR öffnen</a>
         ${cancelAction}
       `;
     }
@@ -1782,7 +1887,9 @@ if (profileForm && changePasswordForm) {
       return;
     }
 
+    closeProfileQrModal();
     reservationModal.hidden = true;
+    activeReservationQr = null;
     document.body.classList.remove("is-modal-open");
   };
 
@@ -1798,7 +1905,23 @@ if (profileForm && changePasswordForm) {
     });
   });
 
+  reservationModalQrOpen?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openProfileQrModal();
+  });
+
+  profileQrCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      closeProfileQrModal();
+    });
+  });
+
   document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && profileQrModal && !profileQrModal.hidden) {
+      closeProfileQrModal();
+      return;
+    }
+
     if (event.key === "Escape" && reservationModal && !reservationModal.hidden) {
       closeProfileReservationModal();
     }

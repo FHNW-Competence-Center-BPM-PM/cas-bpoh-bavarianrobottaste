@@ -1,0 +1,1154 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "G1 Robot API",
+    "summary": "REST API for Unitree G1 control and QR orchestration.",
+    "description": "HTTP API for local G1 control tools. The API exposes arm, LED, speech, and QR scan orchestration endpoints and is designed to be consumed directly or via robot-ui.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Liveness probe",
+        "description": "Returns OK if the API process is running. No auth and no hardware access.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Readiness probe",
+        "description": "Minimal readiness probe. The current implementation does not validate robot connectivity yet.",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/arm/action": {
+      "post": {
+        "tags": [
+          "arm"
+        ],
+        "summary": "Execute arm action",
+        "description": "Runs the configured Unitree arm action binary with the provided action id.",
+        "operationId": "arm_action_arm_action_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArmActionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArmActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Binary execution failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Runtime not initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/led/blink": {
+      "post": {
+        "tags": [
+          "led"
+        ],
+        "summary": "Blink the LED",
+        "description": "Runs the configured LED blink binary with an RGB hex color and blink count.",
+        "operationId": "led_blink_led_blink_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LedBlinkRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LedBlinkResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Binary execution failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Runtime not initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/speech/tts/de": {
+      "post": {
+        "tags": [
+          "speech"
+        ],
+        "summary": "Speak German text",
+        "description": "Synthesizes and plays German speech through the configured Piper-based TTS path.",
+        "operationId": "tts_de_say_speech_tts_de_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TtsDeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TtsDeResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Speech execution failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Runtime not initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/qr/scan/start": {
+      "post": {
+        "tags": [
+          "qr"
+        ],
+        "summary": "Start QR scan",
+        "description": "Starts the QR scanner worker in headless mode. The worker exits automatically after a successful QR detection.",
+        "operationId": "qr_scan_start_qr_scan_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QrScanStartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrScanActionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid webhook URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A scan is already running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Worker startup failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Runtime not initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/qr/scan/status": {
+      "get": {
+        "tags": [
+          "qr"
+        ],
+        "summary": "Get QR scan status",
+        "description": "Returns the current or last known QR scan state, including internal-ui results and webhook delivery status.",
+        "operationId": "qr_scan_status_qr_scan_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrScanStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Runtime not initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/qr/scan/stop": {
+      "post": {
+        "tags": [
+          "qr"
+        ],
+        "summary": "Stop QR scan",
+        "description": "Requests a graceful stop of the currently running QR scanner worker.",
+        "operationId": "qr_scan_stop_qr_scan_stop_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QrScanActionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid Bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Worker stop failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Runtime not initialized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArmActionRequest": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "G1 arm action id, e.g. 26 = wave_above_head"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "ArmActionRequest"
+      },
+      "ArmActionResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          },
+          "action_id": {
+            "type": "integer",
+            "title": "Action Id"
+          },
+          "output": {
+            "type": "string",
+            "title": "Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action_id",
+          "output"
+        ],
+        "title": "ArmActionResponse"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail",
+            "description": "Error detail message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "detail"
+        ],
+        "title": "ErrorResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "examples": [
+              "ok"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "examples": [
+              "robot-api"
+            ]
+          },
+          "time": {
+            "type": "string",
+            "title": "Time",
+            "description": "UTC timestamp in ISO-8601 format"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "service",
+          "time"
+        ],
+        "title": "HealthResponse"
+      },
+      "LedBlinkRequest": {
+        "properties": {
+          "color": {
+            "type": "string",
+            "pattern": "^[0-9A-Fa-f]{6}$",
+            "title": "Color",
+            "description": "RGB color as hex string, e.g. FF0000"
+          },
+          "count": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "description": "Blink count (1–10)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "color",
+          "count"
+        ],
+        "title": "LedBlinkRequest"
+      },
+      "LedBlinkResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "output": {
+            "type": "string",
+            "title": "Output"
+          }
+        },
+        "type": "object",
+        "required": [
+          "color",
+          "count",
+          "output"
+        ],
+        "title": "LedBlinkResponse"
+      },
+      "QrScanActionResponse": {
+        "properties": {
+          "scan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Id",
+            "description": "Current or last scan identifier"
+          },
+          "state": {
+            "type": "string",
+            "title": "State",
+            "examples": [
+              "idle",
+              "running",
+              "completed"
+            ]
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          },
+          "pid": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pid",
+            "description": "PID of the current worker process"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At",
+            "description": "UTC timestamp in ISO-8601 format"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At",
+            "description": "UTC timestamp in ISO-8601 format"
+          },
+          "delivery_target": {
+            "type": "string",
+            "title": "Delivery Target",
+            "description": "Webhook URL or internal-ui"
+          },
+          "webhook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Url",
+            "description": "Configured external webhook target"
+          },
+          "webhook_delivery": {
+            "type": "string",
+            "title": "Webhook Delivery",
+            "examples": [
+              "idle",
+              "pending",
+              "sent",
+              "failed",
+              "internal-ui"
+            ]
+          },
+          "webhook_status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Status Code",
+            "description": "HTTP status code returned by the webhook target"
+          },
+          "webhook_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Error",
+            "description": "Webhook delivery error, if any"
+          },
+          "last_qr_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Qr Text",
+            "description": "Last detected QR text"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error",
+            "description": "Last scanner-level error"
+          },
+          "last_stdout": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Stdout",
+            "description": "Captured stdout from the last scanner process"
+          },
+          "last_stderr": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Stderr",
+            "description": "Captured stderr from the last scanner process"
+          },
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "running",
+          "delivery_target",
+          "webhook_delivery"
+        ],
+        "title": "QrScanActionResponse"
+      },
+      "QrScanStartRequest": {
+        "properties": {
+          "webhook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Url",
+            "description": "Optional external webhook URL. Leave empty to keep the result inside the UI/status API."
+          }
+        },
+        "type": "object",
+        "title": "QrScanStartRequest"
+      },
+      "QrScanStatusResponse": {
+        "properties": {
+          "scan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scan Id",
+            "description": "Current or last scan identifier"
+          },
+          "state": {
+            "type": "string",
+            "title": "State",
+            "examples": [
+              "idle",
+              "running",
+              "completed"
+            ]
+          },
+          "running": {
+            "type": "boolean",
+            "title": "Running"
+          },
+          "pid": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pid",
+            "description": "PID of the current worker process"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At",
+            "description": "UTC timestamp in ISO-8601 format"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At",
+            "description": "UTC timestamp in ISO-8601 format"
+          },
+          "delivery_target": {
+            "type": "string",
+            "title": "Delivery Target",
+            "description": "Webhook URL or internal-ui"
+          },
+          "webhook_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Url",
+            "description": "Configured external webhook target"
+          },
+          "webhook_delivery": {
+            "type": "string",
+            "title": "Webhook Delivery",
+            "examples": [
+              "idle",
+              "pending",
+              "sent",
+              "failed",
+              "internal-ui"
+            ]
+          },
+          "webhook_status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Status Code",
+            "description": "HTTP status code returned by the webhook target"
+          },
+          "webhook_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Webhook Error",
+            "description": "Webhook delivery error, if any"
+          },
+          "last_qr_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Qr Text",
+            "description": "Last detected QR text"
+          },
+          "last_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error",
+            "description": "Last scanner-level error"
+          },
+          "last_stdout": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Stdout",
+            "description": "Captured stdout from the last scanner process"
+          },
+          "last_stderr": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Stderr",
+            "description": "Captured stderr from the last scanner process"
+          }
+        },
+        "type": "object",
+        "required": [
+          "state",
+          "running",
+          "delivery_target",
+          "webhook_delivery"
+        ],
+        "title": "QrScanStatusResponse"
+      },
+      "ReadyChecks": {
+        "properties": {
+          "sdk": {
+            "type": "string",
+            "title": "Sdk",
+            "examples": [
+              "unknown"
+            ]
+          },
+          "robot": {
+            "type": "string",
+            "title": "Robot",
+            "examples": [
+              "unknown"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "sdk",
+          "robot"
+        ],
+        "title": "ReadyChecks"
+      },
+      "ReadyResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "examples": [
+              "ready"
+            ]
+          },
+          "checks": {
+            "$ref": "#/components/schemas/ReadyChecks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadyResponse"
+      },
+      "TtsDeRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Text",
+            "description": "German text to speak"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "TtsDeRequest"
+      },
+      "TtsDeResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted",
+            "default": true
+          },
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "examples": [
+              "de"
+            ]
+          },
+          "length": {
+            "type": "integer",
+            "title": "Length",
+            "description": "Length of the spoken text in characters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "language",
+          "length"
+        ],
+        "title": "TtsDeResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "description": "Bearer JWT for robot control and QR orchestration endpoints.",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": "Liveness and readiness probes."
+    },
+    {
+      "name": "arm",
+      "description": "Arm gesture execution endpoints."
+    },
+    {
+      "name": "led",
+      "description": "LED control endpoints."
+    },
+    {
+      "name": "speech",
+      "description": "Speech synthesis endpoints."
+    },
+    {
+      "name": "qr",
+      "description": "QR scan orchestration endpoints."
+    }
+  ]
+}

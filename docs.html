@@ -726,14 +726,15 @@
             <article class="docs-panel" id="roboter-g1" data-docs-panel hidden>
               <div class="section-heading">
                 <p class="section-tag">Roboter G1</p>
-                <h2>REST-Service zur Ausführung von Unitree-G1-Armgesten über HTTP.</h2>
+                <h2>REST-Service für Unitree-G1-Steuerung, Sprache, LED und QR-Orchestrierung.</h2>
               </div>
               <section class="docs-detail-intro">
                 <p>
-                  <code>g1-api</code> stellt eine FastAPI-REST-Schnittstelle bereit, um
-                  Arm-Aktionen eines Unitree G1 auszuführen. Die API kapselt die native Binary
-                  <code>g1_arm_action_example</code>, ruft sie mit einer Action-ID auf und
-                  kommuniziert über CycloneDDS mit dem Roboter.
+                  <code>g1-api</code> ist die lokale FastAPI-Schnittstelle für den Unitree G1.
+                  Sie stellt nicht nur Arm-Aktionen bereit, sondern orchestriert inzwischen auch
+                  LED-Signale, deutsche Text-to-Speech-Ausgabe und einen headless QR-Scan-Worker.
+                  Die API ist für direkte lokale Clients oder eine vorgelagerte
+                  <code>robot-ui</code> gedacht.
                 </p>
               </section>
 
@@ -744,14 +745,17 @@
                     <h3>Technischer Ablauf</h3>
                   </div>
                   <p>
-                    Client, UI oder Voice-Trigger senden einen HTTP-Request an FastAPI. Der
-                    Service delegiert an den <code>UnitreeArmActionAdapter</code>, startet die
-                    Binary mit einer Action-ID und übergibt die Kommunikation an CycloneDDS.
+                    UI, Voice-Trigger oder andere lokale Clients senden HTTP-Requests an
+                    FastAPI. Je nach Endpunkt delegiert der Service an Arm-Adapter,
+                    LED-/TTS-Binaries oder an einen separaten QR-Scanner-Worker. Die
+                    Bewegungssteuerung bleibt dabei an die lokale Runtime und CycloneDDS
+                    angebunden.
                   </p>
                   <div class="docs-inline-list">
                     <span>Client</span>
                     <span>FastAPI</span>
-                    <span>UnitreeArmActionAdapter</span>
+                    <span>Arm / LED / TTS Adapter</span>
+                    <span>QR Scanner Worker</span>
                     <span>g1_arm_action_example</span>
                     <span>CycloneDDS</span>
                     <span>Unitree G1</span>
@@ -770,9 +774,9 @@
                         <code>/arm/action</code>
                       </div>
                       <p>
-                        Führt eine Arm-Aktion aus. Der Request erwartet aktuell genau ein Feld:
+                        Führt eine Arm-Aktion aus. Der Request erwartet ein Feld
                         <code>id</code> vom Typ Integer. Im Schema ist als Beispiel
-                        <code>26 = wave_above_head</code> hinterlegt.
+                        <code>26 = wave_above_head</code> dokumentiert.
                       </p>
                       <div class="docs-split-block">
                         <div>
@@ -794,6 +798,128 @@
 
                     <article class="docs-endpoint-item">
                       <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/led/blink</code>
+                      </div>
+                      <p>
+                        Triggert die LED des Roboters mit einer Hex-Farbe und einer Blinkzahl.
+                        Laut Schema ist <code>color</code> als RGB-Hexstring und
+                        <code>count</code> im Bereich <code>1-10</code> vorgesehen.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "color": "00FFD1",
+  "count": 3
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "color": "00FFD1",
+  "count": 3,
+  "output": "..."
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/speech/tts/de</code>
+                      </div>
+                      <p>
+                        Synthesisiert und spielt deutschen Text über den konfigurierten
+                        Piper-/TTS-Pfad ab. Der Endpunkt eignet sich für lokale Dialoge,
+                        Bestätigungen oder Moderation direkt am Roboter.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "text": "Willkommen bei Bavarian RoboTaste."
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "language": "de",
+  "length": 36
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/qr/scan/start</code>
+                      </div>
+                      <p>
+                        Startet einen headless QR-Scan. Der Worker beendet sich nach
+                        erfolgreicher Erkennung automatisch. Zusätzlich sind
+                        <code>/qr/scan/status</code> und <code>/qr/scan/stop</code> für
+                        Statusabfrage und kontrolliertes Beenden dokumentiert.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "webhook_url": "https://example.org/hooks/g1-qr"
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "scan_id": "scan-20260321-001",
+  "state": "running",
+  "running": true,
+  "pid": 4821,
+  "started_at": "2026-03-21T18:42:11Z",
+  "finished_at": null,
+  "delivery_target": "https://example.org/hooks/g1-qr",
+  "webhook_url": "https://example.org/hooks/g1-qr",
+  "webhook_delivery": "pending"
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">GET</span>
+                        <code>/qr/scan/status</code>
+                      </div>
+                      <p>
+                        Liefert den aktuellen oder zuletzt bekannten QR-Scan-Status zurück.
+                        Relevant sind hier neben <code>state</code> und <code>running</code>
+                        vor allem <code>last_qr_text</code>, <code>last_error</code>,
+                        <code>webhook_delivery</code>, <code>webhook_status_code</code> sowie
+                        optional <code>last_stdout</code> und <code>last_stderr</code> für
+                        technische Diagnose.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/qr/scan/stop</code>
+                      </div>
+                      <p>
+                        Fordert ein kontrolliertes Stoppen des laufenden QR-Workers an. Die
+                        Antwort verwendet dasselbe Statusschema wie <code>/qr/scan/start</code>,
+                        sodass der letzte bekannte Zustand und Delivery-Kontext direkt sichtbar
+                        bleiben.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
                         <span class="docs-method is-neutral">GET</span>
                         <code>/health</code>
                       </div>
@@ -809,13 +935,161 @@
                         <code>/ready</code>
                       </div>
                       <p>
-                        Minimaler Readiness-Endpunkt. Aktuell liefert er nur
-                        <code>sdk: unknown</code> und <code>robot: unknown</code>; eine echte
-                        Prüfung von DDS, SDK oder Robot-Erreichbarkeit ist noch nicht
-                        implementiert.
+                        Minimaler Readiness-Endpunkt. Aktuell validiert er laut OpenAPI keine
+                        echte Robot-Konnektivität und ist daher eher ein Prozesssignal als ein
+                        Hardware-Check.
                       </p>
                     </article>
                   </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">QR Flow</p>
+                    <h3>Webhook, Status und Rückgabefelder</h3>
+                  </div>
+                  <p>
+                    Beim Start eines QR-Scans kann optional <code>webhook_url</code> übergeben
+                    werden. Bleibt das Feld leer, bleibt das Ergebnis intern und kann über
+                    <code>/qr/scan/status</code> abgefragt werden. Ist ein Webhook gesetzt,
+                    versucht der Worker das Ergebnis zusätzlich an dieses Ziel auszuliefern.
+                  </p>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">delivery_target</p>
+                      <p>Ziel der Rückgabe: externe Webhook-URL oder <code>internal-ui</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">webhook_delivery</p>
+                      <p>Status der Auslieferung, z. B. <code>pending</code>, <code>sent</code>, <code>failed</code> oder <code>internal-ui</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">last_qr_text</p>
+                      <p>Zuletzt erkannter QR-Inhalt als Klartext, sofern bereits ein Code gelesen wurde.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">last_error</p>
+                      <p>Scanner-Fehler auf Prozessebene, z. B. wenn der Worker oder Kamerazugriff scheitert.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">last_stdout / last_stderr</p>
+                      <p>Diagnoseausgaben des letzten Scanner-Prozesses für Debugging und Support.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">webhook_status_code / webhook_error</p>
+                      <p>HTTP-Ergebnis oder Fehlertext der Webhook-Zustellung.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Fehlerbilder</p>
+                    <h3>Welche Fehler wann auftreten können</h3>
+                  </div>
+                  <div class="docs-endpoint-list">
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">401</span>
+                        <code>Missing or invalid Bearer token</code>
+                      </div>
+                      <p>
+                        Betrifft die geschützten Steuer-Endpunkte. Typisch bei fehlendem
+                        <code>Authorization: Bearer ...</code>, ungültiger Signatur,
+                        falschem <code>iss</code>/<code>aud</code> oder abgelaufenem Token.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">422</span>
+                        <code>Validation Error</code>
+                      </div>
+                      <p>
+                        Request-Schema passt nicht zur OpenAPI. Beispiele: fehlendes
+                        <code>id</code> bei <code>/arm/action</code>, ungültige Hex-Farbe,
+                        Blinkzahl außerhalb <code>1-10</code>, leerer oder zu langer
+                        Speech-Text, formal ungültige Webhook-URL.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">400</span>
+                        <code>Invalid webhook URL</code>
+                      </div>
+                      <p>
+                        Spezifisch für <code>/qr/scan/start</code>, wenn
+                        <code>webhook_url</code> gesetzt wurde, aber nicht akzeptiert wird.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">409</span>
+                        <code>A scan is already running</code>
+                      </div>
+                      <p>
+                        Ebenfalls spezifisch für <code>/qr/scan/start</code>. Der Endpunkt ist
+                        nicht für parallele Scans gedacht; zuerst Status prüfen oder laufenden
+                        Worker stoppen.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">500</span>
+                        <code>Binary / Worker failure</code>
+                      </div>
+                      <p>
+                        Tritt auf, wenn das Arm-, LED- oder Speech-Binary fehlschlägt oder der
+                        QR-Worker nicht korrekt gestartet bzw. gestoppt werden kann.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">503</span>
+                        <code>Runtime not initialized</code>
+                      </div>
+                      <p>
+                        Die Robot-Runtime ist nicht initialisiert. Das ist meist ein
+                        Betriebsproblem und kein Request-Problem des Clients.
+                      </p>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Schemas</p>
+                    <h3>Standardisierte Fehler- und Antwortformate</h3>
+                  </div>
+                  <div class="docs-split-block">
+                    <div>
+                      <p class="card-kicker">ErrorResponse</p>
+                      <pre class="docs-code"><code>{
+  "detail": "Worker startup failed"
+}</code></pre>
+                    </div>
+                    <div>
+                      <p class="card-kicker">HTTPValidationError</p>
+                      <pre class="docs-code"><code>{
+  "detail": [
+    {
+      "loc": ["body", "count"],
+      "msg": "Input should be less than or equal to 10",
+      "type": "less_than_equal"
+    }
+  ]
+}</code></pre>
+                    </div>
+                  </div>
+                  <p>
+                    <code>ErrorResponse</code> ist für einfache Betriebs- und Laufzeitfehler
+                    gedacht. <code>HTTPValidationError</code> zeigt dagegen feldgenau, wo ein
+                    Request nicht zum erwarteten Schema passt.
+                  </p>
                 </section>
 
                 <section class="docs-detail-section">
@@ -824,11 +1098,11 @@
                     <h3>Authentifizierung</h3>
                   </div>
                   <p>
-                    Der Bewegungs-Endpunkt ist über Bearer-JWT geschützt. Geprüft werden
-                    <code>HS256</code>, <code>iss</code>, <code>aud</code> und
-                    <code>exp</code>. Falls vorhanden, wird auch <code>nbf</code>
-                    berücksichtigt. Ohne gesetztes <code>JWT_SECRET</code> beantwortet der
-                    Service geschützte Requests mit einem Fehler.
+                    Alle aktiven Steuer-Endpunkte sind über Bearer-JWT geschützt, also Arm-,
+                    LED-, Speech- und QR-Operationen. Geprüft werden
+                    <code>HS256</code>, <code>iss</code>, <code>aud</code>,
+                    <code>exp</code> und optional <code>nbf</code>. Ohne gesetztes
+                    <code>JWT_SECRET</code> schlagen geschützte Requests fehl.
                   </p>
                   <div class="docs-meta-grid">
                     <div>
@@ -857,7 +1131,8 @@
                       <p>
                         <code>JWT_SECRET</code>, <code>JWT_ISSUER</code>,
                         <code>JWT_AUDIENCE</code>, <code>UNITREE_ARM_BINARY</code>,
-                        <code>CYCLONEDDS_URI</code>, <code>TZ</code>
+                        <code>CYCLONEDDS_URI</code>, TTS-/LED-Binarypfade,
+                        QR-Worker-Konfiguration, <code>TZ</code>
                       </p>
                     </div>
                     <div>
@@ -880,10 +1155,11 @@
                     <h3>Aktueller Scope und Grenzen</h3>
                   </div>
                   <ul class="docs-bullet-list">
-                    <li>Im Repo ist aktuell nur die Ausführung von Arm-Aktionen dokumentiert.</li>
-                    <li>Ein Katalog gültiger Action-IDs ist nicht enthalten.</li>
-                    <li><code>/ready</code> validiert derzeit weder DDS noch die tatsächliche Erreichbarkeit des Roboters.</li>
-                    <li>Die API reicht Fehler aus dem Aufruf der nativen Binary als Serverfehler weiter.</li>
+                    <li>Die OpenAPI beschreibt inzwischen Arm, LED, deutsche Sprache und QR-Scan-Orchestrierung.</li>
+                    <li>Ein vollständiger Katalog gültiger Arm-Action-IDs ist weiterhin nicht Teil der Doku.</li>
+                    <li><code>/ready</code> validiert derzeit noch keine echte Robot-Konnektivität.</li>
+                    <li>QR-Scans laufen als separater Worker-Prozess und liefern Status- sowie Delivery-Informationen zurück.</li>
+                    <li>Fehler aus Binaries oder Worker-Start landen weiterhin direkt als API-Fehler beim Client.</li>
                   </ul>
                 </section>
               </div>

@@ -51,7 +51,7 @@
     {
       "id": "unitree-g1",
       "title": "Unitree G1 Roboter",
-      "text": "Dummytext: Robotik-Knoten für Bewegungslogik, Sicherheit und Erlebnisprozesse.",
+      "text": "Physischer Service-Roboter im On-Prem-Netz. Er wird über die G1 API angesteuert und ist aktuell mit Armbewegungen, LED-Signalen, deutscher Sprachausgabe und QR-gestützten Abläufen gekoppelt.",
       "meta": [
         {
           "label": "Typ",
@@ -60,6 +60,10 @@
         {
           "label": "Anknüpfung",
           "value": "G1 API, Steuerung, Aufgaben"
+        },
+        {
+          "label": "Funktionen",
+          "value": "Motion, LED, Speech, QR Flow"
         }
       ]
     },

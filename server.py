@@ -1,5 +1,6 @@
 import hashlib
 import html
+import io
 import json
 import mimetypes
 import os
@@ -14,6 +15,12 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 from zoneinfo import ZoneInfo
+
+try:
+    import qrcode
+    import qrcode.image.svg
+except ModuleNotFoundError:
+    qrcode = None
 
 
 ROOT = Path(__file__).resolve().parent
@@ -1246,6 +1253,20 @@ def reservation_qr_matrix(payload: str) -> list[list[bool]]:
 
 
 def reservation_qr_svg(payload: str, module_size: int = 14, quiet_zone: int = 4) -> str:
+    if qrcode is not None:
+        qr = qrcode.QRCode(
+            version=None,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=module_size,
+            border=quiet_zone,
+        )
+        qr.add_data(payload)
+        qr.make(fit=True)
+        image = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
+        buffer = io.BytesIO()
+        image.save(buffer)
+        return buffer.getvalue().decode("utf-8")
+
     matrix = reservation_qr_matrix(payload)
     size = len(matrix)
     full_size = (size + quiet_zone * 2) * module_size

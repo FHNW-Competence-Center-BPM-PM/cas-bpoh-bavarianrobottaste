@@ -111,7 +111,7 @@
     {
       "id": "g1-api",
       "title": "G1 API",
-      "text": "Dummytext: Steuer-API für Roboterbefehle, Status und Sicherheitsregeln.",
+      "text": "Lokale FastAPI für Unitree-G1-Steuerung. Die Schnittstelle deckt Arm-Aktionen, LED-Blinken, deutsche TTS-Ausgabe sowie Start, Status und Stop eines QR-Scan-Workers ab.",
       "meta": [
         {
           "label": "Ebene",
@@ -120,6 +120,10 @@
         {
           "label": "Typ",
           "value": "Robot API"
+        },
+        {
+          "label": "Scope",
+          "value": "Arm, LED, Speech, QR Scan"
         }
       ]
     }

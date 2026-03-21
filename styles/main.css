@@ -2207,7 +2207,7 @@ body.is-modal-open {
 
 .profile-reservation-card {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(140px, auto) auto;
+  grid-template-columns: minmax(0, 1.2fr) 96px minmax(140px, auto) auto;
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
@@ -2240,6 +2240,43 @@ body.is-modal-open {
   display: grid;
   gap: 4px;
   text-align: right;
+}
+
+.profile-reservation-qr-preview,
+.profile-reservation-qr-large,
+.profile-reservation-qr-small {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.profile-reservation-qr-preview {
+  width: 96px;
+  min-height: 96px;
+  padding: 8px;
+  border: 0;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.profile-reservation-qr-preview:hover,
+.profile-reservation-qr-preview:focus-visible {
+  transform: scale(1.03);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+  outline: none;
+}
+
+.profile-reservation-qr-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.profile-reservation-qr-preview span,
+.profile-reservation-qr-empty,
+.profile-reservation-qr-hint {
+  color: var(--muted);
 }
 
 .profile-reservation-facts p,
@@ -2284,9 +2321,90 @@ body.is-modal-open {
   gap: 18px;
 }
 
+.profile-reservation-qr-panel {
+  gap: 14px;
+}
+
 .profile-reservation-detail-stack {
   display: grid;
   gap: 12px;
+}
+
+.profile-reservation-qr-trigger {
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.profile-reservation-qr-trigger:disabled {
+  cursor: default;
+}
+
+.profile-reservation-qr-trigger:focus-visible {
+  outline: 2px solid rgba(119, 229, 216, 0.55);
+  outline-offset: 6px;
+}
+
+.profile-reservation-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(119, 229, 216, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--highlight);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.profile-reservation-icon-button:hover,
+.profile-reservation-icon-button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(119, 229, 216, 0.46);
+  background: rgba(119, 229, 216, 0.12);
+  outline: none;
+}
+
+.profile-reservation-icon-button svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.profile-reservation-qr-large {
+  min-height: 280px;
+  padding: 18px;
+}
+
+.profile-reservation-qr-small {
+  width: 132px;
+  min-height: 132px;
+  padding: 10px;
+}
+
+.profile-reservation-qr-small img,
+.profile-reservation-qr-large img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.profile-reservation-qr-empty {
+  text-align: center;
+}
+
+.profile-reservation-qr-hint {
+  margin: 0;
+  text-align: center;
 }
 
 .profile-reservation-modal[hidden] {
@@ -2301,6 +2419,52 @@ body.is-modal-open {
 
 .profile-reservation-modal-panel {
   margin-top: 8vh;
+}
+
+.profile-qr-modal[hidden] {
+  display: none;
+}
+
+.profile-qr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+.profile-qr-modal-panel {
+  position: relative;
+  width: min(calc(100% - 24px), 620px);
+  margin: 6vh auto 0;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  background: rgba(11, 24, 35, 0.96);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+}
+
+.profile-qr-modal-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.profile-qr-modal-frame {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  border-radius: 24px;
+  background: #fff;
+}
+
+.profile-qr-modal-image {
+  width: min(100%, 460px);
+}
+
+.profile-qr-modal-image img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .profile-empty {
@@ -2651,6 +2815,10 @@ body.is-modal-open {
   .profile-reservation-card {
     grid-template-columns: 1fr;
     align-items: start;
+  }
+
+  .profile-reservation-qr-preview {
+    max-width: 184px;
   }
 
   .profile-reservation-facts {

@@ -8,7 +8,7 @@
       name="description"
       content="Profilseite für registrierte Gäste von Bavarian RoboTaste."
     />
-    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="styles/main.css?v=20260321-qr" />
   </head>
   <body>
     <div class="site-shell">
@@ -113,6 +113,15 @@
               <p class="card-kicker">Rahmen</p>
               <div class="profile-reservation-detail-stack" data-profile-reservation-meta></div>
             </div>
+            <div class="legal-card profile-reservation-qr-panel">
+              <p class="card-kicker">QR-Code</p>
+              <button class="profile-reservation-qr-trigger" type="button" data-profile-reservation-qr-open>
+                <div class="profile-reservation-qr-small" data-profile-reservation-qr></div>
+              </button>
+              <p class="profile-reservation-qr-hint" data-profile-reservation-qr-hint>
+                Der QR-Code wird geladen.
+              </p>
+            </div>
             <div class="legal-card">
               <p class="card-kicker">Notizen &amp; Aktionen</p>
               <div class="profile-reservation-detail-stack" data-profile-reservation-notes></div>
@@ -122,10 +131,31 @@
         </div>
       </div>
 
+      <div class="profile-qr-modal" data-profile-qr-modal hidden>
+        <div class="reservation-calendar-modal-backdrop" data-profile-qr-close></div>
+        <div class="profile-qr-modal-panel">
+          <div class="profile-qr-modal-tools">
+            <a class="profile-reservation-icon-button" href="#" download data-profile-qr-download aria-label="QR-Code herunterladen" title="Download">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 4v10M8 10l4 4 4-4M5 19h14" />
+              </svg>
+            </a>
+            <button class="profile-reservation-icon-button" type="button" data-profile-qr-close aria-label="QR-Code schliessen" title="Schliessen">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <div class="profile-qr-modal-frame">
+            <div class="profile-qr-modal-image" data-profile-qr-image></div>
+          </div>
+        </div>
+      </div>
+
       <footer class="site-footer reveal" data-site-footer></footer>
     </div>
 
-    <script src="scripts/layout.js"></script>
-    <script src="scripts/main.js"></script>
+    <script src="scripts/layout.js?v=20260321-qr"></script>
+    <script src="scripts/main.js?v=20260321-qr"></script>
   </body>
 </html>
