@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bavarian RoboTaste | Integration Lab</title>
+    <meta
+      name="description"
+      content="Interne, nicht verlinkte Testoberflaeche fuer CMS-REST-Calls und CRM-SOAP-Requests."
+    />
+    <link rel="stylesheet" href="styles/main.css" />
+  </head>
+  <body class="integration-lab-page">
+    <div class="site-shell">
+      <main>
+        <section class="section integration-lab-shell" data-integration-lab>
+          <div class="integration-lab-grid">
+            <article class="integration-builder">
+              <div class="integration-section-heading">
+                <p class="card-kicker">Request Builder</p>
+                <h2>Call aufbauen</h2>
+              </div>
+
+              <div class="integration-builder-controls">
+                <label class="field">
+                  <span>Bereich</span>
+                  <select data-lab-target>
+                    <option value="cms">CMS REST</option>
+                    <option value="crm">CRM SOAP</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Operation</span>
+                  <select data-lab-operation></select>
+                </label>
+              </div>
+
+              <div class="integration-inline-note" data-lab-cms-note>
+                Die CMS-Endpunkte brauchen eine gepflegte <code>erpId</code>. Im aktuellen
+                Datenbestand sind die Produktdatensaetze zwar vorhanden, die ERP-IDs aber leer,
+                deshalb liefern CMS-Tests momentan erwartungsgemaess oft <code>404 product_not_found</code>.
+              </div>
+
+              <section class="integration-form-panel" data-lab-section="cms-get">
+                <div class="integration-form-grid">
+                  <label class="field">
+                    <span>ERP-ID</span>
+                    <input
+                      type="text"
+                      data-field="cmsGetErpId"
+                      value=""
+                      placeholder="z. B. ERP-10042 sobald im Produkt gepflegt"
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="cms-price" hidden>
+                <div class="integration-form-grid">
+                  <label class="field">
+                    <span>ERP-ID</span>
+                    <input
+                      type="text"
+                      data-field="cmsPriceErpId"
+                      value=""
+                      placeholder="z. B. ERP-20017 sobald im Produkt gepflegt"
+                    />
+                  </label>
+                  <label class="field">
+                    <span>Neuer Preis</span>
+                    <input type="text" data-field="cmsPriceValue" value="CHF 17 / 102" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-common" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>Bearer-Token optional</span>
+                    <input
+                      type="text"
+                      data-field="crmBearerToken"
+                      placeholder="Leer lassen oder Session-Token aus dem Browser verwenden"
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-id-by-email" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>customerEmail</span>
+                    <input type="email" data-field="crmCustomerEmail" value="achim@achimsweb.de" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-reservations" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>customerId</span>
+                    <input type="text" data-field="crmReservationsCustomerId" value="guest_40306352e52e176f" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-stats" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>customerId</span>
+                    <input type="text" data-field="crmStatsCustomerId" value="guest_40306352e52e176f" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-status" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>customerId</span>
+                    <input type="text" data-field="crmStatusCustomerId" value="guest_40306352e52e176f" />
+                  </label>
+                  <label class="field">
+                    <span>reservationId</span>
+                    <input type="text" data-field="crmStatusReservationId" value="reservation_demo_001" />
+                  </label>
+                  <label class="field">
+                    <span>Status</span>
+                    <input type="text" data-field="crmStatusValue" value="arrived" />
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-invoice" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>customerId</span>
+                    <input type="text" data-field="crmInvoiceCustomerId" value="guest_40306352e52e176f" />
+                  </label>
+                  <label class="field">
+                    <span>reservationId</span>
+                    <input type="text" data-field="crmInvoiceReservationId" value="reservation_demo_001" />
+                  </label>
+                  <label class="field">
+                    <span>invoiceId</span>
+                    <input type="text" data-field="crmInvoiceId" value="inv-2026-0001" />
+                  </label>
+                  <label class="field">
+                    <span>currency</span>
+                    <input type="text" data-field="crmInvoiceCurrency" value="CHF" />
+                  </label>
+                  <label class="field">
+                    <span>totalAmount</span>
+                    <input type="text" data-field="crmInvoiceTotalAmount" value="148.50" />
+                  </label>
+                  <label class="field field-span-2">
+                    <span>paidAt</span>
+                    <input type="text" data-field="crmInvoicePaidAt" value="2026-03-21T21:15:00+01:00" />
+                  </label>
+                  <label class="field field-span-2">
+                    <span>Items (JSON Array)</span>
+                    <textarea data-field="crmInvoiceItems" rows="8">[
+  {
+    "itemId": "ERP-10042",
+    "name": "Mechatronic Roast",
+    "qty": 2,
+    "price": 39
+  },
+  {
+    "itemId": "ERP-30001",
+    "name": "Signal Spritz",
+    "qty": 1,
+    "price": 13
+  }
+]</textarea>
+                  </label>
+                </div>
+              </section>
+
+              <section class="integration-form-panel" data-lab-section="crm-revenue" hidden>
+                <div class="integration-form-grid">
+                  <label class="field field-span-2">
+                    <span>customerId</span>
+                    <input type="text" data-field="crmRevenueCustomerId" value="guest_40306352e52e176f" />
+                  </label>
+                </div>
+              </section>
+
+              <div class="integration-builder-actions">
+                <button class="button" type="button" data-lab-send>Request senden</button>
+                <button class="button button-secondary" type="button" data-lab-reset>
+                  Vorschau neu erzeugen
+                </button>
+              </div>
+            </article>
+
+            <article class="integration-console">
+              <div class="integration-console-block">
+                <div class="integration-section-heading">
+                  <p class="card-kicker">Preview</p>
+                  <h2>Erzeugter Request</h2>
+                </div>
+                <div class="integration-meta-row">
+                  <span class="integration-meta-pill" data-lab-preview-method>GET</span>
+                  <code data-lab-preview-url>/api/cms/products/ERP-10042</code>
+                </div>
+                <label class="field">
+                  <span>Headers</span>
+                  <textarea data-lab-preview-headers rows="5" readonly></textarea>
+                </label>
+                <label class="field">
+                  <span>Body / SOAP</span>
+                  <textarea data-lab-preview-body rows="18"></textarea>
+                </label>
+              </div>
+
+              <div class="integration-console-block">
+                <div class="integration-section-heading">
+                  <p class="card-kicker">Response</p>
+                  <h2>Server-Antwort</h2>
+                </div>
+                <div class="integration-meta-row">
+                  <span class="integration-meta-pill" data-lab-response-status>Bereit</span>
+                  <span class="integration-meta-note" data-lab-response-time>Noch nicht gesendet</span>
+                </div>
+                <label class="field">
+                  <span>Response Headers</span>
+                  <textarea data-lab-response-headers rows="5" readonly></textarea>
+                </label>
+                <label class="field">
+                  <span>Response Body</span>
+                  <textarea data-lab-response-body rows="18" readonly></textarea>
+                </label>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="scripts/integration-lab.js"></script>
+  </body>
+</html>
