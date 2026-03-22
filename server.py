@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import html
+import io
 import json
 import mimetypes
 import os
@@ -8,12 +9,19 @@ import secrets
 import smtplib
 import sqlite3
 import threading
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, unquote, urlsplit
 from zoneinfo import ZoneInfo
+
+try:
+    import qrcode
+    import qrcode.image.svg
+except ModuleNotFoundError:
+    qrcode = None
 
 
 ROOT = Path(__file__).resolve().parent
@@ -330,6 +338,19 @@ def ensure_reservations_db() -> None:
                 status TEXT NOT NULL DEFAULT 'requested',
                 cancelled_at TEXT NOT NULL DEFAULT '',
                 created_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS reservation_invoices (
+                id TEXT PRIMARY KEY,
+                reservation_id TEXT NOT NULL,
+                guest_email TEXT NOT NULL,
+                invoice_id TEXT NOT NULL UNIQUE,
+                currency TEXT NOT NULL DEFAULT 'CHF',
+                total_amount REAL NOT NULL DEFAULT 0,
+                items_json TEXT NOT NULL DEFAULT '[]',
+                paid_at TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             );
             """
         )
@@ -769,6 +790,173 @@ def reservations_for_guest_email(email: str, base_url: str | None = None) -> lis
     return [reservation_details_payload(row, resolved_base_url) for row in rows]
 
 
+def reservation_stats_for_guest_email(email: str) -> dict:
+    normalized_email = normalize_email(email)
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT status, reservation_date
+            FROM reservations
+            WHERE lower(guest_email) = ?
+            """,
+            (normalized_email,),
+        ).fetchall()
+
+    made = len(rows)
+    cancelled = sum(1 for row in rows if row["status"] == "cancelled")
+    arrived = sum(1 for row in rows if row["status"] == "arrived")
+    open_count = sum(1 for row in rows if row["status"] not in {"cancelled", "arrived"})
+    return {
+        "made": made,
+        "cancelled": cancelled,
+        "arrived": arrived,
+        "open": open_count,
+    }
+
+
+def crm_invoice_payload(row: sqlite3.Row | dict) -> dict:
+    try:
+        items = json.loads(row["items_json"] or "[]")
+    except (TypeError, json.JSONDecodeError):
+        items = []
+
+    return {
+        "id": row["id"],
+        "reservationId": row["reservation_id"],
+        "guestEmail": row["guest_email"],
+        "invoiceId": row["invoice_id"],
+        "currency": row["currency"],
+        "totalAmount": float(row["total_amount"]),
+        "items": items if isinstance(items, list) else [],
+        "paidAt": row["paid_at"],
+        "createdAt": row["created_at"],
+        "updatedAt": row["updated_at"],
+    }
+
+
+def invoices_for_guest_email(email: str) -> list[dict]:
+    normalized_email = normalize_email(email)
+    with db_connection() as connection:
+        rows = connection.execute(
+            """
+            SELECT id, reservation_id, guest_email, invoice_id, currency, total_amount, items_json, paid_at, created_at, updated_at
+            FROM reservation_invoices
+            WHERE lower(guest_email) = ?
+            ORDER BY paid_at DESC, created_at DESC
+            """,
+            (normalized_email,),
+        ).fetchall()
+
+    return [crm_invoice_payload(row) for row in rows]
+
+
+def customer_revenue_for_guest_email(email: str) -> dict:
+    invoices = invoices_for_guest_email(email)
+    total_amount = round(sum(invoice["totalAmount"] for invoice in invoices), 2)
+    currency = invoices[0]["currency"] if invoices else "CHF"
+    return {
+        "currency": currency,
+        "totalAmount": total_amount,
+        "invoiceCount": len(invoices),
+        "invoices": invoices,
+    }
+
+
+def update_reservation_status_for_guest(email: str, reservation_id: str, status: str) -> dict:
+    normalized_email = normalize_email(email)
+    normalized_status = status.strip().lower()
+    allowed_statuses = {"requested", "cancelled", "arrived"}
+    if normalized_status == "open":
+        normalized_status = "requested"
+    if normalized_status not in allowed_statuses:
+        raise ValueError("Der Reservierungsstatus ist nicht gültig.")
+
+    reservation_row = reservation_by_id(reservation_id)
+    if not reservation_row or normalize_email(reservation_row["guest_email"]) != normalized_email:
+        raise ValueError("Die Reservierung wurde für diesen Gast nicht gefunden.")
+
+    cancelled_at = reservation_row["cancelled_at"]
+    if normalized_status == "cancelled" and not cancelled_at:
+        cancelled_at = now_iso()
+    if normalized_status != "cancelled":
+        cancelled_at = ""
+
+    with db_connection() as connection:
+        connection.execute(
+            """
+            UPDATE reservations
+            SET status = ?, cancelled_at = ?
+            WHERE id = ?
+            """,
+            (normalized_status, cancelled_at, reservation_id),
+        )
+
+    refreshed_row = reservation_by_id(reservation_id)
+    return reservation_details_payload(refreshed_row)
+
+
+def store_invoice_for_guest(
+    email: str,
+    reservation_id: str,
+    invoice_id: str,
+    total_amount: float,
+    currency: str,
+    items: list[dict],
+    paid_at: str,
+) -> dict:
+    normalized_email = normalize_email(email)
+    reservation_row = reservation_by_id(reservation_id)
+    if not reservation_row or normalize_email(reservation_row["guest_email"]) != normalized_email:
+        raise ValueError("Die Reservierung wurde für diesen Gast nicht gefunden.")
+    if not invoice_id.strip():
+        raise ValueError("Die Rechnungs-ID fehlt.")
+    if total_amount < 0:
+        raise ValueError("Der Gesamtbetrag darf nicht negativ sein.")
+
+    invoice_row_id = f"invoice_{secrets.token_hex(16)}"
+    timestamp = now_iso()
+    payload = (
+        invoice_row_id,
+        reservation_id,
+        normalized_email,
+        invoice_id.strip(),
+        (currency or "CHF").strip().upper(),
+        float(total_amount),
+        json.dumps(items or [], ensure_ascii=False),
+        paid_at.strip() or timestamp,
+        timestamp,
+        timestamp,
+    )
+
+    with db_connection() as connection:
+        connection.execute(
+            """
+            INSERT INTO reservation_invoices (
+                id, reservation_id, guest_email, invoice_id, currency, total_amount, items_json, paid_at, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(invoice_id) DO UPDATE SET
+                reservation_id = excluded.reservation_id,
+                guest_email = excluded.guest_email,
+                currency = excluded.currency,
+                total_amount = excluded.total_amount,
+                items_json = excluded.items_json,
+                paid_at = excluded.paid_at,
+                updated_at = excluded.updated_at
+            """,
+            payload,
+        )
+        row = connection.execute(
+            """
+            SELECT id, reservation_id, guest_email, invoice_id, currency, total_amount, items_json, paid_at, created_at, updated_at
+            FROM reservation_invoices
+            WHERE invoice_id = ?
+            """,
+            (invoice_id.strip(),),
+        ).fetchone()
+
+    return crm_invoice_payload(row)
+
+
 def available_tables(date_value: str, slot_key: str, room_id: str, guests: int | None = None) -> list[dict]:
     room = reservation_room(room_id)
     if not room:
@@ -1069,6 +1257,20 @@ def reservation_qr_matrix(payload: str) -> list[list[bool]]:
 
 
 def reservation_qr_svg(payload: str, module_size: int = 14, quiet_zone: int = 4) -> str:
+    if qrcode is not None:
+        qr = qrcode.QRCode(
+            version=None,
+            error_correction=qrcode.constants.ERROR_CORRECT_H,
+            box_size=module_size,
+            border=quiet_zone,
+        )
+        qr.add_data(payload)
+        qr.make(fit=True)
+        image = qr.make_image(image_factory=qrcode.image.svg.SvgPathImage)
+        buffer = io.BytesIO()
+        image.save(buffer)
+        return buffer.getvalue().decode("utf-8")
+
     matrix = reservation_qr_matrix(payload)
     size = len(matrix)
     full_size = (size + quiet_zone * 2) * module_size
@@ -1088,7 +1290,7 @@ def reservation_qr_svg(payload: str, module_size: int = 14, quiet_zone: int = 4)
     )
 
 
-def reservation_qr_email_markup(payload: str, module_size: int = 6, quiet_zone: int = 4) -> str:
+def reservation_qr_email_markup(payload: str, module_size: int = 5, quiet_zone: int = 4) -> str:
     matrix = reservation_qr_matrix(payload)
     full_size = len(matrix) + quiet_zone * 2
     rows = []
@@ -1103,9 +1305,13 @@ def reservation_qr_email_markup(payload: str, module_size: int = 6, quiet_zone: 
             )
         rows.append(f"<tr>{''.join(cells)}</tr>")
     return (
-        '<div style="display:inline-block;margin:0 auto 14px;padding:14px;border-radius:18px;background:#ffffff;">'
-        '<table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">'
-        f"{''.join(rows)}</table></div>"
+        '<table role="presentation" align="center" cellspacing="0" cellpadding="0" '
+        'style="margin:0 auto 14px auto;border-collapse:separate;border-spacing:0;background:#ffffff;'
+        'border-radius:18px;">'
+        '<tr><td style="padding:14px;">'
+        '<table role="presentation" align="center" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">'
+        f"{''.join(rows)}</table>"
+        "</td></tr></table>"
     )
 
 
@@ -1187,73 +1393,98 @@ def build_reservation_confirmation_email(reservation: dict, base_url: str) -> Em
     html_body = f"""
 <!DOCTYPE html>
 <html lang="de">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
   <body style="margin:0;padding:0;background:#07131c;color:#edf1f3;font-family:Trebuchet MS,Segoe UI,sans-serif;">
-    <div style="padding:24px 12px;background:radial-gradient(circle at top right, rgba(242,106,61,0.22), transparent 34%), #07131c;">
-      <div style="max-width:720px;margin:0 auto;border:1px solid rgba(255,255,255,0.1);border-radius:28px;overflow:hidden;background:rgba(11,24,35,0.92);">
-        <div style="padding:28px 28px 12px;">
-          <div style="color:#77e5d8;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">Reservierung bestätigt</div>
-          <h1 style="margin:0 0 14px;font-family:Georgia,Times New Roman,serif;font-size:40px;line-height:1.04;">Dein Abend steht.</h1>
-          <p style="margin:0;color:#a7b4bc;font-size:17px;line-height:1.7;">
-            Hallo {guest_name}, wir freuen uns auf deinen Besuch im <strong style="color:#edf1f3;">{room_name}</strong>.
-            Unten findest du deinen QR-Code für den Check-in, alle Eckdaten und den Storno-Link.
-          </p>
-        </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#07131c;">
+      <tr>
+        <td style="padding:12px 8px;background:radial-gradient(circle at top right, rgba(242,106,61,0.22), transparent 34%), #07131c;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;max-width:560px;margin:0 auto;border-collapse:separate;border-spacing:0;border:1px solid rgba(255,255,255,0.1);border-radius:24px;overflow:hidden;background:rgba(11,24,35,0.92);">
+            <tr>
+              <td style="padding:20px 16px 10px;">
+                <div style="color:#77e5d8;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:12px;">Reservierung bestätigt</div>
+                <div style="margin:0 0 12px;font-family:Georgia,Times New Roman,serif;font-size:28px;line-height:1.08;font-weight:700;">Dein Abend steht.</div>
+                <p style="margin:0;color:#a7b4bc;font-size:15px;line-height:1.7;">
+                  Hallo {guest_name}, wir freuen uns auf deinen Besuch im <strong style="color:#edf1f3;">{room_name}</strong>.
+                  Unten findest du deinen QR-Code für den Check-in, alle Eckdaten und den Storno-Link.
+                </p>
+              </td>
+            </tr>
 
-        <div style="padding:16px 28px 28px;">
-          <div style="display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;">
-            <div style="padding:22px;border:1px solid rgba(255,255,255,0.08);border-radius:22px;background:rgba(255,255,255,0.03);">
-              <div style="display:grid;gap:14px;">
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Zeitfenster</div>
-                  <div style="margin-top:6px;font-size:22px;font-weight:700;line-height:1.3;">{scheduled_label}</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Raum & Tisch</div>
-                  <div style="margin-top:6px;font-size:18px;font-weight:700;">{room_name} · {table_label}</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Personen</div>
-                  <div style="margin-top:6px;font-size:18px;font-weight:700;">{reservation['guests']} Gäste</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Anlass</div>
-                  <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{occasion}</div>
-                </div>
-                <div>
-                  <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Notizen</div>
-                  <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{notes}</div>
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:10px;padding-top:6px;">
-                  <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:999px;background:rgba(119,229,216,0.12);color:#77e5d8;font-weight:700;">Code {reservation_code}</span>
-                  <span style="display:inline-flex;align-items:center;min-height:34px;padding:0 12px;border-radius:999px;background:rgba(242,106,61,0.14);color:#ffd9cd;font-weight:700;">ID {reservation_id}</span>
-                </div>
-              </div>
-            </div>
+            <tr>
+              <td style="padding:8px 16px 0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+                  <tr>
+                    <td style="padding:16px;border:1px solid rgba(119,229,216,0.18);border-radius:20px;background:linear-gradient(180deg, rgba(119,229,216,0.08), rgba(255,255,255,0.03));text-align:center;">
+                      <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;">Check-in QR</div>
+                      {qr_media_markup}
+                      <p style="margin:0;color:#a7b4bc;line-height:1.6;">
+                        Tippe auf den QR-Code, um ihn im Browser groß zu öffnen. Darin steckt deine lange Reservierungs-ID.
+                      </p>
+                      <p style="margin:12px 0 0;color:#a7b4bc;font-size:13px;line-height:1.6;">
+                        Falls dein Mailprogramm eingebettete Bilder blockiert, kannst du den Code auch direkt hier öffnen:<br />
+                        <a href="{qr_image}" style="color:#77e5d8;">QR-Code direkt laden</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
 
-            <div style="padding:22px;border:1px solid rgba(119,229,216,0.18);border-radius:22px;background:linear-gradient(180deg, rgba(119,229,216,0.08), rgba(255,255,255,0.03));text-align:center;">
-              <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;">Check-in QR</div>
-              {qr_media_markup}
-              <p style="margin:0;color:#a7b4bc;line-height:1.6;">
-                Tippe auf den QR-Code, um ihn im Browser groß zu öffnen. Darin steckt deine lange Reservierungs-ID.
-              </p>
-              <p style="margin:12px 0 0;color:#a7b4bc;font-size:13px;line-height:1.6;">
-                Falls dein Mailprogramm eingebettete Bilder blockiert, kannst du den Code auch direkt hier öffnen:<br />
-                <a href="{qr_image}" style="color:#77e5d8;">QR-Code extern laden</a>
-              </p>
-            </div>
-          </div>
+            <tr>
+              <td style="padding:14px 16px 0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+                  <tr>
+                    <td style="padding:18px;border:1px solid rgba(255,255,255,0.08);border-radius:20px;background:rgba(255,255,255,0.03);">
+                      <div style="color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Zeitfenster</div>
+                      <div style="margin-top:6px;font-size:20px;font-weight:700;line-height:1.35;word-break:break-word;">{scheduled_label}</div>
 
-          <div style="margin-top:18px;padding:18px 20px;border:1px solid rgba(242,106,61,0.24);border-radius:20px;background:rgba(242,106,61,0.08);">
-            <div style="font-weight:700;font-size:18px;margin-bottom:8px;">Reservierung verwalten</div>
-            <p style="margin:0 0 14px;color:#ffd9cd;line-height:1.7;">
-              Falls sich etwas ändert, kannst du deine Reservierung über den Link unten löschen.
-              Bitte beachte: Das geht nur bis <strong>{cancellation_deadline}</strong>, also spätestens {RESERVATION_CANCELLATION_NOTICE_HOURS} Stunden vor Beginn.
-            </p>
-            <a href="{cancel_link}" style="display:inline-flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:999px;background:linear-gradient(135deg, #f26a3d, #db4d1f);color:#fff5f0;text-decoration:none;font-weight:700;">Reservierung löschen</a>
-          </div>
-        </div>
-      </div>
-    </div>
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Raum &amp; Tisch</div>
+                      <div style="margin-top:6px;font-size:17px;font-weight:700;line-height:1.45;word-break:break-word;">{room_name} · {table_label}</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Personen</div>
+                      <div style="margin-top:6px;font-size:18px;font-weight:700;">{reservation['guests']} Gäste</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Anlass</div>
+                      <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{occasion}</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Notizen</div>
+                      <div style="margin-top:6px;color:#a7b4bc;line-height:1.6;">{notes}</div>
+
+                      <div style="margin-top:18px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Code</div>
+                      <div style="margin-top:6px;">
+                        <span style="display:inline-block;margin:0 8px 8px 0;padding:9px 12px;border-radius:999px;background:rgba(119,229,216,0.12);color:#77e5d8;font-weight:700;">Code {reservation_code}</span>
+                      </div>
+
+                      <div style="margin-top:10px;color:#77e5d8;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Reservierungs-ID</div>
+                      <div style="margin-top:6px;padding:12px 14px;border-radius:16px;background:rgba(242,106,61,0.12);color:#ffd9cd;font-weight:700;line-height:1.55;word-break:break-all;">{reservation_id}</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:14px 16px 20px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:separate;border-spacing:0;">
+                  <tr>
+                    <td style="padding:18px 18px;border:1px solid rgba(242,106,61,0.24);border-radius:20px;background:rgba(242,106,61,0.08);">
+                      <div style="font-weight:700;font-size:18px;margin-bottom:8px;">Reservierung verwalten</div>
+                      <p style="margin:0 0 14px;color:#ffd9cd;line-height:1.7;">
+                        Falls sich etwas ändert, kannst du deine Reservierung über den Link unten löschen.
+                        Bitte beachte: Das geht nur bis <strong>{cancellation_deadline}</strong>, also spätestens {RESERVATION_CANCELLATION_NOTICE_HOURS} Stunden vor Beginn.
+                      </p>
+                      <a href="{cancel_link}" style="display:inline-block;padding:15px 22px;border-radius:999px;background:linear-gradient(135deg, #f26a3d, #db4d1f);color:#fff5f0;text-decoration:none;font-weight:700;">Reservierung löschen</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
   </body>
 </html>
 """
@@ -1839,6 +2070,79 @@ def docs_basic_auth_valid(handler) -> bool:
     return secrets.compare_digest(username, DOCS_USERNAME) and secrets.compare_digest(password, DOCS_PASSWORD)
 
 
+def docs_auth_required(path: str) -> bool:
+    return path == "/docs.html" or path.startswith("/assets/docs/") or path in {
+        "/assets/bavarian-robotaste-infrastructure-hw-network.svg",
+        "/assets/bavarian-robotaste-infrastructure-services.svg",
+    }
+
+
+SOAP_ENV_NS = "http://schemas.xmlsoap.org/soap/envelope/"
+CRM_SOAP_NS = "http://bavarian-robotaste.local/crm"
+SOAP_NAMESPACES = {"soapenv": SOAP_ENV_NS, "crm": CRM_SOAP_NS}
+ET.register_namespace("soapenv", SOAP_ENV_NS)
+ET.register_namespace("crm", CRM_SOAP_NS)
+
+
+class CRMSoapError(Exception):
+    def __init__(self, fault_code: str, message: str, status: int = 400, error_code: str = "validation_error", details: dict | None = None):
+        super().__init__(message)
+        self.fault_code = fault_code
+        self.message = message
+        self.status = status
+        self.error_code = error_code
+        self.details = details or {}
+
+
+def xml_local_name(tag: str) -> str:
+    return tag.split("}", 1)[-1] if "}" in tag else tag
+
+
+def parse_xml_body(handler) -> ET.Element:
+    content_length = int(handler.headers.get("Content-Length", "0"))
+    raw_body = handler.rfile.read(content_length)
+    return ET.fromstring(raw_body.decode("utf-8"))
+
+
+def xml_text(node: ET.Element | None, name: str, default: str = "") -> str:
+    if node is None:
+        return default
+    for child in list(node):
+        if xml_local_name(child.tag) == name:
+            return (child.text or "").strip()
+    return default
+
+
+def append_xml_text(parent: ET.Element, name: str, value) -> ET.Element:
+    child = ET.SubElement(parent, f"{{{CRM_SOAP_NS}}}{name}")
+    child.text = "" if value is None else str(value)
+    return child
+
+
+def soap_envelope(body_builder) -> bytes:
+    envelope = ET.Element(f"{{{SOAP_ENV_NS}}}Envelope")
+    body = ET.SubElement(envelope, f"{{{SOAP_ENV_NS}}}Body")
+    body_builder(body)
+    return ET.tostring(envelope, encoding="utf-8", xml_declaration=True)
+
+
+def soap_fault(code: str, message: str, status: int = 400, error_code: str = "validation_error", details: dict | None = None) -> tuple[int, bytes]:
+    def build(body: ET.Element):
+        fault = ET.SubElement(body, f"{{{SOAP_ENV_NS}}}Fault")
+        faultcode = ET.SubElement(fault, "faultcode")
+        faultcode.text = code
+        faultstring = ET.SubElement(fault, "faultstring")
+        faultstring.text = message
+        detail = ET.SubElement(fault, "detail")
+        error = ET.SubElement(detail, f"{{{CRM_SOAP_NS}}}error")
+        append_xml_text(error, "code", error_code)
+        append_xml_text(error, "message", message)
+        for key, value in (details or {}).items():
+            append_xml_text(error, key, value)
+
+    return status, soap_envelope(build)
+
+
 class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -1847,15 +2151,23 @@ class AppHandler(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
+    def require_docs_auth(self, path: str) -> bool:
+        if not docs_auth_required(path):
+            return False
+        if docs_basic_auth_valid(self):
+            return False
+
+        self.send_response(401)
+        self.send_header("WWW-Authenticate", f'Basic realm="{DOCS_BASIC_AUTH_REALM}"')
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(b"Authentication required")
+        return True
+
     def do_GET(self):
         parsed_url = urlsplit(self.path)
 
-        if parsed_url.path == "/docs.html" and not docs_basic_auth_valid(self):
-            self.send_response(401)
-            self.send_header("WWW-Authenticate", f'Basic realm="{DOCS_BASIC_AUTH_REALM}"')
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
-            self.end_headers()
-            self.wfile.write(b"Authentication required")
+        if self.require_docs_auth(parsed_url.path):
             return
 
         if parsed_url.path == "/api/auth/me":
@@ -1890,7 +2202,19 @@ class AppHandler(SimpleHTTPRequestHandler):
             return
         super().do_GET()
 
+    def do_HEAD(self):
+        parsed_url = urlsplit(self.path)
+
+        if self.require_docs_auth(parsed_url.path):
+            return
+
+        super().do_HEAD()
+
     def do_POST(self):
+        if self.path == "/api/crm/soap":
+            self.handle_crm_soap()
+            return
+
         routes = {
             "/api/contact": self.handle_contact,
             "/api/reservations": self.handle_reservations_create,
@@ -2051,6 +2375,308 @@ class AppHandler(SimpleHTTPRequestHandler):
             200,
             {"ok": True, "reservations": reservations_for_guest_email(profile["email"], self.public_base_url())},
         )
+
+    def handle_crm_soap(self):
+        try:
+            envelope = parse_xml_body(self)
+        except ET.ParseError:
+            status, body = soap_fault(
+                "soap:Client",
+                "Ungültiges XML in der SOAP-Anfrage.",
+                400,
+                "invalid_xml",
+            )
+            self.respond_xml(status, body)
+            return
+
+        if xml_local_name(envelope.tag) != "Envelope":
+            status, body = soap_fault(
+                "soap:Client",
+                "Die SOAP-Anfrage muss mit einem Envelope beginnen.",
+                400,
+                "invalid_envelope",
+            )
+            self.respond_xml(status, body)
+            return
+
+        body_node = next((child for child in list(envelope) if xml_local_name(child.tag) == "Body"), None)
+        operation_node = list(body_node)[0] if body_node is not None and list(body_node) else None
+        if operation_node is None:
+            status, body = soap_fault(
+                "soap:Client",
+                "SOAP Body ohne Operation.",
+                400,
+                "missing_operation",
+            )
+            self.respond_xml(status, body)
+            return
+
+        operation = xml_local_name(operation_node.tag)
+        _, authenticated_profile = self.authenticated_profile()
+
+        try:
+            if operation == "GetCustomerIdByEmail":
+                response = self.crm_get_customer_id_by_email(operation_node)
+            elif operation == "GetCustomerReservations":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_get_customer_reservations(profile)
+            elif operation == "GetCustomerReservationStats":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_get_customer_reservation_stats(profile)
+            elif operation == "UpdateReservationStatus":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_update_reservation_status(profile, operation_node)
+            elif operation == "UpsertCustomerInvoice":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_upsert_customer_invoice(profile, operation_node)
+            elif operation == "GetCustomerRevenue":
+                profile = self.crm_profile_context(operation_node, authenticated_profile)
+                response = self.crm_get_customer_revenue(profile)
+            else:
+                status, body = soap_fault(
+                    "soap:Client",
+                    f"Unbekannte CRM-Operation: {operation}",
+                    400,
+                    "unknown_operation",
+                    {"operation": operation},
+                )
+                self.respond_xml(status, body)
+                return
+        except CRMSoapError as exc:
+            status, body = soap_fault(exc.fault_code, exc.message, exc.status, exc.error_code, exc.details)
+            self.respond_xml(status, body)
+            return
+        except Exception as exc:
+            status, body = soap_fault("soap:Server", str(exc), 500, "server_error")
+            self.respond_xml(status, body)
+            return
+
+        self.respond_xml(200, response)
+
+    def crm_get_customer_id_by_email(self, operation_node: ET.Element) -> bytes:
+        customer_email = normalize_email(xml_text(operation_node, "customerEmail"))
+        if not customer_email:
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "customerEmail ist erforderlich.",
+                400,
+                "missing_customer_email",
+            )
+
+        profile = find_profile_by_email(customer_email)
+        if not profile:
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "Der angegebene customerEmail-Kontext wurde nicht gefunden.",
+                404,
+                "customer_not_found",
+                {"customerEmail": customer_email},
+            )
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerIdByEmailResponse")
+            customer = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}customer")
+            append_xml_text(customer, "id", profile["id"])
+            append_xml_text(customer, "email", profile["email"])
+            append_xml_text(customer, "firstName", profile.get("firstName", ""))
+
+        return soap_envelope(build)
+
+    def crm_profile_context(self, operation_node: ET.Element, authenticated_profile: dict | None) -> dict:
+        customer_id = xml_text(operation_node, "customerId")
+
+        if authenticated_profile and not customer_id:
+            return authenticated_profile
+
+        profile_by_id = find_profile_by_id(customer_id) if customer_id else None
+
+        if customer_id and not profile_by_id:
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "Der angegebene customerId-Kontext wurde nicht gefunden.",
+                404,
+                "customer_not_found",
+                {"customerId": customer_id},
+            )
+        if not customer_id and xml_text(operation_node, "customerEmail"):
+            raise CRMSoapError(
+                "soap:Client.Validation",
+                "Für diese Operation wird customerId erwartet. Verwende zuerst GetCustomerIdByEmail.",
+                400,
+                "customer_id_required",
+            )
+
+        resolved_profile = profile_by_id or authenticated_profile
+        if not resolved_profile:
+            raise CRMSoapError(
+                "soap:Client.Authentication",
+                "Es wird entweder ein Bearer-Token oder customerId benötigt.",
+                401,
+                "missing_customer_context",
+            )
+
+        return resolved_profile
+
+    def crm_get_customer_reservations(self, profile: dict) -> bytes:
+        reservations = reservations_for_guest_email(profile["email"], self.public_base_url())
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerReservationsResponse")
+            customer = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}customer")
+            append_xml_text(customer, "id", profile["id"])
+            append_xml_text(customer, "email", profile["email"])
+            append_xml_text(customer, "firstName", profile.get("firstName", ""))
+
+            reservations_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}reservations")
+            for reservation in reservations:
+                item = ET.SubElement(reservations_node, f"{{{CRM_SOAP_NS}}}reservation")
+                for field in (
+                    "id",
+                    "reservationCode",
+                    "date",
+                    "slotKey",
+                    "slotLabel",
+                    "roomId",
+                    "roomName",
+                    "tableId",
+                    "tableLabel",
+                    "guests",
+                    "occasion",
+                    "status",
+                    "createdAt",
+                    "cancelledAt",
+                    "scheduledLabel",
+                ):
+                    append_xml_text(item, field, reservation.get(field, ""))
+
+        return soap_envelope(build)
+
+    def crm_get_customer_reservation_stats(self, profile: dict) -> bytes:
+        stats = reservation_stats_for_guest_email(profile["email"])
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerReservationStatsResponse")
+            append_xml_text(response, "customerId", profile["id"])
+            append_xml_text(response, "email", profile["email"])
+            summary = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}summary")
+            append_xml_text(summary, "made", stats["made"])
+            append_xml_text(summary, "cancelled", stats["cancelled"])
+            append_xml_text(summary, "arrived", stats["arrived"])
+            append_xml_text(summary, "open", stats["open"])
+
+        return soap_envelope(build)
+
+    def crm_update_reservation_status(self, profile: dict, operation_node: ET.Element) -> bytes:
+        reservation_id = xml_text(operation_node, "reservationId")
+        status_value = xml_text(operation_node, "status")
+        if not reservation_id:
+            raise CRMSoapError("soap:Client.Validation", "reservationId ist erforderlich.", 400, "missing_reservation_id")
+        if not status_value:
+            raise CRMSoapError("soap:Client.Validation", "status ist erforderlich.", 400, "missing_status")
+
+        try:
+            reservation = update_reservation_status_for_guest(profile["email"], reservation_id, status_value)
+        except ValueError as exc:
+            raise CRMSoapError("soap:Client.Validation", str(exc), 400, "reservation_status_update_failed")
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}UpdateReservationStatusResponse")
+            reservation_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}reservation")
+            append_xml_text(reservation_node, "id", reservation["id"])
+            append_xml_text(reservation_node, "status", reservation["status"])
+            append_xml_text(reservation_node, "cancelledAt", reservation["cancelledAt"])
+            append_xml_text(reservation_node, "scheduledLabel", reservation["scheduledLabel"])
+
+        return soap_envelope(build)
+
+    def crm_upsert_customer_invoice(self, profile: dict, operation_node: ET.Element) -> bytes:
+        reservation_id = xml_text(operation_node, "reservationId")
+        invoice_id = xml_text(operation_node, "invoiceId")
+        currency = xml_text(operation_node, "currency", "CHF") or "CHF"
+        paid_at = xml_text(operation_node, "paidAt", now_iso())
+        total_raw = xml_text(operation_node, "totalAmount", "0")
+        if not reservation_id:
+            raise CRMSoapError("soap:Client.Validation", "reservationId ist erforderlich.", 400, "missing_reservation_id")
+        if not invoice_id:
+            raise CRMSoapError("soap:Client.Validation", "invoiceId ist erforderlich.", 400, "missing_invoice_id")
+        try:
+            total_amount = float(total_raw)
+        except ValueError:
+            raise CRMSoapError("soap:Client.Validation", "totalAmount muss numerisch sein.", 400, "invalid_total_amount")
+
+        items_node = next((child for child in list(operation_node) if xml_local_name(child.tag) == "items"), None)
+        items = []
+        if items_node is not None:
+            for item_node in list(items_node):
+                if xml_local_name(item_node.tag) != "item":
+                    continue
+                try:
+                    qty = int(xml_text(item_node, "qty", "1") or "1")
+                except ValueError:
+                    qty = 1
+                try:
+                    price = float(xml_text(item_node, "price", "0") or "0")
+                except ValueError:
+                    price = 0.0
+                items.append(
+                    {
+                        "itemId": xml_text(item_node, "itemId"),
+                        "name": xml_text(item_node, "name"),
+                        "qty": qty,
+                        "price": price,
+                    }
+                )
+
+        try:
+            invoice = store_invoice_for_guest(
+                profile["email"],
+                reservation_id,
+                invoice_id,
+                total_amount,
+                currency,
+                items,
+                paid_at,
+            )
+        except ValueError as exc:
+            raise CRMSoapError("soap:Client.Validation", str(exc), 400, "invoice_upsert_failed")
+        revenue = customer_revenue_for_guest_email(profile["email"])
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}UpsertCustomerInvoiceResponse")
+            invoice_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}invoice")
+            append_xml_text(invoice_node, "invoiceId", invoice["invoiceId"])
+            append_xml_text(invoice_node, "reservationId", invoice["reservationId"])
+            append_xml_text(invoice_node, "currency", invoice["currency"])
+            append_xml_text(invoice_node, "totalAmount", invoice["totalAmount"])
+            append_xml_text(invoice_node, "paidAt", invoice["paidAt"])
+
+            revenue_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}revenue")
+            append_xml_text(revenue_node, "currency", revenue["currency"])
+            append_xml_text(revenue_node, "totalAmount", revenue["totalAmount"])
+            append_xml_text(revenue_node, "invoiceCount", revenue["invoiceCount"])
+
+        return soap_envelope(build)
+
+    def crm_get_customer_revenue(self, profile: dict) -> bytes:
+        revenue = customer_revenue_for_guest_email(profile["email"])
+
+        def build(body: ET.Element):
+            response = ET.SubElement(body, f"{{{CRM_SOAP_NS}}}GetCustomerRevenueResponse")
+            append_xml_text(response, "customerId", profile["id"])
+            append_xml_text(response, "email", profile["email"])
+            append_xml_text(response, "currency", revenue["currency"])
+            append_xml_text(response, "totalAmount", revenue["totalAmount"])
+            append_xml_text(response, "invoiceCount", revenue["invoiceCount"])
+            invoices_node = ET.SubElement(response, f"{{{CRM_SOAP_NS}}}invoices")
+            for invoice in revenue["invoices"]:
+                item = ET.SubElement(invoices_node, f"{{{CRM_SOAP_NS}}}invoice")
+                append_xml_text(item, "invoiceId", invoice["invoiceId"])
+                append_xml_text(item, "reservationId", invoice["reservationId"])
+                append_xml_text(item, "currency", invoice["currency"])
+                append_xml_text(item, "totalAmount", invoice["totalAmount"])
+                append_xml_text(item, "paidAt", invoice["paidAt"])
+
+        return soap_envelope(build)
 
     def cms_product_payload(self, product: sqlite3.Row) -> dict:
         image_path = product["image_path"] or ""
@@ -2350,6 +2976,13 @@ class AppHandler(SimpleHTTPRequestHandler):
         body = document.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def respond_xml(self, status: int, body: bytes):
+        self.send_response(status)
+        self.send_header("Content-Type", "text/xml; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)

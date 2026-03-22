@@ -10,7 +10,7 @@
     />
     <link rel="stylesheet" href="styles/main.css" />
   </head>
-  <body>
+  <body class="docs-page">
     <div class="site-shell">
       <header class="site-header reveal" data-site-header></header>
 
@@ -20,8 +20,10 @@
             <a class="docs-tab docs-tab-brand is-active" href="#brt" data-docs-tab aria-controls="brt">
               <img src="assets/logo/bavarian-robotaste-logo.svg" alt="Bavarian RoboTaste Logo" />
             </a>
+            <a class="docs-tab" href="#infrastruktur" data-docs-tab aria-controls="infrastruktur">Infrastruktur</a>
             <a class="docs-tab" href="#hue" data-docs-tab aria-controls="hue">HUE</a>
             <a class="docs-tab" href="#cms" data-docs-tab aria-controls="cms">CMS</a>
+            <a class="docs-tab" href="#crm" data-docs-tab aria-controls="crm">CRM</a>
             <a class="docs-tab" href="#erp" data-docs-tab aria-controls="erp">ERP</a>
             <a class="docs-tab" href="#tisch-tablets" data-docs-tab aria-controls="tisch-tablets">Tisch Tablets</a>
             <a class="docs-tab" href="#roboter-g1" data-docs-tab aria-controls="roboter-g1">Roboter G1</a>
@@ -63,6 +65,89 @@
                   </p>
                 </section>
               </div>
+            </article>
+
+            <article class="docs-panel" id="infrastruktur" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">Infrastruktur</p>
+                <h2>Hardware, Netzwerk und Services als interaktive Ãœbersicht.</h2>
+                <p class="lead">
+                  Die gelben Bereiche sind als erste Hotspots vorbereitet. Beim Darüberfahren oder Anklicken
+                  zeigen wir Dummy-Informationen an, damit wir die Struktur gemeinsam feinjustieren können.
+                </p>
+              </div>
+
+              <section class="docs-infra-shell" data-infra-app>
+                <div class="docs-infra-stage">
+                  <div class="docs-infra-toolbar" role="tablist" aria-label="Infrastrukturansichten">
+                    <button
+                      class="docs-infra-toggle is-active"
+                      type="button"
+                      data-infra-view-button="hw-network"
+                      aria-selected="true"
+                    >
+                      HW &amp; Netzwerk
+                    </button>
+                    <button
+                      class="docs-infra-toggle"
+                      type="button"
+                      data-infra-view-button="services"
+                      aria-selected="false"
+                    >
+                      Services
+                    </button>
+                    <div class="docs-infra-toolbar-group" aria-label="Diagrammsteuerung">
+                      <button class="docs-infra-tool" type="button" data-infra-action="zoom-out" data-infra-mode="inline" aria-label="Herauszoomen">
+                        <span class="docs-infra-tool-icon docs-infra-tool-icon-minus" aria-hidden="true"></span>
+                      </button>
+                      <button class="docs-infra-tool" type="button" data-infra-action="zoom-in" data-infra-mode="inline" aria-label="Hineinzoomen">
+                        <span class="docs-infra-tool-icon docs-infra-tool-icon-plus" aria-hidden="true"></span>
+                      </button>
+                      <button class="docs-infra-tool" type="button" data-infra-action="reset" data-infra-mode="inline">Reset</button>
+                    </div>
+                    <button class="button button-secondary docs-infra-zoom" type="button" data-infra-zoom>
+                      Vollbild
+                    </button>
+                  </div>
+
+                  <div class="docs-infra-figure-shell">
+                    <figure class="docs-infra-figure is-active" data-infra-view="hw-network">
+                      <object
+                        class="docs-infra-svg"
+                        data-infra-svg="hw-network"
+                        data="assets/bavarian-robotaste-infrastructure-hw-network.svg"
+                        type="image/svg+xml"
+                        aria-label="Hardware- und Netzwerkübersicht von Bavarian RoboTaste"
+                      ></object>
+                    </figure>
+
+                    <figure class="docs-infra-figure" data-infra-view="services" hidden>
+                      <object
+                        class="docs-infra-svg"
+                        data-infra-svg="services"
+                        data="assets/bavarian-robotaste-infrastructure-services.svg"
+                        type="image/svg+xml"
+                        aria-label="Serviceübersicht von Bavarian RoboTaste"
+                      ></object>
+                    </figure>
+
+                    <div class="docs-infra-overlay panel" data-infra-overlay hidden>
+                      <p class="card-kicker">Hotspot</p>
+                      <h3 data-infra-title>HW &amp; Netzwerk</h3>
+                      <p data-infra-text>
+                        Wähle im Diagramm einen Hotspot aus. Die Infos erscheinen direkt über der Grafik,
+                        damit die Struktur schneller überprüft werden kann.
+                      </p>
+                      <div class="docs-meta-grid docs-meta-grid-single" data-infra-meta>
+                        <div>
+                          <p class="card-kicker">Status</p>
+                          <p>Bereit für Feedback und Feinschliff.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </article>
 
             <article class="docs-panel" id="hue" data-docs-panel hidden>
@@ -184,6 +269,7 @@
                     <h3>Endpoints</h3>
                   </div>
                   <div class="docs-endpoint-list">
+
                     <article class="docs-endpoint-item">
                       <div class="docs-endpoint-meta">
                         <span class="docs-method is-neutral">GET</span>
@@ -292,9 +378,396 @@
                   </div>
                   <ul class="docs-bullet-list">
                     <li>Frontend oder Tablet kann über <code>erpId</code> gezielt Produkttexte und Bildlinks abfragen.</li>
-                    <li>Das ERP bleibt führend für Preislogik und stößt Preisupdates per <code>PUT /api/cms/products/{erpId}/price</code> an.</li>
+                    <li>Das ERP bleibt fÃ¼hrend fÃ¼r Preislogik und stÃ¶ÃŸt Preisupdates per <code>PUT /api/cms/products/{erpId}/price</code> an.</li>
                     <li>Produkte ohne Bild liefern <code>imageUrl: null</code>; aktuell betrifft das vor allem Getränke.</li>
                     <li>Solange noch keine finalen ERP-IDs gepflegt sind, antwortet die API für unbekannte IDs mit <code>404 product_not_found</code>.</li>
+                  </ul>
+                </section>
+              </div>
+            </article>
+
+            <article class="docs-panel" id="crm" data-docs-panel hidden>
+              <div class="section-heading">
+                <p class="section-tag">CRM</p>
+                <h2>SOAP-Service für angemeldete Gäste, Reservierungshistorie und Umsatzdaten.</h2>
+              </div>
+              <section class="docs-detail-intro">
+                <p>
+                  Das CRM zeigt im Unterrichtscase bewusst eine zweite API-Art neben REST.
+                  Angemeldete Gäste werden über denselben Bearer-Token wie im Frontend
+                  authentifiziert, die Fachoperationen selbst laufen aber als SOAP-Calls über
+                  <code>POST /api/crm/soap</code>.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Vertrag</p>
+                    <h3>Technischer Rahmen der Schnittstelle</h3>
+                  </div>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Endpoint</p>
+                      <p><code>POST /api/crm/soap</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Content-Type</p>
+                      <p><code>text/xml; charset=utf-8</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Namespace</p>
+                      <p><code>http://bavarian-robotaste.local/crm</code> ist der XML-Namespace, nicht die Aufruf-URL.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Antwortformat</p>
+                      <p>Erfolgsfälle kommen als SOAP-Envelope mit fachlicher Response, Fehler als SOAP-Fault mit technischem Fehlercode im Detail-Block.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Operationen</p>
+                    <h3>SOAP-Methoden</h3>
+                  </div>
+                  <div class="docs-endpoint-list">
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/crm/soap</code>
+                      </div>
+                      <p>
+                        Löst eine E-Mail-Adresse in die technische CRM-User-ID auf. Diese
+                        <code>customerId</code> wird anschließend in den weiteren SOAP-Aufrufen verwendet.
+                      </p>
+                      <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerIdByEmail&gt;
+      &lt;crm:customerEmail&gt;gast@example.com&lt;/crm:customerEmail&gt;
+    &lt;/crm:GetCustomerIdByEmail&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      <details class="docs-response-toggle">
+                        <summary>Beispiel-Response anzeigen</summary>
+                        <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerIdByEmailResponse&gt;
+      &lt;crm:customer&gt;
+        &lt;crm:id&gt;guest_40306352e52e176f&lt;/crm:id&gt;
+        &lt;crm:email&gt;gast@example.com&lt;/crm:email&gt;
+        &lt;crm:firstName&gt;Max&lt;/crm:firstName&gt;
+      &lt;/crm:customer&gt;
+    &lt;/crm:GetCustomerIdByEmailResponse&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      </details>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/crm/soap</code>
+                      </div>
+                      <p>
+                        Löst eine E-Mail-Adresse in die technische CRM-User-ID auf. Diese
+                        <code>customerId</code> wird anschließend in den weiteren SOAP-Aufrufen verwendet.
+                      </p>
+                      <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerReservations&gt;
+      &lt;crm:customerId&gt;guest_40306352e52e176f&lt;/crm:customerId&gt;
+    &lt;/crm:GetCustomerReservations&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      <details class="docs-response-toggle">
+                        <summary>Beispiel-Response anzeigen</summary>
+                        <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerReservationsResponse&gt;
+      &lt;crm:customer&gt;
+        &lt;crm:id&gt;guest_40306352e52e176f&lt;/crm:id&gt;
+        &lt;crm:email&gt;gast@example.com&lt;/crm:email&gt;
+        &lt;crm:firstName&gt;Max&lt;/crm:firstName&gt;
+      &lt;/crm:customer&gt;
+      &lt;crm:reservations&gt;
+        &lt;crm:reservation&gt;
+          &lt;crm:id&gt;reservation_a1b2c3&lt;/crm:id&gt;
+          &lt;crm:reservationCode&gt;7F2A91BC&lt;/crm:reservationCode&gt;
+          &lt;crm:date&gt;2026-03-21&lt;/crm:date&gt;
+          &lt;crm:slotKey&gt;early&lt;/crm:slotKey&gt;
+          &lt;crm:slotLabel&gt;17:30 - 20:00&lt;/crm:slotLabel&gt;
+          &lt;crm:roomId&gt;raum-4&lt;/crm:roomId&gt;
+          &lt;crm:roomName&gt;Servierwerk Lounge&lt;/crm:roomName&gt;
+          &lt;crm:tableId&gt;table-1&lt;/crm:tableId&gt;
+          &lt;crm:tableLabel&gt;Tisch 1&lt;/crm:tableLabel&gt;
+          &lt;crm:guests&gt;4&lt;/crm:guests&gt;
+          &lt;crm:occasion&gt;Dinner&lt;/crm:occasion&gt;
+          &lt;crm:status&gt;requested&lt;/crm:status&gt;
+          &lt;crm:createdAt&gt;2026-03-20T18:41:12+00:00&lt;/crm:createdAt&gt;
+          &lt;crm:cancelledAt&gt;&lt;/crm:cancelledAt&gt;
+          &lt;crm:scheduledLabel&gt;21.03.2026 · 17:30 - 20:00&lt;/crm:scheduledLabel&gt;
+        &lt;/crm:reservation&gt;
+      &lt;/crm:reservations&gt;
+    &lt;/crm:GetCustomerReservationsResponse&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      </details>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/crm/soap</code>
+                      </div>
+                      <p>
+                        Liefert die Kennzahlen <code>made</code>, <code>cancelled</code>,
+                        <code>arrived</code> und <code>open</code> für den angemeldeten Gast.
+                      </p>
+                      <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerReservationStats&gt;
+      &lt;crm:customerId&gt;guest_40306352e52e176f&lt;/crm:customerId&gt;
+    &lt;/crm:GetCustomerReservationStats&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      <details class="docs-response-toggle">
+                        <summary>Beispiel-Response anzeigen</summary>
+                        <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerReservationStatsResponse&gt;
+      &lt;crm:customerId&gt;guest_123&lt;/crm:customerId&gt;
+      &lt;crm:email&gt;gast@example.com&lt;/crm:email&gt;
+      &lt;crm:summary&gt;
+        &lt;crm:made&gt;10&lt;/crm:made&gt;
+        &lt;crm:cancelled&gt;5&lt;/crm:cancelled&gt;
+        &lt;crm:arrived&gt;2&lt;/crm:arrived&gt;
+        &lt;crm:open&gt;3&lt;/crm:open&gt;
+      &lt;/crm:summary&gt;
+    &lt;/crm:GetCustomerReservationStatsResponse&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      </details>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/crm/soap</code>
+                      </div>
+                      <p>
+                        Speichert oder aktualisiert eine bezahlte Rechnung zu einer Reservierung.
+                        Darüber entsteht die Umsatzsicht pro Gast.
+                      </p>
+                      <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:UpsertCustomerInvoice&gt;
+      &lt;crm:customerId&gt;guest_40306352e52e176f&lt;/crm:customerId&gt;
+      &lt;crm:reservationId&gt;reservation_123&lt;/crm:reservationId&gt;
+      &lt;crm:invoiceId&gt;inv-2026-0001&lt;/crm:invoiceId&gt;
+      &lt;crm:currency&gt;CHF&lt;/crm:currency&gt;
+      &lt;crm:totalAmount&gt;148.50&lt;/crm:totalAmount&gt;
+      &lt;crm:paidAt&gt;2026-03-21T21:15:00+01:00&lt;/crm:paidAt&gt;
+      &lt;crm:items&gt;
+        &lt;crm:item&gt;
+          &lt;crm:itemId&gt;ERP-10042&lt;/crm:itemId&gt;
+          &lt;crm:name&gt;Mechatronic Roast&lt;/crm:name&gt;
+          &lt;crm:qty&gt;2&lt;/crm:qty&gt;
+          &lt;crm:price&gt;39.00&lt;/crm:price&gt;
+        &lt;/crm:item&gt;
+      &lt;/crm:items&gt;
+    &lt;/crm:UpsertCustomerInvoice&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      <details class="docs-response-toggle">
+                        <summary>Beispiel-Response anzeigen</summary>
+                        <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:UpsertCustomerInvoiceResponse&gt;
+      &lt;crm:invoice&gt;
+        &lt;crm:invoiceId&gt;inv-2026-0001&lt;/crm:invoiceId&gt;
+        &lt;crm:reservationId&gt;reservation_123&lt;/crm:reservationId&gt;
+        &lt;crm:currency&gt;CHF&lt;/crm:currency&gt;
+        &lt;crm:totalAmount&gt;148.5&lt;/crm:totalAmount&gt;
+        &lt;crm:paidAt&gt;2026-03-21T21:15:00+01:00&lt;/crm:paidAt&gt;
+      &lt;/crm:invoice&gt;
+      &lt;crm:revenue&gt;
+        &lt;crm:currency&gt;CHF&lt;/crm:currency&gt;
+        &lt;crm:totalAmount&gt;412.0&lt;/crm:totalAmount&gt;
+        &lt;crm:invoiceCount&gt;3&lt;/crm:invoiceCount&gt;
+      &lt;/crm:revenue&gt;
+    &lt;/crm:UpsertCustomerInvoiceResponse&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      </details>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/crm/soap</code>
+                      </div>
+                      <p>
+                        Setzt den Reservierungsstatus eines Gasts, zum Beispiel auf
+                        <code>arrived</code>, <code>requested</code> oder <code>cancelled</code>.
+                      </p>
+                      <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:UpdateReservationStatus&gt;
+      &lt;crm:customerId&gt;guest_40306352e52e176f&lt;/crm:customerId&gt;
+      &lt;crm:reservationId&gt;reservation_123&lt;/crm:reservationId&gt;
+      &lt;crm:status&gt;arrived&lt;/crm:status&gt;
+    &lt;/crm:UpdateReservationStatus&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      <details class="docs-response-toggle">
+                        <summary>Beispiel-Response anzeigen</summary>
+                        <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:UpdateReservationStatusResponse&gt;
+      &lt;crm:reservation&gt;
+        &lt;crm:id&gt;reservation_123&lt;/crm:id&gt;
+        &lt;crm:status&gt;arrived&lt;/crm:status&gt;
+        &lt;crm:cancelledAt&gt;&lt;/crm:cancelledAt&gt;
+        &lt;crm:scheduledLabel&gt;21.03.2026 · 17:30 - 20:00&lt;/crm:scheduledLabel&gt;
+      &lt;/crm:reservation&gt;
+    &lt;/crm:UpdateReservationStatusResponse&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      </details>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/api/crm/soap</code>
+                      </div>
+                      <p>
+                        Liefert den aggregierten Umsatz inklusive Rechnungsanzahl und
+                        Einzelrechnungen des angemeldeten Gasts.
+                      </p>
+                      <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerRevenue&gt;
+      &lt;crm:customerId&gt;guest_40306352e52e176f&lt;/crm:customerId&gt;
+    &lt;/crm:GetCustomerRevenue&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      <details class="docs-response-toggle">
+                        <summary>Beispiel-Response anzeigen</summary>
+                        <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;crm:GetCustomerRevenueResponse&gt;
+      &lt;crm:customerId&gt;guest_123&lt;/crm:customerId&gt;
+      &lt;crm:email&gt;gast@example.com&lt;/crm:email&gt;
+      &lt;crm:currency&gt;CHF&lt;/crm:currency&gt;
+      &lt;crm:totalAmount&gt;412.0&lt;/crm:totalAmount&gt;
+      &lt;crm:invoiceCount&gt;3&lt;/crm:invoiceCount&gt;
+      &lt;crm:invoices&gt;
+        &lt;crm:invoice&gt;
+          &lt;crm:invoiceId&gt;inv-2026-0001&lt;/crm:invoiceId&gt;
+          &lt;crm:reservationId&gt;reservation_123&lt;/crm:reservationId&gt;
+          &lt;crm:currency&gt;CHF&lt;/crm:currency&gt;
+          &lt;crm:totalAmount&gt;148.5&lt;/crm:totalAmount&gt;
+          &lt;crm:paidAt&gt;2026-03-21T21:15:00+01:00&lt;/crm:paidAt&gt;
+        &lt;/crm:invoice&gt;
+      &lt;/crm:invoices&gt;
+    &lt;/crm:GetCustomerRevenueResponse&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                      </details>
+                    </article>
+                  </div>
+                </section>
+
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Authentifizierung</p>
+                    <h3>Wie der CRM-Service den Gastkontext erhält</h3>
+                  </div>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Header</p>
+                      <p><code>Authorization: Bearer &lt;token&gt;</code> bleibt für Frontend-Calls möglich, ist im geschlossenen System aber nicht zwingend.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Gastkontext</p>
+                      <p>Im Prozess wird zuerst <code>GetCustomerIdByEmail</code> mit <code>customerEmail</code> aufgerufen. Die fachlichen Folgeoperationen arbeiten dann mit <code>customerId</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Scope</p>
+                      <p>Frontend-Calls können weiter nur über Bearer-Token laufen. Prozess-Calls ohne Login geben nach der Auflösung ausschließlich <code>customerId</code> mit.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Format</p>
+                      <p>Responses kommen als SOAP-Envelope zurück; Fehler werden als SOAP-Fault geliefert.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Fehlerfälle</p>
+                    <h3>Professionelle Fault-Struktur</h3>
+                  </div>
+                  <p>
+                    Die Schnittstelle liefert bei Fehlern nicht nur <code>faultcode</code> und
+                    <code>faultstring</code>, sondern zusätzlich einen fachlichen Detailblock mit
+                    maschinenlesbarem <code>crm:error/code</code>.
+                  </p>
+                  <pre class="docs-code"><code>&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:crm="http://bavarian-robotaste.local/crm"&gt;
+  &lt;soapenv:Body&gt;
+    &lt;soapenv:Fault&gt;
+      &lt;faultcode&gt;soap:Client.Validation&lt;/faultcode&gt;
+      &lt;faultstring&gt;Der angegebene customerEmail-Kontext wurde nicht gefunden.&lt;/faultstring&gt;
+      &lt;detail&gt;
+        &lt;crm:error&gt;
+          &lt;crm:code&gt;customer_not_found&lt;/crm:code&gt;
+          &lt;crm:message&gt;Der angegebene customerEmail-Kontext wurde nicht gefunden.&lt;/crm:message&gt;
+          &lt;crm:customerEmail&gt;gast@example.com&lt;/crm:customerEmail&gt;
+        &lt;/crm:error&gt;
+      &lt;/detail&gt;
+  &lt;/soapenv:Body&gt;
+&lt;/soapenv:Envelope&gt;</code></pre>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">unknown_operation</p>
+                      <p>Die angeforderte SOAP-Operation ist im CRM-Service nicht bekannt.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">missing_customer_context</p>
+                      <p>Weder Bearer-Token noch <code>customerId</code> wurden geliefert.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">customer_not_found</p>
+                      <p>Der übergebene Nutzerkontext konnte keinem Gastprofil zugeordnet werden.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">customer_id_required</p>
+                      <p>Für fachliche Folgeoperationen wurde nur <code>customerEmail</code> geliefert. Verwende zuerst <code>GetCustomerIdByEmail</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">missing_reservation_id</p>
+                      <p>Für status- oder rechnungsbezogene Operationen fehlt die Reservierungs-ID.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">invoice_upsert_failed</p>
+                      <p>Die Rechnung konnte fachlich nicht gespeichert werden, etwa weil Reservierung oder Betrag ungültig sind.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Fachlicher Nutzen</p>
+                    <h3>Was im CRM damit sichtbar wird</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Reservierungen eines angemeldeten Gasts können im CRM als Historie angezeigt werden.</li>
+                    <li>Statistiken für gemacht, abgesagt, gekommen und offen lassen sich direkt aus der SOAP-Schnittstelle lesen.</li>
+                    <li>Bezahlte Rechnungen können einer Reservierung zugeordnet und für Umsatzsicht pro Gast gespeichert werden.</li>
+                    <li>Ãœber den Statuswechsel auf <code>arrived</code> wird aus einer offenen Reservierung ein tatsÃ¤chlich erschienener Besuch.</li>
                   </ul>
                 </section>
               </div>
@@ -435,14 +908,15 @@
             <article class="docs-panel" id="roboter-g1" data-docs-panel hidden>
               <div class="section-heading">
                 <p class="section-tag">Roboter G1</p>
-                <h2>REST-Service zur Ausführung von Unitree-G1-Armgesten über HTTP.</h2>
+                <h2>REST-Service für Unitree-G1-Steuerung, Sprache, LED und QR-Orchestrierung.</h2>
               </div>
               <section class="docs-detail-intro">
                 <p>
-                  <code>g1-api</code> stellt eine FastAPI-REST-Schnittstelle bereit, um
-                  Arm-Aktionen eines Unitree G1 auszuführen. Die API kapselt die native Binary
-                  <code>g1_arm_action_example</code>, ruft sie mit einer Action-ID auf und
-                  kommuniziert über CycloneDDS mit dem Roboter.
+                  <code>g1-api</code> ist die lokale FastAPI-Schnittstelle für den Unitree G1.
+                  Sie stellt nicht nur Arm-Aktionen bereit, sondern orchestriert inzwischen auch
+                  LED-Signale, deutsche Text-to-Speech-Ausgabe und einen headless QR-Scan-Worker.
+                  Die API ist für direkte lokale Clients oder eine vorgelagerte
+                  <code>robot-ui</code> gedacht.
                 </p>
               </section>
 
@@ -453,14 +927,17 @@
                     <h3>Technischer Ablauf</h3>
                   </div>
                   <p>
-                    Client, UI oder Voice-Trigger senden einen HTTP-Request an FastAPI. Der
-                    Service delegiert an den <code>UnitreeArmActionAdapter</code>, startet die
-                    Binary mit einer Action-ID und übergibt die Kommunikation an CycloneDDS.
+                    UI, Voice-Trigger oder andere lokale Clients senden HTTP-Requests an
+                    FastAPI. Je nach Endpunkt delegiert der Service an Arm-Adapter,
+                    LED-/TTS-Binaries oder an einen separaten QR-Scanner-Worker. Die
+                    Bewegungssteuerung bleibt dabei an die lokale Runtime und CycloneDDS
+                    angebunden.
                   </p>
                   <div class="docs-inline-list">
                     <span>Client</span>
                     <span>FastAPI</span>
-                    <span>UnitreeArmActionAdapter</span>
+                    <span>Arm / LED / TTS Adapter</span>
+                    <span>QR Scanner Worker</span>
                     <span>g1_arm_action_example</span>
                     <span>CycloneDDS</span>
                     <span>Unitree G1</span>
@@ -479,9 +956,9 @@
                         <code>/arm/action</code>
                       </div>
                       <p>
-                        Führt eine Arm-Aktion aus. Der Request erwartet aktuell genau ein Feld:
+                        Führt eine Arm-Aktion aus. Der Request erwartet ein Feld
                         <code>id</code> vom Typ Integer. Im Schema ist als Beispiel
-                        <code>26 = wave_above_head</code> hinterlegt.
+                        <code>26 = wave_above_head</code> dokumentiert.
                       </p>
                       <div class="docs-split-block">
                         <div>
@@ -503,6 +980,128 @@
 
                     <article class="docs-endpoint-item">
                       <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/led/blink</code>
+                      </div>
+                      <p>
+                        Triggert die LED des Roboters mit einer Hex-Farbe und einer Blinkzahl.
+                        Laut Schema ist <code>color</code> als RGB-Hexstring und
+                        <code>count</code> im Bereich <code>1-10</code> vorgesehen.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "color": "00FFD1",
+  "count": 3
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "color": "00FFD1",
+  "count": 3,
+  "output": "..."
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/speech/tts/de</code>
+                      </div>
+                      <p>
+                        Synthesisiert und spielt deutschen Text über den konfigurierten
+                        Piper-/TTS-Pfad ab. Der Endpunkt eignet sich für lokale Dialoge,
+                        Bestätigungen oder Moderation direkt am Roboter.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "text": "Willkommen bei Bavarian RoboTaste."
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "language": "de",
+  "length": 36
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/qr/scan/start</code>
+                      </div>
+                      <p>
+                        Startet einen headless QR-Scan. Der Worker beendet sich nach
+                        erfolgreicher Erkennung automatisch. Zusätzlich sind
+                        <code>/qr/scan/status</code> und <code>/qr/scan/stop</code> für
+                        Statusabfrage und kontrolliertes Beenden dokumentiert.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Request</p>
+                          <pre class="docs-code"><code>{
+  "webhook_url": "https://example.org/hooks/g1-qr"
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "accepted": true,
+  "scan_id": "scan-20260321-001",
+  "state": "running",
+  "running": true,
+  "pid": 4821,
+  "started_at": "2026-03-21T18:42:11Z",
+  "finished_at": null,
+  "delivery_target": "https://example.org/hooks/g1-qr",
+  "webhook_url": "https://example.org/hooks/g1-qr",
+  "webhook_delivery": "pending"
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">GET</span>
+                        <code>/qr/scan/status</code>
+                      </div>
+                      <p>
+                        Liefert den aktuellen oder zuletzt bekannten QR-Scan-Status zurück.
+                        Relevant sind hier neben <code>state</code> und <code>running</code>
+                        vor allem <code>last_qr_text</code>, <code>last_error</code>,
+                        <code>webhook_delivery</code>, <code>webhook_status_code</code> sowie
+                        optional <code>last_stdout</code> und <code>last_stderr</code> für
+                        technische Diagnose.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>/qr/scan/stop</code>
+                      </div>
+                      <p>
+                        Fordert ein kontrolliertes Stoppen des laufenden QR-Workers an. Die
+                        Antwort verwendet dasselbe Statusschema wie <code>/qr/scan/start</code>,
+                        sodass der letzte bekannte Zustand und Delivery-Kontext direkt sichtbar
+                        bleiben.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
                         <span class="docs-method is-neutral">GET</span>
                         <code>/health</code>
                       </div>
@@ -518,13 +1117,161 @@
                         <code>/ready</code>
                       </div>
                       <p>
-                        Minimaler Readiness-Endpunkt. Aktuell liefert er nur
-                        <code>sdk: unknown</code> und <code>robot: unknown</code>; eine echte
-                        Prüfung von DDS, SDK oder Robot-Erreichbarkeit ist noch nicht
-                        implementiert.
+                        Minimaler Readiness-Endpunkt. Aktuell validiert er laut OpenAPI keine
+                        echte Robot-Konnektivität und ist daher eher ein Prozesssignal als ein
+                        Hardware-Check.
                       </p>
                     </article>
                   </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">QR Flow</p>
+                    <h3>Webhook, Status und Rückgabefelder</h3>
+                  </div>
+                  <p>
+                    Beim Start eines QR-Scans kann optional <code>webhook_url</code> übergeben
+                    werden. Bleibt das Feld leer, bleibt das Ergebnis intern und kann über
+                    <code>/qr/scan/status</code> abgefragt werden. Ist ein Webhook gesetzt,
+                    versucht der Worker das Ergebnis zusätzlich an dieses Ziel auszuliefern.
+                  </p>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">delivery_target</p>
+                      <p>Ziel der Rückgabe: externe Webhook-URL oder <code>internal-ui</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">webhook_delivery</p>
+                      <p>Status der Auslieferung, z. B. <code>pending</code>, <code>sent</code>, <code>failed</code> oder <code>internal-ui</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">last_qr_text</p>
+                      <p>Zuletzt erkannter QR-Inhalt als Klartext, sofern bereits ein Code gelesen wurde.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">last_error</p>
+                      <p>Scanner-Fehler auf Prozessebene, z. B. wenn der Worker oder Kamerazugriff scheitert.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">last_stdout / last_stderr</p>
+                      <p>Diagnoseausgaben des letzten Scanner-Prozesses für Debugging und Support.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">webhook_status_code / webhook_error</p>
+                      <p>HTTP-Ergebnis oder Fehlertext der Webhook-Zustellung.</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Fehlerbilder</p>
+                    <h3>Welche Fehler wann auftreten können</h3>
+                  </div>
+                  <div class="docs-endpoint-list">
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">401</span>
+                        <code>Missing or invalid Bearer token</code>
+                      </div>
+                      <p>
+                        Betrifft die geschützten Steuer-Endpunkte. Typisch bei fehlendem
+                        <code>Authorization: Bearer ...</code>, ungültiger Signatur,
+                        falschem <code>iss</code>/<code>aud</code> oder abgelaufenem Token.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">422</span>
+                        <code>Validation Error</code>
+                      </div>
+                      <p>
+                        Request-Schema passt nicht zur OpenAPI. Beispiele: fehlendes
+                        <code>id</code> bei <code>/arm/action</code>, ungültige Hex-Farbe,
+                        Blinkzahl außerhalb <code>1-10</code>, leerer oder zu langer
+                        Speech-Text, formal ungültige Webhook-URL.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">400</span>
+                        <code>Invalid webhook URL</code>
+                      </div>
+                      <p>
+                        Spezifisch für <code>/qr/scan/start</code>, wenn
+                        <code>webhook_url</code> gesetzt wurde, aber nicht akzeptiert wird.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">409</span>
+                        <code>A scan is already running</code>
+                      </div>
+                      <p>
+                        Ebenfalls spezifisch für <code>/qr/scan/start</code>. Der Endpunkt ist
+                        nicht für parallele Scans gedacht; zuerst Status prüfen oder laufenden
+                        Worker stoppen.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">500</span>
+                        <code>Binary / Worker failure</code>
+                      </div>
+                      <p>
+                        Tritt auf, wenn das Arm-, LED- oder Speech-Binary fehlschlägt oder der
+                        QR-Worker nicht korrekt gestartet bzw. gestoppt werden kann.
+                      </p>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">503</span>
+                        <code>Runtime not initialized</code>
+                      </div>
+                      <p>
+                        Die Robot-Runtime ist nicht initialisiert. Das ist meist ein
+                        Betriebsproblem und kein Request-Problem des Clients.
+                      </p>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Schemas</p>
+                    <h3>Standardisierte Fehler- und Antwortformate</h3>
+                  </div>
+                  <div class="docs-split-block">
+                    <div>
+                      <p class="card-kicker">ErrorResponse</p>
+                      <pre class="docs-code"><code>{
+  "detail": "Worker startup failed"
+}</code></pre>
+                    </div>
+                    <div>
+                      <p class="card-kicker">HTTPValidationError</p>
+                      <pre class="docs-code"><code>{
+  "detail": [
+    {
+      "loc": ["body", "count"],
+      "msg": "Input should be less than or equal to 10",
+      "type": "less_than_equal"
+    }
+  ]
+}</code></pre>
+                    </div>
+                  </div>
+                  <p>
+                    <code>ErrorResponse</code> ist für einfache Betriebs- und Laufzeitfehler
+                    gedacht. <code>HTTPValidationError</code> zeigt dagegen feldgenau, wo ein
+                    Request nicht zum erwarteten Schema passt.
+                  </p>
                 </section>
 
                 <section class="docs-detail-section">
@@ -533,11 +1280,11 @@
                     <h3>Authentifizierung</h3>
                   </div>
                   <p>
-                    Der Bewegungs-Endpunkt ist über Bearer-JWT geschützt. Geprüft werden
-                    <code>HS256</code>, <code>iss</code>, <code>aud</code> und
-                    <code>exp</code>. Falls vorhanden, wird auch <code>nbf</code>
-                    berücksichtigt. Ohne gesetztes <code>JWT_SECRET</code> beantwortet der
-                    Service geschützte Requests mit einem Fehler.
+                    Alle aktiven Steuer-Endpunkte sind über Bearer-JWT geschützt, also Arm-,
+                    LED-, Speech- und QR-Operationen. Geprüft werden
+                    <code>HS256</code>, <code>iss</code>, <code>aud</code>,
+                    <code>exp</code> und optional <code>nbf</code>. Ohne gesetztes
+                    <code>JWT_SECRET</code> schlagen geschützte Requests fehl.
                   </p>
                   <div class="docs-meta-grid">
                     <div>
@@ -566,7 +1313,8 @@
                       <p>
                         <code>JWT_SECRET</code>, <code>JWT_ISSUER</code>,
                         <code>JWT_AUDIENCE</code>, <code>UNITREE_ARM_BINARY</code>,
-                        <code>CYCLONEDDS_URI</code>, <code>TZ</code>
+                        <code>CYCLONEDDS_URI</code>, TTS-/LED-Binarypfade,
+                        QR-Worker-Konfiguration, <code>TZ</code>
                       </p>
                     </div>
                     <div>
@@ -589,10 +1337,11 @@
                     <h3>Aktueller Scope und Grenzen</h3>
                   </div>
                   <ul class="docs-bullet-list">
-                    <li>Im Repo ist aktuell nur die Ausführung von Arm-Aktionen dokumentiert.</li>
-                    <li>Ein Katalog gültiger Action-IDs ist nicht enthalten.</li>
-                    <li><code>/ready</code> validiert derzeit weder DDS noch die tatsächliche Erreichbarkeit des Roboters.</li>
-                    <li>Die API reicht Fehler aus dem Aufruf der nativen Binary als Serverfehler weiter.</li>
+                    <li>Die OpenAPI beschreibt inzwischen Arm, LED, deutsche Sprache und QR-Scan-Orchestrierung.</li>
+                    <li>Ein vollständiger Katalog gültiger Arm-Action-IDs ist weiterhin nicht Teil der Doku.</li>
+                    <li><code>/ready</code> validiert derzeit noch keine echte Robot-Konnektivität.</li>
+                    <li>QR-Scans laufen als separater Worker-Prozess und liefern Status- sowie Delivery-Informationen zurück.</li>
+                    <li>Fehler aus Binaries oder Worker-Start landen weiterhin direkt als API-Fehler beim Client.</li>
                   </ul>
                 </section>
               </div>
@@ -608,7 +1357,7 @@
                   Die Tablet-Lösung besteht aus zwei Teilen: einem statischen Web-Client und
                   einem FastAPI-basierten Event-Server. Der Client wird über Nginx ausgeliefert,
                   verbindet sich per WebSocket mit <code>/ws?table=&lt;id&gt;</code> und erhält
-                  seine Inhalte ausschließlich über JSON-Events. Ein externer Orchestrator kann
+                  seine Inhalte ausschlieÃŸlich Ã¼ber JSON-Events. Ein externer Orchestrator kann
                   über <code>POST /api/push</code> Inhalte oder Statusupdates aktiv auf einzelne
                   Tablets oder auf alle Tablets gleichzeitig schicken.
                 </p>
@@ -648,7 +1397,7 @@
                     <li>Willkommensnachricht pro Tisch.</li>
                     <li>Warenkorb, Bestellhistorie und simulierte Zahlung.</li>
                     <li>Bestellstatus mit Progress-Bar und Sperrlogik für den Warenkorb.</li>
-                    <li>Serverseitig gepushte Offers mit direkter Übernahme in den Warenkorb.</li>
+                    <li>Serverseitig gepushte Offers mit direkter Ãœbernahme in den Warenkorb.</li>
                     <li>Fun Events wie Glücksrad inklusive Segmentdaten und Prize-Einlösung.</li>
                   </ul>
                 </section>
@@ -733,7 +1482,7 @@
                   <p>
                     Alle eingehenden Tablet-Events werden auf dem Event-Server per Pydantic als
                     Objekt mit <code>type</code> und <code>payload</code> validiert und
-                    anschließend an den externen Webhook mit
+                    anschlieÃŸend an den externen Webhook mit
                     <code>source: table:&lt;id&gt;</code> weitergeleitet.
                   </p>
                 </section>
@@ -744,7 +1493,7 @@
                     <h3>Event-Referenz mit Beispielpayloads</h3>
                   </div>
                   <p>
-                    Die folgende Übersicht beschreibt die im Code sichtbaren Nachrichten in einer
+                    Die folgende Ãœbersicht beschreibt die im Code sichtbaren Nachrichten in einer
                     konkreteren Form: Richtung, Pflichtfelder, optionale Felder und ein
                     Beispielpayload pro Event. Wo der Code bestimmte Strukturen nicht hart
                     validiert, ist das in den Hinweisen vermerkt.
@@ -828,7 +1577,7 @@
                         <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.text</code></p></div>
                         <div><p class="card-kicker">Optionale Felder</p><p>Keine</p></div>
                       </div>
-                      <p>Reines Text-Event für Begrüßung oder Kontextansprache.</p>
+                      <p>Reines Text-Event fÃ¼r BegrÃ¼ÃŸung oder Kontextansprache.</p>
                       <p class="card-kicker">Beispielpayload</p>
                       <pre class="docs-code"><code>{
   "type": "WELCOME_MESSAGE",
@@ -984,7 +1733,7 @@
                         <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.id</code>, <code>payload.title</code>, <code>payload.description</code></p></div>
                         <div><p class="card-kicker">Optionale Felder</p><p><code>payload.cta</code>, <code>payload.itemId</code>, <code>payload.item</code>, <code>payload.priceOverride</code></p></div>
                       </div>
-                      <p>Für Warenkorb-Übernahme muss entweder <code>itemId</code> auf ein Menü-Item zeigen oder <code>item</code> direkt mitgeliefert werden.</p>
+                      <p>FÃ¼r Warenkorb-Ãœbernahme muss entweder <code>itemId</code> auf ein MenÃ¼-Item zeigen oder <code>item</code> direkt mitgeliefert werden.</p>
                       <p class="card-kicker">Beispielpayload</p>
                       <pre class="docs-code"><code>{
   "type": "PUSH_OFFER",
@@ -1052,7 +1801,7 @@
   "type": "FUN_EVENT",
   "payload": {
     "title": "Glücksrad",
-    "message": "Drehen Sie das Rad für eine Überraschung.",
+    "message": "Drehen Sie das Rad fÃ¼r eine Ãœberraschung.",
     "cta": "Jetzt drehen",
     "segments": [
       { "label": "Gratis Kaffee" },
@@ -1100,7 +1849,7 @@
                     </div>
                     <div>
                       <p class="card-kicker">PUSH_OFFER</p>
-                      <p>Öffnet ein Offer-Modal und kann ein bestehendes oder direkt mitgegebenes Item in den Warenkorb übernehmen.</p>
+                      <p>Ã–ffnet ein Offer-Modal und kann ein bestehendes oder direkt mitgegebenes Item in den Warenkorb Ã¼bernehmen.</p>
                     </div>
                     <div>
                       <p class="card-kicker">FUN_EVENT</p>
@@ -1159,7 +1908,7 @@
                     <h3>Aktueller Scope</h3>
                   </div>
                   <ul class="docs-bullet-list">
-                    <li>Es gibt keine REST-API für Menüabfragen; Inhalte kommen ausschließlich eventbasiert.</li>
+                    <li>Es gibt keine REST-API fÃ¼r MenÃ¼abfragen; Inhalte kommen ausschlieÃŸlich eventbasiert.</li>
                     <li>Der Client kennt nur die im Code behandelten Event-Typen; unbekannte Events werden geloggt, aber nicht dargestellt.</li>
                     <li><code>TABLE_CONNECTED_ACK</code> wird im UI nur sehr leicht genutzt und nicht in einen persistierten Tablet-Status übernommen.</li>
                     <li>Die Zahlungsfunktion ist im Client explizit als PoC ohne echte Zahlungsabwicklung implementiert.</li>
@@ -1275,6 +2024,59 @@
         </section>
       </main>
 
+      <div class="image-lightbox" data-infra-lightbox hidden>
+        <div class="image-lightbox-backdrop" data-infra-lightbox-close></div>
+        <div class="image-lightbox-panel docs-infra-lightbox-panel">
+          <button class="dish-modal-close" type="button" aria-label="Vollbild schliessen" data-infra-lightbox-close>&times;</button>
+          <div class="docs-infra-lightbox-grid">
+            <div class="docs-infra-toolbar docs-infra-toolbar-lightbox" aria-label="Vollbildsteuerung">
+              <div class="docs-infra-toolbar-group">
+                <button class="docs-infra-tool" type="button" data-infra-action="zoom-out" data-infra-mode="lightbox" aria-label="Herauszoomen">
+                  <span class="docs-infra-tool-icon docs-infra-tool-icon-minus" aria-hidden="true"></span>
+                </button>
+                <button class="docs-infra-tool" type="button" data-infra-action="zoom-in" data-infra-mode="lightbox" aria-label="Hineinzoomen">
+                  <span class="docs-infra-tool-icon docs-infra-tool-icon-plus" aria-hidden="true"></span>
+                </button>
+                <button class="docs-infra-tool" type="button" data-infra-action="reset" data-infra-mode="lightbox">Reset</button>
+              </div>
+            </div>
+            <div class="docs-infra-lightbox-stage">
+              <figure class="docs-infra-figure is-active" data-infra-lightbox-view="hw-network">
+                <object
+                  class="docs-infra-svg"
+                  data-infra-lightbox-svg="hw-network"
+                  data="assets/bavarian-robotaste-infrastructure-hw-network.svg"
+                  type="image/svg+xml"
+                  aria-label="Hardware- und Netzwerkübersicht von Bavarian RoboTaste im Vollbild"
+                ></object>
+              </figure>
+              <figure class="docs-infra-figure" data-infra-lightbox-view="services" hidden>
+                <object
+                  class="docs-infra-svg"
+                  data-infra-lightbox-svg="services"
+                  data="assets/bavarian-robotaste-infrastructure-services.svg"
+                  type="image/svg+xml"
+                  aria-label="Serviceübersicht von Bavarian RoboTaste im Vollbild"
+                ></object>
+              </figure>
+              <div class="docs-infra-overlay docs-infra-overlay-lightbox panel" data-infra-lightbox-overlay hidden>
+                <p class="card-kicker">Vollbild</p>
+                <h3 data-infra-lightbox-title>Infrastruktur</h3>
+                <p data-infra-lightbox-text>
+                  Auch im Vollbild bleiben die Hotspots interaktiv, damit wir die Struktur in Ruhe prüfen können.
+                </p>
+                <div class="docs-meta-grid docs-meta-grid-single" data-infra-lightbox-meta>
+                  <div>
+                    <p class="card-kicker">Hinweis</p>
+                    <p>Diese Ansicht dient dem Review der Diagramme und der Hotspot-Positionen.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <footer class="site-footer reveal" data-site-footer></footer>
     </div>
 
@@ -1282,3 +2084,5 @@
     <script src="scripts/main.js"></script>
   </body>
 </html>
+
+

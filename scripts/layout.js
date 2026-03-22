@@ -33,6 +33,7 @@ if (headerTarget) {
     <nav class="site-nav" aria-label="Hauptnavigation">
       ${navMarkup}
     </nav>
+    <div class="site-header-auth" data-site-header-auth></div>
   `;
 }
 

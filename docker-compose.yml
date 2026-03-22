@@ -7,12 +7,23 @@ services:
       - .env
     environment:
       PORT: 8080
-      APP_BASE_URL: https://${DOMAIN}
-      REGISTRATION_URL: https://${DOMAIN}/register.html
-    expose:
-      - "8080"
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      REGISTRATION_URL: ${REGISTRATION_URL:-http://localhost:8080/register.html}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
     volumes:
       - ./data:/app/data
+    restart: unless-stopped
+
+  integration-lab:
+    build:
+      context: .
+      dockerfile: Dockerfile.integration-lab
+    container_name: bavarian-robotaste-integration-lab
+    depends_on:
+      - app
+    ports:
+      - "${INTEGRATION_LAB_PORT:-8001}:80"
     restart: unless-stopped
 
   caddy:
