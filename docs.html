@@ -6,7 +6,7 @@
     <title>Bavarian RoboTaste | Doku</title>
     <meta
       name="description"
-      content="Technische Dokumentation für den Unterrichtscase von Bavarian RoboTaste mit Reitern für HUE, CMS, ERP, Tisch Tablets, Roboter G1 und NROK."
+      content="Technische Dokumentation für den Unterrichtscase von Bavarian RoboTaste mit Reitern für HUE, CMS, ERP, Tisch Tablets, Roboter G1 und NGROK GW."
     />
     <link rel="stylesheet" href="styles/main.css" />
   </head>
@@ -25,7 +25,7 @@
             <a class="docs-tab" href="#erp" data-docs-tab aria-controls="erp">ERP</a>
             <a class="docs-tab" href="#tisch-tablets" data-docs-tab aria-controls="tisch-tablets">Tisch Tablets</a>
             <a class="docs-tab" href="#roboter-g1" data-docs-tab aria-controls="roboter-g1">Roboter G1</a>
-            <a class="docs-tab" href="#nrok" data-docs-tab aria-controls="nrok">NROK</a>
+            <a class="docs-tab" href="#nrok" data-docs-tab aria-controls="nrok">NGROK GW</a>
           </aside>
 
           <div class="docs-content">
@@ -68,23 +68,96 @@
             <article class="docs-panel" id="hue" data-docs-panel hidden>
               <div class="section-heading">
                 <p class="section-tag">HUE</p>
-                <h2>Lighting, Stimmung und Szenensteuerung im Restaurantkontext.</h2>
+                <h2>REST-API zur Steuerung von Tischlampen und Lichtstreifen im Restaurant.</h2>
               </div>
-              <div class="docs-card-grid">
-                <section class="legal-card">
-                  <p class="card-kicker">OpenAPI</p>
-                  <h3>REST-Endpunkte</h3>
-                  <p>Hier dokumentieren wir später Lichtgruppen, Szenen, Farbprofile und Trigger für Reservierungs- oder Event-Kontexte.</p>
+              <section class="docs-detail-intro">
+                <p>
+                  Philips Hue ist das Beleuchtungssystem im Unterrichtscase von Bavarian
+                  RoboTaste. Darüber steuern wir die Tischlampen sowie die Lichtstreifen auf
+                  dem Boden, um Stimmungen, Begrüßungsszenen oder Statuswechsel im Restaurant
+                  sichtbar zu machen. Die Anbindung erfolgt über eine REST-API und kann bei
+                  Bedarf auch von extern über ein <code>ngrok</code>-Gateway angesprochen
+                  werden.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Architektur</p>
+                    <h3>Einsatz im Case</h3>
+                  </div>
+                  <p>
+                    HUE bildet die Lichtschicht im Restaurant. Typische Trigger kommen aus
+                    Reservierung, Welcome-Flow, Menüphase oder Eventsteuerung und werden auf
+                    konkrete Lampen, Gruppen oder Szenen abgebildet.
+                  </p>
+                  <div class="docs-inline-list">
+                    <span>Tischlampen</span>
+                    <span>Boden-Lichtstreifen</span>
+                    <span>Szenen</span>
+                    <span>Gruppen</span>
+                    <span>Trigger</span>
+                    <span>Ambience</span>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Use Case</p>
-                  <h3>Unterrichtsbezug</h3>
-                  <p>HUE steuert Ambience je nach Tischstatus, Menüphase oder Welcome-Szene beim Eintritt in das Restaurant.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">API</p>
+                    <h3>Schnittstelle</h3>
+                  </div>
+                  <p>
+                    Die Ansteuerung von Hue erfolgt über eine REST-API. Darüber lassen sich
+                    Lichtgruppen, einzelne Leuchten, Farbwerte, Helligkeit und Szenen für den
+                    Restaurantbetrieb adressieren.
+                  </p>
+                  <ul class="docs-bullet-list">
+                    <li>Geeignet für die Steuerung einzelner Tischlampen oder definierter Lichtgruppen.</li>
+                    <li>Nutzbar für Szenen wie Welcome, Service, Event oder stimmungsabhängige Beleuchtung.</li>
+                    <li>Einbindung in externe Trigger-Flows über HTTP-basierte Requests.</li>
+                  </ul>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Integration</p>
-                  <h3>Relevante Artefakte</h3>
-                  <p>Webhook-Trigger, Szenen-Mapping, Authentifizierung und das Zusammenspiel mit ERP, CMS oder Roboter-Events.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Zugriff</p>
+                    <h3>Intern und extern</h3>
+                  </div>
+                  <p>
+                    Im lokalen Setup wird Hue direkt im internen Netz angesprochen. Für Demo-,
+                    Unterrichts- oder Integrationsszenarien kann der Zugriff zusätzlich über
+                    ein <code>ngrok</code>-Gateway veröffentlicht werden, sodass externe
+                    Systeme oder Orchestratoren die REST-Schnittstelle erreichen.
+                  </p>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Protokoll</p>
+                      <p><code>REST / HTTP</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Externer Zugriff</p>
+                      <p>Optional über <code>ngrok</code>-Gateway</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Typische Consumer</p>
+                      <p>ERP, CMS, Event-Logik oder Roboter-Trigger</p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Referenz</p>
+                    <h3>Weiterführende Dokumentation</h3>
+                  </div>
+                  <p>
+                    Offizielle Entwicklerdokumentation für Einrichtung, Authentifizierung und
+                    erste Requests:
+                    <a href="https://developers.meethue.com/develop/get-started-2/" target="_blank" rel="noreferrer">
+                      developers.meethue.com/develop/get-started-2/
+                    </a>
+                  </p>
                 </section>
               </div>
             </article>
@@ -230,23 +303,131 @@
             <article class="docs-panel" id="erp" data-docs-panel hidden>
               <div class="section-heading">
                 <p class="section-tag">ERP</p>
-                <h2>Preise, Artikel, Bestand und operative Daten für Küche und Service.</h2>
+                <h2>Zentrales ERP- und Kassensystem für Stammdaten, Verkauf und Belegprozesse.</h2>
               </div>
-              <div class="docs-card-grid">
-                <section class="legal-card">
-                  <p class="card-kicker">SOAP</p>
-                  <h3>Business-Services</h3>
-                  <p>Hier sammeln wir SOAP-Schnittstellen für Produktstammdaten, Preislisten, Lagerbewegungen und Bestandsabfragen.</p>
+              <section class="docs-detail-intro">
+                <p>
+                  Im Case dient ein Kassensystem von <code>ready2order</code> als zentrales
+                  ERP-System. Dort liegen Produktstammdaten, Preise, Rabatte, Belege und
+                  weitere operative Verkaufsdaten. Das System besteht aus einer
+                  Cloud-Anwendung sowie der zugehörigen Kassenhardware und bildet die
+                  fachliche Basis für Verkaufsabwicklung, Belegerstellung und verschiedene
+                  Verwaltungsprozesse.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Architektur</p>
+                    <h3>Systemrolle im Case</h3>
+                  </div>
+                  <p>
+                    ready2order verbindet die Cloud-Anwendung mit dem Kassensystem vor Ort.
+                    Im Unterrichtscase ist das ERP die führende Quelle für verkaufsrelevante
+                    Daten und Prozesse und stellt diese über eine REST-API für Integrationen
+                    bereit.
+                  </p>
+                  <div class="docs-inline-list">
+                    <span>Cloud-Anwendung</span>
+                    <span>Kassensystem</span>
+                    <span>Produktstammdaten</span>
+                    <span>Preise</span>
+                    <span>Rabatte</span>
+                    <span>Belege</span>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Domäne</p>
-                  <h3>ERP-Rolle im Case</h3>
-                  <p>Das ERP liefert die führenden Informationen für Preis, Verfügbarkeit, Materialverbrauch und betriebliche Steuerung.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Verantwortung</p>
+                    <h3>Fachlicher Scope</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li>Verkaufsabwicklung und Belegerstellung im Kassenprozess.</li>
+                    <li>Gutscheinverwaltung und Rabattfunktionen.</li>
+                    <li>Produktverwaltung inklusive produktbezogener Stammdaten und Preise.</li>
+                    <li>Lieferantenmanagement als Teil der operativen ERP-Verantwortung.</li>
+                  </ul>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Integration</p>
-                  <h3>Synchronisationspunkte</h3>
-                  <p>Produkt-Feeds, Preisupdates, Reservierungslogik, Bestellstatus und Rückmeldungen aus Service oder Roboterprozess.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">API</p>
+                    <h3>REST-Schnittstelle</h3>
+                  </div>
+                  <p>
+                    Das System bietet eine REST-API, über die unter anderem Produkte,
+                    Preisstrukturen, Rabatte, Gutscheine, Tische und weitere
+                    ERP-nahe Ressourcen adressiert werden können. Die offizielle Definition
+                    der Schnittstelle liegt unter
+                    <a href="https://ready2order.com/api/doc" target="_blank" rel="noreferrer">
+                      ready2order.com/api/doc
+                    </a>.
+                  </p>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">API-Typ</p>
+                      <p><code>REST / HTTP</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Basis-URL</p>
+                      <p><code>https://api.ready2order.com</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Referenz</p>
+                      <p><code>https://ready2order.com/api/doc</code></p>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Security</p>
+                    <h3>Authentifizierung</h3>
+                  </div>
+                  <p>
+                    Die Anbindung nutzt einen mehrstufigen Token-Flow: vom
+                    <code>developer_token</code> über den Grant-Access-Flow zum eigentlichen
+                    <code>accountToken</code>. Für produktive API-Requests auf Kontodaten wird
+                    ausschließlich der <code>accountToken</code> verwendet.
+                  </p>
+                  <ul class="docs-bullet-list">
+                    <li>Authentifizierung über <code>Authorization: Bearer &lt;ACCOUNT_TOKEN&gt;</code>.</li>
+                    <li>Der <code>developer_token</code> dient nur zum Start des Freigabe- und Grant-Flows.</li>
+                    <li>Erst der <code>accountToken</code> darf für echte Requests auf Produkte, Rabatte, Gutscheine oder Tische genutzt werden.</li>
+                  </ul>
+                  <p>
+                    Der typische Ablauf sieht so aus: Zuerst wird mit dem
+                    <code>developer_token</code> ein
+                    <code>grantAccessToken</code> angefordert. Dieser liefert eine
+                    Freigabe-URL, die im Browser geöffnet wird. Nach der Bestätigung durch das
+                    gewünschte ready2order-Konto erfolgt ein Redirect auf die konfigurierte
+                    Callback-URL, über die der <code>accountToken</code> zurückkommt und
+                    gespeichert werden kann.
+                  </p>
+                  <p>
+                    Danach laufen fachliche Requests mit dem gespeicherten
+                    <code>accountToken</code>. Ein typisches Beispiel ist ein
+                    <code>GET</code> auf <code>/v1/products</code> mit
+                    <code>Authorization: Bearer &lt;ACCOUNT_TOKEN&gt;</code>, um
+                    Produktdaten inklusive zusätzlicher Parameter wie
+                    <code>includeProductGroup=true</code> aus dem ERP abzurufen.
+                  </p>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Referenz</p>
+                    <h3>Offizielle API-Dokumentation</h3>
+                  </div>
+                  <p>
+                    Die offizielle Beschreibung der ready2order REST-API mit Endpunkten,
+                    Parametern und Datenstrukturen ist hier dokumentiert:
+                    <a href="https://ready2order.com/api/doc" target="_blank" rel="noreferrer">
+                      ready2order api
+                    </a>
+                  </p>
                 </section>
               </div>
             </article>
@@ -989,24 +1170,104 @@
 
             <article class="docs-panel" id="nrok" data-docs-panel hidden>
               <div class="section-heading">
-                <p class="section-tag">NROK</p>
-                <h2>Orchestrierung, Regeln und technische Klammer für den Gesamtprozess.</h2>
+                <p class="section-tag">NGROK GW</p>
+                <h2>Reverse-Tunnel-Gateway für den sicheren Zugriff aus Cloud-Services ins interne Netzwerk.</h2>
               </div>
-              <div class="docs-card-grid">
-                <section class="legal-card">
-                  <p class="card-kicker">Schnittstellen</p>
-                  <h3>Koordination</h3>
-                  <p>Hier landen Querschnittsdokumente für Eventing, Routing, Fehlerbehandlung und fachliche Orchestrierung zwischen allen Systemen.</p>
+              <section class="docs-detail-intro">
+                <p>
+                  Damit Cloud-Services wie <code>n8n</code>, <code>Camunda</code> oder
+                  ähnliche externe Anwendungen gezielt auf interne Infrastruktur zugreifen
+                  können, ist im internen Netzwerk ein Raspberry Pi installiert. Dieser baut
+                  einen Reverse Tunnel über <code>ngrok</code> auf und stellt so eine
+                  kontrollierte Verbindung von außen zu ausgewählten internen Services her.
+                </p>
+              </section>
+
+              <div class="docs-detail-stack">
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Architektur</p>
+                    <h3>Gateway-Rolle im Case</h3>
+                  </div>
+                  <p>
+                    Das NGROK Gateway verbindet externe Systeme mit Services innerhalb des
+                    internen Netzwerks. Dadurch lassen sich interne Komponenten wie Roboter oder
+                    Beleuchtung gezielt ansprechen, ohne diese direkt öffentlich im Netz
+                    bereitzustellen.
+                  </p>
+                  <div class="docs-inline-list">
+                    <span>Raspberry Pi</span>
+                    <span>Reverse Tunnel</span>
+                    <span>ngrok</span>
+                    <span>Cloud Services</span>
+                    <span>Hue</span>
+                    <span>Robot</span>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Case-Logik</p>
-                  <h3>Fachliche Regeln</h3>
-                  <p>NROK beschreibt im Unterrichtscase die Logik, wann welches System reagiert und wie Status sauber propagiert werden.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Routing</p>
+                    <h3>Adressierung und Weiterleitung</h3>
+                  </div>
+                  <p>
+                    Der Tunnel ist über
+                    <a href="https://muskiest-usha-mortifyingly.ngrok-free.dev/" target="_blank" rel="noreferrer">
+                      https://muskiest-usha-mortifyingly.ngrok-free.dev/
+                    </a>
+                    erreichbar. Über <code>/service</code> wird eine Anfrage an einen
+                    vordefinierten internen Service weitergeleitet. Alle URL-Bestandteile nach
+                    dem Service-Namen werden unverändert an das jeweilige Zielsystem
+                    durchgereicht.
+                  </p>
+                  <p>
+                    Beispiel: Der Aufruf
+                    <code>https://muskiest-usha-mortifyingly.ngrok-free.dev/hue/api/&lt;APIKEY&gt;/lights/1/state</code>
+                    wird an den definierten <code>hue</code>-Service weitergeleitet und kann
+                    dort den Zustand der Hue-Lampe mit ID <code>1</code> ändern.
+                  </p>
+                  <div class="docs-meta-grid">
+                    <div>
+                      <p class="card-kicker">Öffentliche URL</p>
+                      <p><code>https://muskiest-usha-mortifyingly.ngrok-free.dev/</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Routing-Schema</p>
+                      <p><code>/{service}/...</code></p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Weiterleitung</p>
+                      <p>Pfadbestandteile nach dem Service werden direkt übernommen.</p>
+                    </div>
+                  </div>
                 </section>
-                <section class="legal-card">
-                  <p class="card-kicker">Erweiterung</p>
-                  <h3>Nächste Dokumente</h3>
-                  <p>OpenAPI-Snippets, Sequenzdiagramme, BPMN-Bezüge, Fehlerfälle und Governance-Hinweise können hier Schritt für Schritt ergänzt werden.</p>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Services</p>
+                    <h3>Definierte Weiterleitungen</h3>
+                  </div>
+                  <ul class="docs-bullet-list">
+                    <li><code>/hue</code> für die Weiterleitung an die interne Hue-Schnittstelle.</li>
+                    <li><code>/robot</code> für die Weiterleitung an die interne Robotik-Schnittstelle.</li>
+                  </ul>
+                </section>
+
+                <section class="docs-detail-section">
+                  <div class="docs-detail-heading">
+                    <p class="card-kicker">Security</p>
+                    <h3>Zweistufige Authentifizierung</h3>
+                  </div>
+                  <p>
+                    Der Zugriff ist zweistufig abgesichert. Zuerst erfolgt die
+                    Authentifizierung am NGROK Gateway selbst mittels <code>KEY</code>. Erst
+                    danach greift die Authentifizierung des weitergeleiteten Zielsystems gemäß
+                    dessen eigener Schnittstellendefinition.
+                  </p>
+                  <ul class="docs-bullet-list">
+                    <li>Stufe 1: Authentifizierung am NGROK Gateway mittels <code>KEY</code>.</li>
+                    <li>Stufe 2: Authentifizierung an der Zielschnittstelle, zum Beispiel per API-Key, Bearer-Token oder Drittservice-spezifischem Mechanismus.</li>
+                  </ul>
                 </section>
               </div>
             </article>

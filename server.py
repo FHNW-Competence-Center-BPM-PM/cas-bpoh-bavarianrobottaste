@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import html
 import json
@@ -49,6 +50,9 @@ HOST = "0.0.0.0"
 PORT = int(os.environ.get("PORT", "8080"))
 REGISTRATION_CODE_TTL_MINUTES = int(os.environ.get("REGISTRATION_CODE_TTL_MINUTES", "15"))
 PASSWORD_HASH_ITERATIONS = 200_000
+DOCS_BASIC_AUTH_REALM = "Bavarian RoboTaste Docs"
+DOCS_USERNAME = os.environ.get("DOCS_USERNAME", "docs")
+DOCS_PASSWORD = os.environ.get("DOCS_PASSWORD", "")
 DATA_LOCK = threading.Lock()
 RESERVATION_BOOKING_WINDOW_DAYS = 21
 RESERVATION_CANCELLATION_NOTICE_HOURS = 5
@@ -1813,6 +1817,28 @@ def bearer_token(handler) -> str | None:
     return authorization.removeprefix("Bearer ").strip()
 
 
+def docs_basic_auth_valid(handler) -> bool:
+    if not DOCS_PASSWORD:
+        return False
+
+    authorization = handler.headers.get("Authorization", "")
+    if not authorization.startswith("Basic "):
+        return False
+
+    encoded = authorization.removeprefix("Basic ").strip()
+
+    try:
+        decoded = base64.b64decode(encoded).decode("utf-8")
+    except Exception:
+        return False
+
+    username, separator, password = decoded.partition(":")
+    if not separator:
+        return False
+
+    return secrets.compare_digest(username, DOCS_USERNAME) and secrets.compare_digest(password, DOCS_PASSWORD)
+
+
 class AppHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -1823,6 +1849,14 @@ class AppHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         parsed_url = urlsplit(self.path)
+
+        if parsed_url.path == "/docs.html" and not docs_basic_auth_valid(self):
+            self.send_response(401)
+            self.send_header("WWW-Authenticate", f'Basic realm="{DOCS_BASIC_AUTH_REALM}"')
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.end_headers()
+            self.wfile.write(b"Authentication required")
+            return
 
         if parsed_url.path == "/api/auth/me":
             self.handle_auth_me()
