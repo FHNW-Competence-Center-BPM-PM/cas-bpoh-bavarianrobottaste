@@ -160,7 +160,7 @@ RESERVATION_ROOMS = [
 PRODUCT_SECTIONS = [
     {"page": "menu", "key": "starter", "tag": "Starter", "title": "Der Einstieg ist leicht, präzise und bewusst neugierig.", "sort_order": 1},
     {"page": "menu", "key": "main_frames", "tag": "Main Frames", "title": "Signature Plates für Gäste, die klassisches Comfort Food neu erleben wollen.", "sort_order": 2},
-    {"page": "menu", "key": "dessert_drinks", "tag": "Dessert und Drinks", "title": "Das Finale bleibt warm, dunkel, elegant und ein wenig theatralisch.", "sort_order": 3},
+    {"page": "menu", "key": "dessert_drinks", "tag": "Desserts", "title": "Das Finale bleibt warm, elegant und klar als Dessert gelesen.", "sort_order": 3},
     {"page": "drinks", "key": "red_wine", "tag": "Rotweine", "title": "Dunkle Frucht, Würze und Tiefe für die schweren Takte des Abends.", "sort_order": 1},
     {"page": "drinks", "key": "white_wine", "tag": "Weißweine", "title": "Hell, klar und mit genug Rückgrat für Präzision im Glas.", "sort_order": 2},
     {"page": "drinks", "key": "rose", "tag": "Rosé", "title": "Leichtfüßig im Auftakt, ernsthaft genug für eine klare Handschrift.", "sort_order": 3},
@@ -178,8 +178,8 @@ PRODUCT_SEED = [
     {"page": "menu", "section_key": "main_frames", "sort_order": 2, "category": "Vegetarisch", "title": "Bot Garden Knödel", "teaser": "Kräuterknödel, Pilzjus, glasierte Karotten, Petersilienstaub.", "ingredients": "Kräuterknödel, Pilzjus, glasierte Karotten und Petersilienstaub.", "price": "CHF 26", "image_path": "assets/menu/bavarian-robotaste-bot-garden-knoedel.png", "quote_text": "Die Natur eilt nicht, und dennoch wird alles vollendet.", "quote_author": "Laotse", "special_heading_1": "Herkunft", "special_content_1": "Bio-Kräuter, Karotten vom Hof, Pilze aus kontrollierter Zucht und hausgemachte Knödelmasse.", "special_heading_2": "Qualität", "special_content_2": "Vegetarisches Hauptgericht mit saisonalem Gemüse, hoher Produktgüte und bewusst elegantem Aufbau.", "featured": 0},
     {"page": "menu", "section_key": "main_frames", "sort_order": 3, "category": "Fisch", "title": "Autonomous Alpine Trout", "teaser": "Forelle mit Dill, Kartoffelschaum, Gurke und Zitronenbutter.", "ingredients": "Forelle mit Dill, Kartoffelschaum, Gurke und Zitronenbutter.", "price": "CHF 34", "image_path": "assets/menu/bavarian-robotaste-autonomous-alpine-trout.png", "quote_text": "Im Einfachen ruht das Wahre.", "quote_author": "Johann Wolfgang von Goethe", "special_heading_1": "Herkunft", "special_content_1": "Forelle aus alpiner Zucht, frische Gurke, Dill und cremiger Kartoffelaufbau.", "special_heading_2": "Qualität", "special_content_2": "Fein, regional und klar ausbalanciert mit Fokus auf Frische, Wasserqualität und handwerklicher Präzision.", "featured": 0},
     {"page": "menu", "section_key": "dessert_drinks", "sort_order": 1, "category": "Dessert", "title": "Black Forest Circuit", "teaser": "Schokolade, Kirsche, Espresso, Rauchsalz und Spiegelglas-Finish.", "ingredients": "Schokolade, Kirsche, Espresso, Rauchsalz und Spiegelglas-Finish.", "price": "CHF 16", "image_path": "assets/menu/bavarian-robotaste-black-forest-circuit.png", "quote_text": "Der Geschmack ist das Gedächtnis des Herzens.", "quote_author": "Jean-Jacques Rousseau", "special_heading_1": "Herkunft", "special_content_1": "Dunkle Schokolade, eingelegte Kirschen, Espressoreduktion und fein gesetzte Dessertstruktur.", "special_heading_2": "Qualität", "special_content_2": "Premium-Dessert mit klarer Texturarbeit, bewusst dosierter Süße und hochwertigen Einzelkomponenten.", "featured": 0},
-    {"page": "menu", "section_key": "dessert_drinks", "sort_order": 2, "category": "Drink", "title": "Signal Spritz", "teaser": "Alpenbitter, Tonic, Rosmarin und Zitrusnebel.", "ingredients": "Alpenbitter, Tonic, Rosmarin und Zitrusnebel.", "price": "CHF 13", "image_path": "assets/menu/bavarian-robotaste-signal-spritz.png", "quote_text": "Das Leichte muss man leicht nehmen.", "quote_author": "Heinrich Heine", "special_heading_1": "Herkunft", "special_content_1": "Bittere Kräuter, feine Zitrusnoten und frischer Rosmarin mit bewusst leichter Struktur.", "special_heading_2": "Qualität", "special_content_2": "Klarer Aperitif mit hochwertigen Botanicals, präziser Balance und markanter Duftsignatur.", "featured": 0},
-    {"page": "menu", "section_key": "dessert_drinks", "sort_order": 3, "category": "Drink", "title": "Brass Barrel Old Fashioned", "teaser": "Dunkler Whisky, Waldhonig, Bitters und Orangenzeste.", "ingredients": "Dunkler Whisky, Waldhonig, Bitters und Orangenzeste.", "price": "CHF 18", "image_path": "assets/menu/bavarian-robotaste-brass-barrel-old-fashioned.png", "quote_text": "In der Ruhe liegt die Kraft.", "quote_author": "Konfuzius", "special_heading_1": "Herkunft", "special_content_1": "Kräftige Fassnoten, regionaler Honig und klassische Bar-Handschrift mit tiefer Aromatik.", "special_heading_2": "Qualität", "special_content_2": "Bewusst langsam gebauter Signature Drink mit klarer Balance, Wärme und Tiefe.", "featured": 0},
+    {"page": "menu", "section_key": "dessert_drinks", "sort_order": 2, "category": "Dessert", "title": "Cherry Espresso Mousse", "teaser": "Dunkle Schokolade, Kirsche, Espresso und seidige Creme.", "ingredients": "Dunkle Schokolade, Kirsche, Espresso und seidige Creme.", "price": "CHF 15", "image_path": "assets/menu/bavarian-robotaste-cherry-espresso-mousse.png", "quote_text": "Süße gewinnt durch Struktur an Erinnerung.", "quote_author": "Paul Valéry", "special_heading_1": "Herkunft", "special_content_1": "Kirschen, dunkle Schokolade und Espresso werden zu einer ruhigen, dichten Dessertkomposition verbunden.", "special_heading_2": "Qualität", "special_content_2": "Fein, cremig und klar gebaut mit wenig Dekor und präziser Aromatik.", "featured": 0},
+    {"page": "menu", "section_key": "dessert_drinks", "sort_order": 3, "category": "Dessert", "title": "Salted Caramel Pretzel Cream", "teaser": "Karamell, Rauchsalz, knusprige Brezn und warme Vanille.", "ingredients": "Karamell, Rauchsalz, knusprige Brezn und warme Vanille.", "price": "CHF 14", "image_path": "assets/menu/bavarian-robotaste-salted-caramel-pretzel-cream.png", "quote_text": "Kontrast macht Genuss erst vollständig.", "quote_author": "Heraklit", "special_heading_1": "Herkunft", "special_content_1": "Brezn-Crunch, warme Vanillenoten und salziges Karamell greifen bayerische Produktlogik modern auf.", "special_heading_2": "Qualität", "special_content_2": "Cremiges Dessert mit klarer Textur, bewusster Salznote und angenehm warmer Süße.", "featured": 0},
     {"page": "drinks", "section_key": "red_wine", "sort_order": 1, "category": "Rotwein", "title": "Pinot Noir Réserve 2022", "teaser": "Baden, Deutschland · Sauerkirsche, Kräuter, seidiger Zug.", "ingredients": "Eleganter Pinot Noir mit Sauerkirsche, Waldbeeren und feiner Würze.", "price": "CHF 15 / 98", "image_path": "", "quote_text": "Der Wein ist unter den Getränken das Nützlichste.", "quote_author": "Platon", "special_heading_1": "Herkunft", "special_content_1": "Kleine Parzellenlage, schonender Ausbau im Holz, handgelesen und bewusst limitiert.", "special_heading_2": "Qualität", "special_content_2": "Feine Gerbstoffe, lange Länge und eine stilvolle Kühle für präzise Speisenbegleitung.", "featured": 0},
     {"page": "drinks", "section_key": "red_wine", "sort_order": 2, "category": "Rotwein", "title": "Blaufränkisch Alte Reben 2021", "teaser": "Burgenland, Österreich · Dunkle Frucht, Pfeffer, mineralischer Kern.", "ingredients": "Würziger Blaufränkisch mit Brombeere, Pfeffer und tiefer mineralischer Note.", "price": "CHF 16 / 104", "image_path": "", "quote_text": "Charakter zeigt sich in der Begrenzung.", "quote_author": "Friedrich Nietzsche", "special_heading_1": "Herkunft", "special_content_1": "Alte Rebanlagen, niedrige Erträge und ein Ausbau, der Struktur vor Lautstärke setzt.", "special_heading_2": "Qualität", "special_content_2": "Markante Frische und Spannung, ideal zu kräftigen Fleischgängen und dunklen Jus.", "featured": 0},
     {"page": "drinks", "section_key": "red_wine", "sort_order": 3, "category": "Rotwein", "title": "Barbera Superiore 2020", "teaser": "Piemont, Italien · Pflaume, Kakao, seidige Säure.", "ingredients": "Saftige Barbera mit Pflaume, Kakao, Säurezug und dunkler Wärme.", "price": "CHF 17 / 112", "image_path": "", "quote_text": "Tiefe entsteht, wenn Form und Kraft einander tragen.", "quote_author": "Aristoteles", "special_heading_1": "Herkunft", "special_content_1": "Traditionelles Weingut mit biologischer Bewirtschaftung und langem Ausbau im großen Holz.", "special_heading_2": "Qualität", "special_content_2": "Großzügig und doch präzise, mit vibrierender Säure und kulinarischer Vielseitigkeit.", "featured": 0},
@@ -209,6 +209,215 @@ PRODUCT_SEED = [
     {"page": "drinks", "section_key": "softs", "sort_order": 9, "category": "Café", "title": "Cappuccino", "teaser": "Milchschaum, Balance, Wärme.", "ingredients": "Espresso, Milch und feiner Schaum.", "price": "CHF 5.5", "image_path": "", "quote_text": "Wärme ist auch eine Textur.", "quote_author": "Virginia Woolf", "special_heading_1": "Profil", "special_content_1": "Rund, weich und ausgewogen mit cremigem Finish.", "special_heading_2": "Servieridee", "special_content_2": "Für entspannte Tageszeiten, Dessertmomente und eine sanfte Landung.", "featured": 0},
     {"page": "drinks", "section_key": "softs", "sort_order": 10, "category": "Café", "title": "Flat White", "teaser": "Kräftiger Espresso und fein gezogene Milch.", "ingredients": "Doppelter Espresso und fein texturierte Milch.", "price": "CHF 5.8", "image_path": "", "quote_text": "Präzision kann sehr weich wirken.", "quote_author": "Ingeborg Bachmann", "special_heading_1": "Profil", "special_content_1": "Mehr Kaffeezug als Cappuccino, aber mit seidiger Milchstruktur.", "special_heading_2": "Servieridee", "special_content_2": "Ideal für Gäste, die Kaffeeintensität mit ruhigem Mundgefühl suchen.", "featured": 0},
 ]
+
+PRODUCT_ENRICHMENTS = {
+    "Alpine Data Salad": {
+        "erp_id": "ERP-11001",
+        "origin": "Äpfel von Bio-Obstbetrieben aus dem Thurgau, Kräuter aus dem Zürcher Oberland, Gurken von einem Marktgarten am Bodensee und Brezn-Crunch aus einer kleinen Zürcher Backstube.",
+        "quality": "Bio-Kräuter, kurze Lieferwege, handwerkliche Pickles und persönlicher Kontakt zu ausgewählten Produzentinnen und Produzenten rund um Zürich und die Ostschweiz.",
+    },
+    "Sensor Pretzel Bites": {
+        "erp_id": "ERP-11002",
+        "origin": "Laugengebäck aus einer Zürcher Handwerksbäckerei, Obazda aus Rohmilchkäse von einem Allgäuer Familienbetrieb und Schnittlauch aus dem Schweizer Seeland.",
+        "quality": "Kleine Chargen, frische Herstellung und direkte Abstimmung mit Bäckerei und Käselieferant für konstant cremige Textur und saubere Würze.",
+    },
+    "Neon Broth Shot": {
+        "erp_id": "ERP-11003",
+        "origin": "Rindsknochen und Wurzelgemüse von Bio-Höfen im Aargau und in der Nordwestschweiz, Kräuteröl mit Petersilie und Kerbel aus der Region Zürichsee.",
+        "quality": "Lang gezogen, klar passiert und ausschließlich aus ausgesuchten Grundprodukten gekocht, mit persönlichem Kontakt zu den liefernden Höfen.",
+    },
+    "Mechatronic Roast": {
+        "erp_id": "ERP-11004",
+        "origin": "Rind aus dem Zürcher Oberland, Sellerie und Karotten von Bio-Betrieben im Seeland, dunkles Bier von einer kleinen Brauerei am Zürichsee.",
+        "quality": "Ausgewählte Landwirte, kurze Wege und handwerkliche Zubereitung mit viel Zeit, damit Fleisch, Jus und Gemüse auf Premium-Niveau zusammenkommen.",
+    },
+    "Bot Garden Knödel": {
+        "erp_id": "ERP-11005",
+        "origin": "Kräuter und Karotten aus dem Seeland, Pilze aus kontrollierter Schweizer Zucht, Brot und Milchprodukte von Partnerbetrieben aus dem Raum Zürich.",
+        "quality": "Bio-nahe Rohstoffe, kleine Lieferketten und enger persönlicher Austausch mit Gemüsebauern und Pilzproduzenten für konstant hohe Produktgüte.",
+    },
+    "Autonomous Alpine Trout": {
+        "erp_id": "ERP-11006",
+        "origin": "Forelle aus einer alpinen Zucht in Graubünden, Gurken und Dill aus der Ostschweiz, Kartoffeln von einem Hof im Kanton Thurgau.",
+        "quality": "Sehr frische Anlieferung, sorgfältig ausgewählte Zucht mit klarer Wasserqualität und direkter Bezug über regionale Partner.",
+    },
+    "Black Forest Circuit": {
+        "erp_id": "ERP-11007",
+        "origin": "Schokolade aus schweizer Biomilch, Kirschen aus dem Baselbiet und Espresso von einer Zürcher Rösterei mit direktem Produzentenkontakt.",
+        "quality": "Hochwertige Schweizer Grundprodukte, präzise Patisseriearbeit und bewusst zurückhaltende Süße für ein klares Premium-Finale.",
+    },
+    "Cherry Espresso Mousse": {
+        "erp_id": "ERP-11008",
+        "origin": "Schokolade aus schweizer Biomilch, Sauerkirschen aus dem Thurgau und Espresso von einer kleinen Zürcher Specialty-Rösterei.",
+        "quality": "Bio-orientierte Zutaten, kurze Wege und enge Zusammenarbeit mit ausgewählten Lieferanten für saubere Aromen und seidige Textur.",
+    },
+    "Salted Caramel Pretzel Cream": {
+        "erp_id": "ERP-11009",
+        "origin": "Rahm und Milch aus Bio-Betrieben im Zürcher Oberland, Brezn-Crunch aus einer Handwerksbäckerei in Winterthur und Vanille aus fair gehandeltem Bezug.",
+        "quality": "Frisch gekochtes Karamell, ausgesuchte Milchprodukte und persönliche Abstimmung mit regionalen Partnern für cremige Konsistenz und feine Salzbalance.",
+    },
+    "Pinot Noir Réserve 2022": {
+        "erp_id": "ERP-21001",
+        "origin": "Pinot-Trauben von einem familiengeführten Weingut in Baden, nur wenige Stunden von Zürich entfernt, bezogen über einen kleinen Schweizer Weinpartner.",
+        "quality": "Selektive Handlese, enger persönlicher Kontakt zum Weingut und bewusst kleine Allokation für konstante Qualität im Glas.",
+    },
+    "Blaufränkisch Alte Reben 2021": {
+        "erp_id": "ERP-21002",
+        "origin": "Von alten Reben eines burgenländischen Familienbetriebs, eingekauft über einen unabhängigen Importeur im Raum Zürich.",
+        "quality": "Niedrige Erträge, sorgfältige Kellerarbeit und direkte Verkostung mit dem Produzenten statt anonymer Standardware.",
+    },
+    "Barbera Superiore 2020": {
+        "erp_id": "ERP-21003",
+        "origin": "Aus einem biologisch arbeitenden Gut im Piemont, nahe der Schweizer Grenze, regelmäßig direkt selektiert mit unserem Weinpartner.",
+        "quality": "Ausgewählte Jahrgänge, persönlicher Kontakt und bewusst kleine Mengen statt breit austauschbarer Handelsware.",
+    },
+    "Riesling Steinblick 2023": {
+        "erp_id": "ERP-22001",
+        "origin": "Steillagen-Riesling eines kleinen Moselbetriebs, kuratiert über einen Schweizer Fachhändler mit persönlicher Produzentenbeziehung.",
+        "quality": "Saubere Herkunft, präziser Ausbau und nur Weine, die sensorisch zu Küche und Stil des Hauses passen.",
+    },
+    "Sauvignon Blanc Kalk 2023": {
+        "erp_id": "ERP-22002",
+        "origin": "Von kalkreichen Parzellen eines Familienweinguts in der Südsteiermark, bezogen über eine nahe Zürcher Weinagentur.",
+        "quality": "Kleine Chargen, enge Auswahl und verlässlicher Direktkontakt statt Massenprogramm.",
+    },
+    "Chardonnay Fumé 2022": {
+        "erp_id": "ERP-22003",
+        "origin": "Chardonnay im Burgund-Stil aus einem kleinen europäischen Spitzenbetrieb, importiert über einen persönlich bekannten Schweizer Händler.",
+        "quality": "Bewusst selektiert, sauber ausgebaut und nur aufgenommen, wenn Holz, Frucht und Struktur harmonisch bleiben.",
+    },
+    "Rosé Cuvée Roselight 2023": {
+        "erp_id": "ERP-23001",
+        "origin": "Rosé im Provence-Stil von einem kleinen südfranzösischen Gut, das über einen Partner in Basel in die Schweiz kommt.",
+        "quality": "Saubere Pressung, limitierte Mengen und persönlicher Kontakt über den Importeur sichern eine klare, frische Linie.",
+    },
+    "Pinot Rosé Reserve 2023": {
+        "erp_id": "ERP-23002",
+        "origin": "Pinot-Trauben aus höher gelegenen Schweizer Lagen, ausgebaut von einem kleinen Weingut mit Nähe zum Zürichsee.",
+        "quality": "Kurze Wege, enge Zusammenarbeit und bewusst kleine Produktion mit Fokus auf Frische und Präzision.",
+    },
+    "Rosato di Lago 2023": {
+        "erp_id": "ERP-23003",
+        "origin": "Norditalienischer Rosato aus See-Lagen nahe der Schweizer Grenze, direkt ausgewählt über einen Tessiner Weinpartner.",
+        "quality": "Kurze Transportwege, kleine Mengen und sorgfältige Verkostung vor jeder Aufnahme.",
+    },
+    "Crémant Blanc de Blancs": {
+        "erp_id": "ERP-24001",
+        "origin": "Traditionell erzeugter Crémant aus dem Elsass, nur wenige Stunden von der Schweiz entfernt, von einem familiengeführten Haus.",
+        "quality": "Lange Hefelagerung, direkte Auswahl beim Partnerbetrieb und bewusst wenig, dafür sehr präzise eingekauft.",
+    },
+    "Winzersekt Pinot Brut": {
+        "erp_id": "ERP-24002",
+        "origin": "Winzersekt eines Pfälzer Familienguts, bezogen über einen kleinen Händler aus der Nordwestschweiz.",
+        "quality": "Kleine Flaschenzahl, klassische Methode und persönlicher Kontakt statt industrieller Standardcuvée.",
+    },
+    "Champagne Premier Cru Brut": {
+        "erp_id": "ERP-24003",
+        "origin": "Premier-Cru-Champagne von einem kleineren Champagnerhaus, kuratiert über einen spezialisierten Schweizer Importeur.",
+        "quality": "Nur ausgewählte Partien, enge sensorische Kontrolle und verlässliche Herkunft auf hohem Niveau.",
+    },
+    "Zürcher Kellerbier": {
+        "erp_id": "ERP-25001",
+        "origin": "Gebraut von einer kleinen Zürcher Brauerei mit regionalem Malz und Hopfen aus dem Bodenseeraum.",
+        "quality": "Unfiltriert, handwerklich gebraut und im direkten Austausch mit der Brauerei ausgewählt.",
+    },
+    "Alpen Pale Ale": {
+        "erp_id": "ERP-25002",
+        "origin": "Schweizer Craft Beer aus einer unabhängigen Brauerei in der Ostschweiz mit Aromahopfen aus Alpennähe.",
+        "quality": "Kleine Sude, saubere Bitterkeit und persönlicher Kontakt zum Brauer für konstante Frische.",
+    },
+    "Bavarian Dark Lager": {
+        "erp_id": "ERP-25003",
+        "origin": "Dunkles Lager einer regionalen Brauerei aus Süddeutschland nahe der Schweizer Grenze, mit ausgesuchtem Malz.",
+        "quality": "Traditionsnahe Brauweise, kurze Wege und bewusst kuratiertes Sortiment statt austauschbarer Massenbiere.",
+    },
+    "Signal Spritz": {
+        "erp_id": "ERP-26001",
+        "origin": "Mit Alpenbitter aus der Schweiz, frischem Rosmarin vom Zürcher Wochenmarkt und Zitrusfrüchten aus engem Frischebezug.",
+        "quality": "Frisch gebaut, sauber abgestimmt und nur mit wenigen, bewusst ausgewählten Zutaten serviert.",
+    },
+    "Brass Barrel Old Fashioned": {
+        "erp_id": "ERP-26002",
+        "origin": "Whisky aus kleiner Chargenabfüllung, Waldhonig von einer Imkerei im Kanton Zürich und frische Orangenzeste.",
+        "quality": "Persönlicher Kontakt zu regionalen Partnern, saubere Spirituosenauswahl und handwerklich präziser Build.",
+    },
+    "Circuit Negroni": {
+        "erp_id": "ERP-26003",
+        "origin": "Gin aus Schweizer Kleinbrennerei, Bitter und Vermouth aus kuratiertem Fachhandelsbezug, Zedernote als feiner Akzent.",
+        "quality": "Klare Rezeptur, hochwertige Barprodukte und bewusst reduzierte Auswahl für konstante Qualität.",
+    },
+    "Hausgemachte Kräuter-Limonade": {
+        "erp_id": "ERP-27001",
+        "origin": "Zitronensaft, Kräuter und Sirup werden in-house mit Kräutern aus dem Zürcher Umland angesetzt.",
+        "quality": "Frisch hergestellt, wenig Zucker und nur aus kleinen Chargen serviert.",
+    },
+    "Cloudy Apple Soda": {
+        "erp_id": "ERP-27002",
+        "origin": "Naturtrüber Apfelsaft aus dem Thurgau und Schweizer Mineralwasser.",
+        "quality": "Kurze Wege, sortenreiner Saft und bewusst einfache, ehrliche Produktqualität.",
+    },
+    "Ginger Citrus Fizz": {
+        "erp_id": "ERP-27003",
+        "origin": "Ingwer, Limette und Soda aus frischem Tagesbezug, mit Kräutern und Zitrus über einen Zürcher Frischepartner.",
+        "quality": "Frisch gemixt, ohne künstliche Zusätze und mit sauberer Balance von Schärfe und Säure.",
+    },
+    "Still Water Premium": {
+        "erp_id": "ERP-27004",
+        "origin": "Stilles Mineralwasser aus einer Schweizer Quelle, ausgewählt für feine Mineralität und ruhigen Charakter.",
+        "quality": "Konstante Herkunft, hochwertige Abfüllung und bewusst neutrales Profil für gehobene Speisenbegleitung.",
+    },
+    "Sparkling Water Premium": {
+        "erp_id": "ERP-27005",
+        "origin": "Mineralwasser mit feiner Kohlensäure aus einer Schweizer Quelle mit kurzer Lieferkette.",
+        "quality": "Saubere Perlage, konstante Qualität und bewusst ausgewählt für elegantes Pairing.",
+    },
+    "Espresso": {
+        "erp_id": "ERP-27006",
+        "origin": "Bohnen von einer Zürcher Rösterei mit direktem Bezug zu ausgewählten Farmen in Mittel- und Südamerika.",
+        "quality": "Schonend geröstet, frisch bezogen und in kleinen Chargen eingekauft.",
+    },
+    "Doppelter Espresso": {
+        "erp_id": "ERP-27007",
+        "origin": "Bohnen von einer Zürcher Rösterei mit direktem Bezug zu ausgewählten Farmen in Mittel- und Südamerika.",
+        "quality": "Schonend geröstet, frisch bezogen und für einen klaren, dichten Doppelshot in kleinen Chargen eingekauft.",
+    },
+    "Americano": {
+        "erp_id": "ERP-27008",
+        "origin": "Espressobasis aus Zürcher Röstung und Schweizer Wasser mit ruhiger Mineralität.",
+        "quality": "Frisch gemahlener Kaffee, saubere Extraktion und bewusst schlichtes Produkt mit hoher Konstanz.",
+    },
+    "Cappuccino": {
+        "erp_id": "ERP-27009",
+        "origin": "Espressobohnen aus Zürcher Rösterei und Bio-Milch von ausgewählten Höfen im Zürcher Oberland.",
+        "quality": "Frisch gemahlener Kaffee, präzise Extraktion und Milch von ausgewählten Landwirten mit persönlichem Kontakt.",
+    },
+    "Flat White": {
+        "erp_id": "ERP-27010",
+        "origin": "Doppelter Espresso aus Zürcher Röstung und fein texturierte Bio-Milch aus dem Raum Winterthur.",
+        "quality": "Kleine Bezugsquellen, präzise Zubereitung und bewusst ausgewählte Milchqualität für ein ruhiges, seidiges Mundgefühl.",
+    },
+}
+
+
+def apply_product_enrichments(connection: sqlite3.Connection) -> None:
+    for title, enrichment in PRODUCT_ENRICHMENTS.items():
+        connection.execute(
+            """
+            UPDATE products
+            SET erp_id = ?,
+                special_heading_1 = 'Herkunft',
+                special_content_1 = ?,
+                special_heading_2 = 'Qualität',
+                special_content_2 = ?
+            WHERE title = ?
+            """,
+            (
+                enrichment["erp_id"],
+                enrichment["origin"],
+                enrichment["quality"],
+                title,
+            ),
+        )
 
 
 def now_utc() -> datetime:
@@ -311,6 +520,8 @@ def ensure_products_db() -> None:
                 """,
                 PRODUCT_SEED,
             )
+
+        apply_product_enrichments(connection)
 
 
 def ensure_reservations_db() -> None:
