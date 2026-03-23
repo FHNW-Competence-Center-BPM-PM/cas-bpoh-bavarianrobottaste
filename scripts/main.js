@@ -294,17 +294,26 @@ if (dishModal) {
   const imageCloseButtons = imageLightbox?.querySelectorAll("[data-image-close]");
 
   const openDishModal = (trigger) => {
+    const specialHeading1 =
+      trigger.getAttribute("data-dish-special-heading-1") || trigger.dataset.dishSpecialHeading1 || "Herkunft";
+    const specialHeading2 =
+      trigger.getAttribute("data-dish-special-heading-2") || trigger.dataset.dishSpecialHeading2 || "Qualität";
+    const specialContent1 =
+      trigger.getAttribute("data-dish-special-content-1") || trigger.dataset.dishOrigin || "";
+    const specialContent2 =
+      trigger.getAttribute("data-dish-special-content-2") || trigger.dataset.dishQuality || "";
+
     modalCategory.textContent = trigger.dataset.dishCategory || "Gericht";
     modalTitle.textContent = trigger.dataset.dishTitle || "Gericht";
     modalPrice.textContent = trigger.dataset.dishPrice || "";
     modalCopy.textContent = trigger.dataset.dishCopy || "";
-    modalOrigin.textContent = trigger.dataset.dishSpecialContent1 || "";
-    modalQuality.textContent = trigger.dataset.dishSpecialContent2 || "";
+    modalOrigin.textContent = specialContent1;
+    modalQuality.textContent = specialContent2;
     if (modalSpecialHeading1) {
-      modalSpecialHeading1.textContent = trigger.dataset.dishSpecialHeading1 || "Details";
+      modalSpecialHeading1.textContent = specialHeading1;
     }
     if (modalSpecialHeading2) {
-      modalSpecialHeading2.textContent = trigger.dataset.dishSpecialHeading2 || "Mehr";
+      modalSpecialHeading2.textContent = specialHeading2;
     }
     modalQuote.textContent = `"${trigger.dataset.dishQuote || ""}"`;
     modalAuthor.textContent = trigger.dataset.dishAuthor || "";
@@ -323,6 +332,8 @@ if (dishModal) {
     }
 
     dishModal.hidden = false;
+    dishModal.scrollTop = 0;
+    dishModal.querySelector(".dish-modal-panel")?.scrollTo({ top: 0 });
     document.body.style.overflow = "hidden";
   };
 

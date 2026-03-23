@@ -58,7 +58,7 @@ wirken:
 - `menu-signature-2`
   - Vegetarische oder kreative Spezialitaet
 - `menu-signature-3`
-  - Dessert oder Drink
+  - Dessert
 - `interior-wide`
   - atmosphaerische Innenraumaufnahme
 - `testimonials`

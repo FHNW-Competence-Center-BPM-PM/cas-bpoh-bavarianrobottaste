@@ -173,6 +173,26 @@ editorial food photography, premium plating. Output format: webp. Target size:
 1400x1400 pixels. Intended filename: bavarian-robotaste-black-forest-circuit.webp
 ```
 
+### Cherry Espresso Mousse
+
+```text
+Luxury dessert image of Cherry Espresso Mousse, dark chocolate mousse, sour cherry,
+espresso cream, silky texture, refined futuristic Bavarian fine dining dessert, elegant
+plating, cinematic editorial food photography, premium ceramic presentation. Output
+format: webp. Target size: 1400x1400 pixels. Intended filename:
+bavarian-robotaste-cherry-espresso-mousse.webp
+```
+
+### Salted Caramel Pretzel Cream
+
+```text
+Premium dessert photography of Salted Caramel Pretzel Cream, salted caramel cream,
+pretzel crumble, vanilla, subtle smoked salt detail, futuristic Bavarian fine dining
+dessert, warm dramatic light, luxury editorial plating, high-end restaurant campaign
+image. Output format: webp. Target size: 1400x1400 pixels. Intended filename:
+bavarian-robotaste-salted-caramel-pretzel-cream.webp
+```
+
 ### Signal Spritz
 
 ```text
