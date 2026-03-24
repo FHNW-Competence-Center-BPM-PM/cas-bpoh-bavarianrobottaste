@@ -343,6 +343,47 @@
                         </div>
                       </div>
                     </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">GET</span>
+                        <code>/api/cms/reservations/{reservationId}</code>
+                      </div>
+                      <p>
+                        Liefert die wichtigsten Reservierungsdaten zu einer konkreten
+                        <code>reservationId</code>. Die Antwort ist bewusst schlank und gibt
+                        Datum, Tisch, <code>roomId</code>, Slot/Zeit und E-Mail zurueck.
+                      </p>
+                      <div class="docs-split-block">
+                        <div>
+                          <p class="card-kicker">Response</p>
+                          <pre class="docs-code"><code>{
+  "ok": true,
+  "reservation": {
+    "reservationId": "reservation_123",
+    "date": "2026-03-25",
+    "table": {
+      "id": "table-04",
+      "label": "Tisch 4"
+    },
+    "roomId": "stube",
+    "slot": {
+      "key": "evening",
+      "label": "18:30 - 21:00"
+    },
+    "email": "achim@example.com"
+  }
+}</code></pre>
+                        </div>
+                        <div>
+                          <p class="card-kicker">Fehler</p>
+                          <pre class="docs-code"><code>{
+  "ok": false,
+  "error": "reservation_not_found"
+}</code></pre>
+                        </div>
+                      </div>
+                    </article>
                   </div>
                 </section>
 

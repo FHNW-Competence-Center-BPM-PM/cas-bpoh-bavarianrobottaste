@@ -49,6 +49,30 @@ Liefert das Gastprofil.
 
 ## Besuche und Begleitgaeste
 
+### `GET /api/cms/reservations/{reservationId}`
+
+Liefert die wichtigsten Reservierungsdaten zu einer konkreten Reservierungs-ID.
+
+```json
+{
+  "ok": true,
+  "reservation": {
+    "reservationId": "reservation_123",
+    "date": "2026-03-25",
+    "table": {
+      "id": "table-04",
+      "label": "Tisch 4"
+    },
+    "roomId": "stube",
+    "slot": {
+      "key": "evening",
+      "label": "18:30 - 21:00"
+    },
+    "email": "achim@example.com"
+  }
+}
+```
+
 ### `POST /api/visits`
 
 Legt einen Restaurantbesuch an.

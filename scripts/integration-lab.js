@@ -80,6 +80,7 @@ ${innerLines.join("\n")}
 
   const operations = {
     cms: [
+      { value: "cms-reservation", label: "GET Reservierung nach ID" },
       { value: "cms-get", label: "GET Produkt nach ERP-ID" },
       { value: "cms-price", label: "PUT Preisupdate" },
     ],
@@ -95,7 +96,7 @@ ${innerLines.join("\n")}
 
   const visibleSectionsFor = (operation) => {
     const sections = ["crm-common"];
-    if (operation.startsWith("cms-")) {
+    if (operation.startsWith("cms-") || operation.startsWith("reservation-")) {
       return [operation];
     }
     sections.push(operation);
@@ -110,6 +111,16 @@ ${innerLines.join("\n")}
 
   const buildRequest = () => {
     const operation = operationSelect.value;
+    if (operation === "cms-reservation") {
+      const reservationId = encodeURIComponent(fieldValue("reservationLookupId"));
+      return {
+        method: "GET",
+        url: `/api/cms/reservations/${reservationId}`,
+        headers: { Accept: "application/json" },
+        body: "",
+      };
+    }
+
     if (operation === "cms-get") {
       const erpId = encodeURIComponent(fieldValue("cmsGetErpId"));
       return {

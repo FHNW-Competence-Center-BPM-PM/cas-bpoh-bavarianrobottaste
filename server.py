@@ -1731,6 +1731,26 @@ def reservation_details_payload(reservation_row: sqlite3.Row | dict, base_url: s
     return payload
 
 
+def reservation_lookup_payload(reservation_row: sqlite3.Row | dict) -> dict:
+    slot = reservation_slot(reservation_row["slot_key"])
+    room = reservation_room(reservation_row["room_id"])
+    table = reservation_table(room, reservation_row["table_id"]) if room else None
+    return {
+        "reservationId": reservation_row["id"],
+        "date": reservation_row["reservation_date"],
+        "table": {
+            "id": reservation_row["table_id"],
+            "label": table["label"] if table else reservation_row["table_id"],
+        },
+        "roomId": reservation_row["room_id"],
+        "slot": {
+            "key": reservation_row["slot_key"],
+            "label": slot["label"] if slot else reservation_row["slot_key"],
+        },
+        "email": reservation_row["guest_email"],
+    }
+
+
 def build_reservation_confirmation_email(reservation: dict, base_url: str) -> EmailMessage:
     settings = smtp_settings()
     message = EmailMessage()
@@ -2577,6 +2597,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         if parsed_url.path == "/reservations/cancel":
             self.handle_reservation_cancel(parsed_url.query)
             return
+        if parsed_url.path.startswith("/api/cms/reservations/"):
+            self.handle_reservation_lookup(parsed_url.path)
+            return
         if parsed_url.path.startswith("/api/cms/products/"):
             self.handle_cms_product_get(parsed_url.path)
             return
@@ -2689,6 +2712,19 @@ class AppHandler(SimpleHTTPRequestHandler):
                 "tables": tables,
             },
         )
+
+    def handle_reservation_lookup(self, path: str):
+        reservation_id = unquote(path.removeprefix("/api/cms/reservations/")).strip()
+        if not reservation_id:
+            self.respond_json(400, {"ok": False, "error": "missing_reservation_id"})
+            return
+
+        reservation_row = reservation_by_id(reservation_id)
+        if not reservation_row:
+            self.respond_json(404, {"ok": False, "error": "reservation_not_found"})
+            return
+
+        self.respond_json(200, {"ok": True, "reservation": reservation_lookup_payload(reservation_row)})
 
     def handle_reservations_calendar(self, query_string: str):
         params = parse_qs(query_string)
