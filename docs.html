@@ -1811,6 +1811,40 @@
   }
 }</code></pre>
                     </article>
+
+                    <article class="docs-spec-card">
+                      <div class="docs-spec-card-head">
+                        <h4><code>EVENT_OVERSTOCK</code></h4>
+                        <span class="docs-direction-pill is-server">Server -&gt; Tablet</span>
+                      </div>
+                      <div class="docs-spec-card-grid">
+                        <div><p class="card-kicker">Pflichtfelder</p><p><code>payload.title</code>, <code>payload.items[]</code></p></div>
+                        <div><p class="card-kicker">Optionale Felder</p><p><code>payload.message</code>, <code>payload.cta</code>, <code>payload.validUntil</code></p></div>
+                      </div>
+                      <p>Hebt kurzfristig verfügbare oder gezielt abzubauende Bestände direkt auf dem Tablet hervor.</p>
+                      <p class="card-kicker">Beispielpayload</p>
+                      <pre class="docs-code"><code>{
+  "type": "EVENT_OVERSTOCK",
+  "payload": {
+    "title": "Overstock Specials",
+    "message": "Heute in begrenzter Menge verfügbar.",
+    "cta": "Jetzt ansehen",
+    "validUntil": "2026-03-24T22:00:00Z",
+    "items": [
+      {
+        "itemId": "pretzel-bites",
+        "label": "Brezel Bites",
+        "price": 6.5
+      },
+      {
+        "itemId": "spritz-01",
+        "label": "Signal Spritz",
+        "price": 8.5
+      }
+    ]
+  }
+}</code></pre>
+                    </article>
                   </div>
                 </section>
 
@@ -1856,6 +1890,10 @@
                       <p>Startet das Glücksrad-Modal mit frei definierbaren Segmenten und CTA-Texten.</p>
                     </div>
                     <div>
+                      <p class="card-kicker">EVENT_OVERSTOCK</p>
+                      <p>Zeigt kurzfristige Overstock- oder Abverkaufsartikel mit CTA direkt auf dem Tablet an.</p>
+                    </div>
+                    <div>
                       <p class="card-kicker">TABLE_CONNECTED_ACK</p>
                       <p>Wird im Client geloggt und zeigt ein kurzes Willkommen-Popup.</p>
                     </div>
@@ -1873,6 +1911,7 @@
                     <li><strong>Operative Statusbefüllung per <code>ORDER_STATUS</code>:</strong> der Orchestrator kann den gesamten Bestellfortschritt inkl. Prozentwert und Nachricht steuern.</li>
                     <li><strong>Verkaufsimpulse per <code>PUSH_OFFER</code>:</strong> Offers können ein bestehendes <code>itemId</code> referenzieren oder ein komplettes Item direkt mitliefern und optional den Preis überschreiben.</li>
                     <li><strong>Engagement per <code>FUN_EVENT</code>:</strong> spielerische Inhalte lassen sich als Segmentliste mit Labels, CTA und Zusatzfeldern einspielen.</li>
+                    <li><strong>Abverkauf per <code>EVENT_OVERSTOCK</code>:</strong> verfügbare Überbestände oder Tagesaktionen können als kuratierte Artikelliste mit Gültigkeit und CTA auf einzelne oder alle Tablets gepusht werden.</li>
                     <li><strong>Broadcast oder gezielt:</strong> über <code>targets</code> in <code>/api/push</code> können Inhalte an ein einzelnes Tablet wie <code>table:12</code> oder an <code>all</code> gesendet werden.</li>
                   </ul>
                 </section>
@@ -1997,8 +2036,8 @@
                     <h3>Definierte Weiterleitungen</h3>
                   </div>
                   <ul class="docs-bullet-list">
-                    <li><code>/hue</code> für die Weiterleitung an die interne Hue-Schnittstelle.</li>
-                    <li><code>/robot</code> für die Weiterleitung an die interne Robotik-Schnittstelle.</li>
+                    <li><code>/hue</code> leitet an <code>http://10.0.0.6</code> weiter.</li>
+                    <li><code>/robot</code> leitet an <code>http://10.0.0.5</code> weiter.</li>
                   </ul>
                 </section>
 
@@ -2084,5 +2123,3 @@
     <script src="scripts/main.js"></script>
   </body>
 </html>
-
-
