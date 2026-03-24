@@ -1411,7 +1411,8 @@
                     <h3>Datenfluss</h3>
                   </div>
                   <p>
-                    Der Browser lädt die Tablet-Web-Oberfläche über <code>http://api.bpoh.space:8080</code>. REST-API-Calls des Tisch-Tablets gehen direkt an <code>http://api.bpoh.space:8000</code>. Nginx proxyt <code>/ws</code> intern auf den Event-Server. Tablets senden
+                    Der Browser lädt die UI vom Client auf Port <code>8080</code>. Nginx
+                    proxyt <code>/ws</code> intern auf den Event-Server. Tablets senden
                     Benutzeraktionen und Handshakes per WebSocket an den Event-Server; dieser
                     validiert die Events und leitet sie mit Retries an einen externen Webhook
                     weiter. In Gegenrichtung pusht der Orchestrator über HTTP neue Events auf
@@ -1432,12 +1433,6 @@
                     <p class="card-kicker">Client</p>
                     <h3>Was das Tablet darstellen kann</h3>
                   </div>
-                  <p>
-                    Bevor weitere Tablet-Funktionen genutzt werden können, muss zuerst ein Menü
-                    per <code>MENU_DATA</code> auf das Tablet geladen werden. Ohne diese initiale
-                    Befüllung bleiben menüabhängige Funktionen wie Warenkorb, Offers oder
-                    Bestellfluss praktisch unbenutzbar.
-                  </p>
                   <ul class="docs-bullet-list">
                     <li>Menükategorien und Menüeinträge inklusive Quick-Drinks.</li>
                     <li>Willkommensnachricht pro Tisch.</li>
@@ -1457,7 +1452,7 @@
                     <article class="docs-endpoint-item">
                       <div class="docs-endpoint-meta">
                         <span class="docs-method is-neutral">WS</span>
-                        <code>ws://api.bpoh.space:8080/ws?table=&lt;TABLE_ID&gt;</code>
+                        <code>/ws?table=&lt;TABLE_ID&gt;</code>
                       </div>
                       <p>
                         Primäre Verbindung des Tablets. Nach dem Verbindungsaufbau sendet der
@@ -1492,7 +1487,7 @@
                     <article class="docs-endpoint-item">
                       <div class="docs-endpoint-meta">
                         <span class="docs-method">POST</span>
-                        <code>http://api.bpoh.space:8000/api/push</code>
+                        <code>/api/push</code>
                       </div>
                       <p>
                         HTTP-Push vom Orchestrator an ein oder mehrere Tablets. Der Event-Server
@@ -1903,7 +1898,7 @@
                     <li>Ein verbindliches JSON-Schema für die Objekte in <code>MENU_DATA.categories[]</code> und <code>MENU_DATA.items[]</code>.</li>
                     <li>Eine Festlegung, ob <code>itemId</code> immer String oder immer Number sein soll.</li>
                     <li>Eine klare Aussage, ob Push-Events Vollersatz oder Delta-Updates darstellen.</li>
-                    <li>Fehler- und ACK-Regeln für <code>http://api.bpoh.space:8000/api/push</code> und für fachlich relevante Zustandswechsel.</li>
+                    <li>Fehler- und ACK-Regeln für <code>/api/push</code> und für fachlich relevante Zustandswechsel.</li>
                     <li>Reconnect-Regeln: ob ein Tablet nach Neuverbindung automatisch erneut befüllt werden muss.</li>
                     <li>Eine Versionsstrategie für zukünftige Event-Erweiterungen.</li>
                   </ul>
@@ -1952,13 +1947,13 @@
                     <h3>Wie die Tablets Inhalte bekommen können</h3>
                   </div>
                   <ul class="docs-bullet-list">
-                    <li><strong>Initiale Befüllung per <code>MENU_DATA</code>:</strong> Kategorien und Items werden vom Server auf das Tablet gepusht. Ohne dieses Event bleibt das Menü leer, und weitere menüabhängige Funktionen können nicht sinnvoll genutzt werden.</li>
+                    <li><strong>Initiale Befüllung per <code>MENU_DATA</code>:</strong> Kategorien und Items werden vom Server auf das Tablet gepusht. Ohne dieses Event bleibt das Menü leer.</li>
                     <li><strong>Kontextuelle Ansprache per <code>WELCOME_MESSAGE</code>:</strong> individuelle Tisch-, Zeit- oder Gasttexte können als reines Text-Event eingespielt werden.</li>
                     <li><strong>Operative Statusbefüllung per <code>ORDER_STATUS</code>:</strong> der Orchestrator kann den gesamten Bestellfortschritt inkl. Prozentwert und Nachricht steuern.</li>
                     <li><strong>Verkaufsimpulse per <code>PUSH_OFFER</code>:</strong> Offers können ein bestehendes <code>itemId</code> referenzieren oder ein komplettes Item direkt mitliefern und optional den Preis überschreiben.</li>
                     <li><strong>Engagement per <code>FUN_EVENT</code>:</strong> spielerische Inhalte lassen sich als Segmentliste mit Labels, CTA und Zusatzfeldern einspielen.</li>
                     <li><strong>Abverkauf per <code>EVENT_OVERSTOCK</code>:</strong> verfügbare Überbestände oder Tagesaktionen können als kuratierte Artikelliste mit Gültigkeit und CTA auf einzelne oder alle Tablets gepusht werden.</li>
-                    <li><strong>Broadcast oder gezielt:</strong> über <code>targets</code> in <code>http://api.bpoh.space:8000/api/push</code> können Inhalte an ein einzelnes Tablet wie <code>table:12</code> oder an <code>all</code> gesendet werden.</li>
+                    <li><strong>Broadcast oder gezielt:</strong> über <code>targets</code> in <code>/api/push</code> können Inhalte an ein einzelnes Tablet wie <code>table:12</code> oder an <code>all</code> gesendet werden.</li>
                   </ul>
                 </section>
 
@@ -1974,11 +1969,11 @@
                     </div>
                     <div>
                       <p class="card-kicker">WebSocket Proxy</p>
-                      <p>Die Tablet-Web-Oberfläche läuft auf <code>http://api.bpoh.space:8080</code>; Nginx leitet <code>/ws</code> intern an <code>restaurant-event-server:8000</code> weiter.</p>
+                      <p>Nginx leitet <code>/ws</code> an <code>restaurant-event-server:8000</code> weiter.</p>
                     </div>
                     <div>
-                      <p class="card-kicker">REST-API / Webhook</p>
-                      <p>REST-Endpunkte für Tisch-Tablets laufen auf <code>http://api.bpoh.space:8000</code>; die Tablet-Web-Oberfläche selbst auf <code>http://api.bpoh.space:8080</code>. Tablet-Events leitet der Event-Server zusätzlich an <code>EXTERNAL_WEBHOOK_URL</code> weiter.</p>
+                      <p class="card-kicker">Externer Webhook</p>
+                      <p>Der Event-Server leitet Tablet-Events an <code>EXTERNAL_WEBHOOK_URL</code> weiter.</p>
                     </div>
                     <div>
                       <p class="card-kicker">Retry-Verhalten</p>
@@ -2058,10 +2053,7 @@
                     Beispiel: Der Aufruf
                     <code>https://muskiest-usha-mortifyingly.ngrok-free.dev/hue/api/&lt;APIKEY&gt;/lights/1/state</code>
                     wird an den definierten <code>hue</code>-Service weitergeleitet und kann
-                    dort den Zustand der Hue-Lampe mit ID <code>1</code> ändern. Die Anfrage
-                    muss bereits am Gateway den Header <code>X-Gateway-Token</code> tragen; die
-                    eigentliche Ziel-Authentifizierung folgt danach innerhalb der weitergeleiteten
-                    Schnittstelle.
+                    dort den Zustand der Hue-Lampe mit ID <code>1</code> ändern.
                   </p>
                   <div class="docs-meta-grid">
                     <div>
@@ -2097,15 +2089,13 @@
                   </div>
                   <p>
                     Der Zugriff ist zweistufig abgesichert. Zuerst erfolgt die
-                    Authentifizierung am NGROK Gateway selbst über den Header
-                    <code>X-Gateway-Token</code>. Dieser Token wird separat bereitgestellt. Erst
+                    Authentifizierung am NGROK Gateway selbst mittels <code>KEY</code>. Erst
                     danach greift die Authentifizierung des weitergeleiteten Zielsystems gemäß
-                    dessen eigener Schnittstellendefinition, zum Beispiel spezifisch für
-                    <code>/hue</code> oder <code>/robot</code>.
+                    dessen eigener Schnittstellendefinition.
                   </p>
                   <ul class="docs-bullet-list">
-                    <li>Stufe 1: Authentifizierung am NGROK Gateway über den Header <code>X-Gateway-Token</code>.</li>
-                    <li>Stufe 2: Authentifizierung an der weitergeleiteten Zielschnittstelle, zum Beispiel per Hue-API-Key unter <code>/hue</code> oder per schnittstellenspezifischem Mechanismus unter <code>/robot</code>.</li>
+                    <li>Stufe 1: Authentifizierung am NGROK Gateway mittels <code>KEY</code>.</li>
+                    <li>Stufe 2: Authentifizierung an der Zielschnittstelle, zum Beispiel per API-Key, Bearer-Token oder Drittservice-spezifischem Mechanismus.</li>
                   </ul>
                 </section>
               </div>
