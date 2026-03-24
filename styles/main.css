@@ -869,6 +869,22 @@ blockquote {
   color: var(--muted);
 }
 
+.product-erp-id {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid rgba(119, 229, 216, 0.2);
+  border-radius: 999px;
+  background: rgba(119, 229, 216, 0.08);
+  color: var(--highlight);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .drink-price {
   justify-self: end;
 }
@@ -2870,6 +2886,10 @@ body.is-modal-open {
   margin-top: 16px;
   color: var(--muted);
   font-size: 1.04rem;
+}
+
+.product-erp-id-modal {
+  margin-top: 12px;
 }
 
 .dish-modal-meta {

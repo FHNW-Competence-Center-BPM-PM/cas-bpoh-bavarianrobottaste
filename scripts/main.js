@@ -164,6 +164,9 @@ const productPageRoot = document.querySelector("[data-product-page]");
 
 const buildProductCard = (product, page) => {
   const classes = ["menu-item"];
+  const erpMarkup = product.erpId
+    ? `<span class="product-erp-id">ERP-ID: ${escapeHtml(product.erpId)}</span>`
+    : "";
   if (page === "drinks") {
     classes.push("drink-item");
   }
@@ -197,6 +200,7 @@ const buildProductCard = (product, page) => {
         <h3 class="drink-name">${escapeHtml(product.title)}</h3>
         <div class="drink-meta">
           <p class="drink-description">${escapeHtml(product.teaser)}</p>
+          ${erpMarkup}
           <span class="price-tag drink-price">${escapeHtml(formatDrinkPrice(product.price))}</span>
         </div>
       </article>
@@ -225,6 +229,7 @@ const buildProductCard = (product, page) => {
       <div>
         <h3>${escapeHtml(product.title)}</h3>
         <p>${escapeHtml(product.teaser)}</p>
+        ${erpMarkup}
       </div>
       <span class="price-tag">${escapeHtml(product.price)}</span>
     </article>
@@ -278,6 +283,7 @@ if (dishModal) {
   const modalCategory = dishModal.querySelector("#dish-modal-category");
   const modalTitle = dishModal.querySelector("#dish-modal-title");
   const modalPrice = dishModal.querySelector("#dish-modal-price");
+  const modalErpId = dishModal.querySelector("#dish-modal-erp-id");
   const modalCopy = dishModal.querySelector("#dish-modal-copy");
   const modalOrigin = dishModal.querySelector("#dish-modal-origin");
   const modalQuality = dishModal.querySelector("#dish-modal-quality");
@@ -306,6 +312,11 @@ if (dishModal) {
     modalCategory.textContent = trigger.dataset.dishCategory || "Gericht";
     modalTitle.textContent = trigger.dataset.dishTitle || "Gericht";
     modalPrice.textContent = trigger.dataset.dishPrice || "";
+    if (modalErpId) {
+      const erpId = trigger.dataset.erpId || "";
+      modalErpId.textContent = erpId ? `ERP-ID: ${erpId}` : "";
+      modalErpId.hidden = !erpId;
+    }
     modalCopy.textContent = trigger.dataset.dishCopy || "";
     modalOrigin.textContent = specialContent1;
     modalQuality.textContent = specialContent2;

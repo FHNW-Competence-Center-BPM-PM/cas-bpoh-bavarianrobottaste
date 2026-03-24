@@ -30,6 +30,7 @@ PENDING_REGISTRATIONS_FILE = DATA_DIR / "pending_registrations.json"
 GUEST_PROFILES_FILE = DATA_DIR / "guest_profiles.json"
 SESSIONS_FILE = DATA_DIR / "sessions.json"
 PRODUCTS_DB_FILE = DATA_DIR / "products.db"
+ERP_ID_OVERRIDES_FILE = DATA_DIR / "erp_id_overrides.json"
 
 
 def load_local_env() -> None:
@@ -424,6 +425,172 @@ def apply_product_enrichments(connection: sqlite3.Connection) -> None:
         )
 
 
+def split_price_variants(price: str) -> tuple[str, str] | None:
+    parts = [part.strip() for part in str(price or "").split("/")]
+    if len(parts) != 2:
+        return None
+
+    glass_price = parts[0]
+    bottle_price = parts[1]
+    if bottle_price and not bottle_price.upper().startswith("CHF"):
+        bottle_price = f"CHF {bottle_price}"
+    return glass_price, bottle_price
+
+
+def serving_variant_teaser(teaser: str, serving_label: str) -> str:
+    base = str(teaser or "").strip()
+    suffix = "Ausschank glasweise." if serving_label == "Glas" else "75 cl Flasche."
+    if not base:
+        return suffix
+    if suffix in base:
+        return base
+    return f"{base} · {suffix}"
+
+
+def migrate_split_drink_products(connection: sqlite3.Connection) -> None:
+    products = connection.execute(
+        """
+        SELECT id, page, section_key, sort_order, erp_id, category, title, teaser, ingredients, price, image_path,
+               quote_text, quote_author, special_heading_1, special_content_1,
+               special_heading_2, special_content_2, featured
+        FROM products
+        WHERE page = 'drinks'
+        ORDER BY section_key, sort_order, id
+        """
+    ).fetchall()
+
+    for product in products:
+        price_variants = split_price_variants(product["price"])
+        if not price_variants:
+            continue
+        if product["title"].endswith(" · Glas") or product["title"].endswith(" · Flasche"):
+            continue
+
+        glass_erp_id = f"{product['erp_id']}-GL" if product["erp_id"] else ""
+        bottle_erp_id = f"{product['erp_id']}-BTL" if product["erp_id"] else ""
+        glass_title = f"{product['title']} · Glas"
+        bottle_title = f"{product['title']} · Flasche"
+        base_sort_order = int(product["sort_order"]) * 10
+
+        connection.execute(
+            """
+            UPDATE products
+            SET sort_order = ?,
+                erp_id = ?,
+                title = ?,
+                teaser = ?,
+                price = ?
+            WHERE id = ?
+            """,
+            (
+                base_sort_order + 1,
+                glass_erp_id,
+                glass_title,
+                serving_variant_teaser(product["teaser"], "Glas"),
+                price_variants[0],
+                product["id"],
+            ),
+        )
+
+        existing_bottle = connection.execute(
+            "SELECT id FROM products WHERE erp_id = ? OR title = ?",
+            (bottle_erp_id, bottle_title),
+        ).fetchone()
+        if existing_bottle:
+            connection.execute(
+                """
+                UPDATE products
+                SET page = ?, section_key = ?, sort_order = ?, category = ?, title = ?, teaser = ?, ingredients = ?,
+                    price = ?, image_path = ?, quote_text = ?, quote_author = ?, special_heading_1 = ?,
+                    special_content_1 = ?, special_heading_2 = ?, special_content_2 = ?, featured = ?, erp_id = ?
+                WHERE id = ?
+                """,
+                (
+                    product["page"],
+                    product["section_key"],
+                    base_sort_order + 2,
+                    product["category"],
+                    bottle_title,
+                    serving_variant_teaser(product["teaser"], "Flasche"),
+                    product["ingredients"],
+                    price_variants[1],
+                    product["image_path"],
+                    product["quote_text"],
+                    product["quote_author"],
+                    product["special_heading_1"],
+                    product["special_content_1"],
+                    product["special_heading_2"],
+                    product["special_content_2"],
+                    product["featured"],
+                    bottle_erp_id,
+                    existing_bottle["id"],
+                ),
+            )
+            continue
+
+        connection.execute(
+            """
+            INSERT INTO products (
+                page, section_key, sort_order, erp_id, category, title, teaser, ingredients, price,
+                image_path, quote_text, quote_author, special_heading_1, special_content_1,
+                special_heading_2, special_content_2, featured
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                product["page"],
+                product["section_key"],
+                base_sort_order + 2,
+                bottle_erp_id,
+                product["category"],
+                bottle_title,
+                serving_variant_teaser(product["teaser"], "Flasche"),
+                product["ingredients"],
+                price_variants[1],
+                product["image_path"],
+                product["quote_text"],
+                product["quote_author"],
+                product["special_heading_1"],
+                product["special_content_1"],
+                product["special_heading_2"],
+                product["special_content_2"],
+                product["featured"],
+            ),
+        )
+
+
+def load_erp_id_overrides() -> dict[str, str]:
+    if not ERP_ID_OVERRIDES_FILE.exists():
+        return {}
+
+    try:
+        payload = json.loads(ERP_ID_OVERRIDES_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+    if not isinstance(payload, dict):
+        return {}
+
+    overrides: dict[str, str] = {}
+    for title, erp_id in payload.items():
+        normalized_title = str(title or "").strip()
+        normalized_erp_id = str(erp_id or "").strip()
+        if normalized_title and normalized_erp_id:
+            overrides[normalized_title] = normalized_erp_id
+    return overrides
+
+
+def apply_erp_id_overrides(connection: sqlite3.Connection) -> None:
+    for title, erp_id in load_erp_id_overrides().items():
+        connection.execute(
+            """
+            UPDATE products
+            SET erp_id = ?
+            WHERE title = ?
+            """,
+            (erp_id, title),
+        )
+
+
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -526,6 +693,8 @@ def ensure_products_db() -> None:
             )
 
         apply_product_enrichments(connection)
+        migrate_split_drink_products(connection)
+        apply_erp_id_overrides(connection)
 
 
 def ensure_reservations_db() -> None:

@@ -7,5 +7,6 @@ coverage/
 .vscode/
 .env
 data/*.json
+!data/erp_id_overrides.json
 data/*.log
 __pycache__/
