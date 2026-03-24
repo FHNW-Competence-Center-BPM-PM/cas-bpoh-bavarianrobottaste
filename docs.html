@@ -260,6 +260,10 @@
                   Texte und Medien im CMS, während Preislogik weiterhin vom ERP
                   verantwortet wird.
                 </p>
+                <p>
+                  Die REST-Endpunkte des CMS werden unter der Basis-URL
+                  <code>https://api.bpoh.space</code> angesprochen.
+                </p>
               </section>
 
               <div class="docs-detail-stack">
@@ -394,6 +398,10 @@
                   </div>
                   <div class="docs-meta-grid">
                     <div>
+                      <p class="card-kicker">Basis-URL</p>
+                      <p><code>https://api.bpoh.space</code></p>
+                    </div>
+                    <div>
                       <p class="card-kicker">Schlüssel</p>
                       <p><code>erpId</code> ist die fachliche Referenz zwischen ERP und CMS.</p>
                     </div>
@@ -439,6 +447,11 @@
                   authentifiziert, die Fachoperationen selbst laufen aber als SOAP-Calls über
                   <code>POST /api/crm/soap</code>.
                 </p>
+                <p>
+                  Die technische Basis-URL des CRM-Services lautet
+                  <code>https://api.bpoh.space</code>; der SOAP-Endpoint ist damit
+                  <code>https://api.bpoh.space/api/crm/soap</code>.
+                </p>
               </section>
 
               <div class="docs-detail-stack">
@@ -449,8 +462,12 @@
                   </div>
                   <div class="docs-meta-grid">
                     <div>
+                      <p class="card-kicker">Basis-URL</p>
+                      <p><code>https://api.bpoh.space</code></p>
+                    </div>
+                    <div>
                       <p class="card-kicker">Endpoint</p>
-                      <p><code>POST /api/crm/soap</code></p>
+                      <p><code>POST https://api.bpoh.space/api/crm/soap</code></p>
                     </div>
                     <div>
                       <p class="card-kicker">Content-Type</p>
@@ -1414,16 +1431,20 @@
                     Der Browser lädt die UI vom Client auf Port <code>8080</code>. Nginx
                     proxyt <code>/ws</code> intern auf den Event-Server. Tablets senden
                     Benutzeraktionen und Handshakes per WebSocket an den Event-Server; dieser
-                    validiert die Events und leitet sie mit Retries an einen externen Webhook
-                    weiter. In Gegenrichtung pusht der Orchestrator über HTTP neue Events auf
-                    konkrete Targets wie <code>table:12</code> oder auf <code>all</code>.
+                    validiert die Events und leitet sie mit Retries an feste oder dynamisch
+                    gepflegte externe Webhooks weiter. In Gegenrichtung pusht der Orchestrator
+                    über HTTP neue Events auf konkrete Targets wie <code>table:12</code> oder
+                    auf <code>all</code>. Diese Push-Events werden zusätzlich ebenfalls an die
+                    konfigurierten externen Webhooks gespiegelt.
                   </p>
                   <div class="docs-inline-list">
                     <span>Browser / Tablet</span>
                     <span>Nginx</span>
                     <span>WebSocket /ws</span>
                     <span>Restaurant Event Server</span>
-                    <span>EXTERNAL_WEBHOOK_URL</span>
+                    <span>EXTERNAL_WEBHOOK_URLS</span>
+                    <span>Dynamic Webhooks</span>
+                    <span>Webhook Display :8001</span>
                     <span>Orchestrator</span>
                   </div>
                 </section>
@@ -1504,6 +1525,102 @@
   }
 }</code></pre>
                     </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">GET</span>
+                        <code>http://api.bpoh.space:8000/api/webhooks</code>
+                      </div>
+                      <p>
+                        Liefert die aktuell konfigurierten festen und dynamischen Webhooks des
+                        Event-Servers. Der Request erwartet bei gesetztem Admin-Token den Header
+                        <code>X-Admin-Token</code>.
+                      </p>
+                      <pre class="docs-code"><code>{
+  "fixed": [
+    {
+      "url": "http://cas-bpoh-restaurant-kitchen-display:9050/api/events",
+      "source": "env"
+    }
+  ],
+  "dynamic": [
+    {
+      "id": 1,
+      "url": "http://host.docker.internal:8001/api/events",
+      "enabled": true,
+      "created_at": "2026-03-24 14:00:00",
+      "source": "dynamic"
+    }
+  ],
+  "effective_urls": [
+    "http://cas-bpoh-restaurant-kitchen-display:9050/api/events",
+    "http://host.docker.internal:8001/api/events"
+  ]
+}</code></pre>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">POST</span>
+                        <code>http://api.bpoh.space:8000/api/webhooks</code>
+                      </div>
+                      <p>
+                        Legt einen dynamischen Webhook zur Laufzeit an. Dieser erhält danach alle
+                        nach außen weitergeleiteten Tablet-Events sowie die über
+                        <code>/api/push</code> gespiegelten Orchestrator-Events.
+                      </p>
+                      <pre class="docs-code"><code>{
+  "url": "http://host.docker.internal:8001/api/events",
+  "enabled": true
+}</code></pre>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">PATCH</span>
+                        <code>http://api.bpoh.space:8000/api/webhooks/{webhookId}</code>
+                      </div>
+                      <p>
+                        Aktiviert oder deaktiviert einen bestehenden dynamischen Webhook, ohne ihn
+                        zu löschen.
+                      </p>
+                      <pre class="docs-code"><code>{
+  "enabled": false
+}</code></pre>
+                      <pre class="docs-code"><code>curl -X PATCH http://api.bpoh.space:8000/api/webhooks/1 \
+  -H 'Content-Type: application/json' \
+  -H 'X-Admin-Token: change-me' \
+  -d '{"enabled":false}'</code></pre>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method">DELETE</span>
+                        <code>http://api.bpoh.space:8000/api/webhooks/{webhookId}</code>
+                      </div>
+                      <p>
+                        Entfernt einen dynamischen Webhook wieder aus der Laufzeitkonfiguration.
+                        Feste, über die Umgebung gesetzte Webhooks bleiben davon unberührt.
+                      </p>
+                      <pre class="docs-code"><code>curl -X DELETE http://api.bpoh.space:8000/api/webhooks/1 \
+  -H 'X-Admin-Token: change-me'</code></pre>
+                    </article>
+
+                    <article class="docs-endpoint-item">
+                      <div class="docs-endpoint-meta">
+                        <span class="docs-method is-neutral">UI</span>
+                        <code>http://api.bpoh.space:8001/</code>
+                      </div>
+                      <p>
+                        Monitoring-Frontend für Webhook-Ereignisse. Die Oberfläche zeigt eingehende
+                        Events mit Typ, Source, Timestamp und Payload an. Der zugehörige
+                        Webhook-Empfänger läuft auf <code>http://api.bpoh.space:8001/api/events</code>.
+                      </p>
+                      <pre class="docs-code"><code>curl -X POST http://api.bpoh.space:8000/api/webhooks \
+  -H 'Content-Type: application/json' \
+  -H 'X-Admin-Token: change-me' \
+  -d '{"url":"http://host.docker.internal:8001/api/events","enabled":true}'</code></pre>
+                    </article>
                   </div>
                 </section>
 
@@ -1525,6 +1642,12 @@
                     Objekt mit <code>type</code> und <code>payload</code> validiert und
                     anschlieÃŸend an den externen Webhook mit
                     <code>source: table:&lt;id&gt;</code> weitergeleitet.
+                  </p>
+                  <p>
+                    Zusätzlich werden über <code>POST /api/push</code> eingehende
+                    Orchestrator-Events an externe Webhooks gespiegelt, mit
+                    <code>source: orchestrator</code> und einem zusätzlichen
+                    <code>targets[]</code>-Feld.
                   </p>
                 </section>
 
@@ -1972,8 +2095,16 @@
                       <p>Nginx leitet <code>/ws</code> an <code>restaurant-event-server:8000</code> weiter.</p>
                     </div>
                     <div>
-                      <p class="card-kicker">Externer Webhook</p>
-                      <p>Der Event-Server leitet Tablet-Events an <code>EXTERNAL_WEBHOOK_URL</code> weiter.</p>
+                      <p class="card-kicker">REST-API / Webhook</p>
+                      <p>REST-Endpunkte für Tisch-Tablets laufen auf <code>http://api.bpoh.space:8000</code>; die Tablet-Web-Oberfläche selbst auf <code>http://api.bpoh.space:8080</code>. Tablet-Events und gespiegelte Push-Events leitet der Event-Server zusätzlich an feste <code>EXTERNAL_WEBHOOK_URLS</code> sowie an dynamisch angelegte Webhooks weiter.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Webhook Display</p>
+                      <p>Das Monitoring-Frontend für Webhook-Empfang läuft auf <code>http://api.bpoh.space:8001/</code>. Der eigentliche Empfänger-Endpunkt lautet <code>http://api.bpoh.space:8001/api/events</code>.</p>
+                    </div>
+                    <div>
+                      <p class="card-kicker">Webhook Admin</p>
+                      <p>Dynamische Webhooks werden über <code>GET</code>, <code>POST</code>, <code>PATCH</code> und <code>DELETE</code> auf <code>http://api.bpoh.space:8000/api/webhooks</code> verwaltet; optional geschützt per <code>X-Admin-Token</code>.</p>
                     </div>
                     <div>
                       <p class="card-kicker">Retry-Verhalten</p>
