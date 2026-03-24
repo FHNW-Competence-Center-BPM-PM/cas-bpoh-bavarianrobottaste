@@ -9,4 +9,6 @@ coverage/
 data/*.json
 !data/erp_id_overrides.json
 data/*.log
+server.stdout.log
+server.stderr.log
 __pycache__/
